@@ -1,0 +1,193 @@
+{#
+  opt: {
+    showPagination: true,
+    cols: [
+      {
+        title: '用户昵称',
+        html: function(rowdata: any) {
+          return '<a href="/member/' + rowdata.id + '">' + rowdata.nickName + '</a>'
+        }
+      },
+      {
+        title: '操作',
+        html: function(rowdata: any) {
+          return '<a href="javascript:;" class="btn-cancel">取消关注</a>'
+        }
+      }
+    ]
+  }
+#}
+{% macro table(opt, showOpt) %}
+<table>
+  <thead>
+    <tr>
+      {% for col in showOpt.cols %}
+      <th>{{col.title}}</th>
+      {% endfor %}
+    </tr>
+  </thead>
+  <tbody>
+    {% for data in opt.datas %}
+    <tr data-id="{{data.id}}">
+      {% for col in showOpt.cols %}
+      <td>
+        {{ col.html(data) | safe }}
+      </td>
+      {% endfor %}
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% if showOpt.showPagination %}
+<div>
+  <span>总数:{{opt.count}} 当前在第{{opt.page}}页</span>
+  {% if opt.page > 1%}
+  <a href="{{opt.url}}_page={{ opt.page - 1 }}&_limit={{ opt.limit }}">上一页</a>
+  {% endif %}
+  {% if opt.page < opt.maxPage %}
+  <a href="{{opt.url}}_page={{ opt.page + 1 }}&_limit={{ opt.limit }}">下一页</a>
+  {% endif %}
+</div>
+{% endif %}
+{% endmacro %}
+
+
+{% macro storyBlocksBody(tableOpt) %}
+<div class="story-list layui-row layui-col-space20">
+  {% for story in tableOpt.datas %}
+  <div class="layui-col-xs12 layui-col-sm6 layui-col-md3 block">
+    <a href="/story/{{story.id}}"><div class="image" style="background-image: url({{story.img}})"></div></a>
+    <div class="story-detail">
+      <div class="story-detail-block1">
+        <div class="name">
+          {% if story.storyMatch.award %}
+          <span class="award">{{story.storyMatch.award}}</span>
+          {% endif %}
+          {% if story.isDigest %}
+          <span class="digest">精</span>
+          {% endif %}
+          <a href="/story/{{story.id}}" class="layui-elip">{{story.title}}</a>
+        </div>
+        <div class="type">分类：{{story.type.name}}</div>
+        <div class="number">浏览：{{story.pageViews}} 评论：{{story.comments.length}}</div>
+      </div>
+      <div class="story-detail-block2">
+        <div class="author"><a href="/member/{{story.author.id}}">{{story.author.nickName}}</a></div>
+        <div class="date">{{story.publishTime | date('YYYY-MM-DD')}}</div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endmacro %}
+
+
+{% macro storyBlocks(tableOpt, opt) %}
+<div class="my-blocks">
+  <div class="title">
+    {{opt.title}}
+    <div class="english"> {{opt.englishTitle}} </div>
+  </div>
+  <div class="panel">
+    {{ storyBlocksBody(tableOpt) }}
+    <div class="panel-button">
+      <a class="btn-gray" href="{{opt.moreUrl}}">更多</a>
+    </div>
+  </div>
+</div>
+{% endmacro %}
+
+{% macro memberBlocksBody(tableOpt) %}
+<div class="member-list layui-row layui-col-space10">
+  {% for member in tableOpt.datas %}
+  <div class="layui-col-xs6 layui-col-sm3 layui-col-md2 block">
+    <div class="member-detail">
+      <div class="avatar">
+        <img src="{% if member.avatar %}{{member.avatar}}{% else %}
+        {% if member.type === '学生' %}
+        /static/images/website/face1.jpg
+        {% elseif member.type === '老师' %}
+        /static/images/website/face2.jpg
+        {% elseif member.type === '学校' %}
+        /static/images/website/face3.jpg
+        {% elseif member.type === '爱心人士' or member.type === '爱心团体' %}
+        /static/images/website/face4.jpg
+        {% else %}
+        /static/images/website/face.jpg
+        {% endif %}
+        {% endif %}">
+      </div>
+      <div class="name"><a href="/member/{{member.id}}">{{member.nickName}}</a></div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endmacro %}
+
+{% macro memberBlocks(tableOpt, opt) %}
+<div class="my-blocks">
+  <div class="title">
+    {{opt.title}}
+    <div class="english"> {{opt.englishTitle}} </div>
+  </div>
+  <div class="panel">
+    {{ memberBlocksBody(tableOpt) }}
+    <div class="panel-button">
+      <a class="btn-gray" href="{{opt.moreUrl}}">更多</a>
+    </div>
+  </div>
+</div>
+{% endmacro %}
+
+
+{% macro pagination(tableOpt) %}
+<div class="pagination">
+  <ul>
+    {% if tableOpt.page > 1 %}
+    <li><a href="{{tableOpt.url}}_page={{tableOpt.page - 1}}&_limit={{opt.limit }}" class="item lt">&lt;</a></li>
+    {% endif %}
+
+    {% if tableOpt.page - 4 >= 1 %}
+    <li><a href="{{tableOpt.url}}_page=1&_limit={{opt.limit }}" class="item">1</a></li>
+    <li><span class="item">...</span></li>
+    {% endif %}
+
+    {% if tableOpt.page - 3 >= 1 %}
+    <li><a href="{{tableOpt.url}}_page={{tableOpt.page - 3}}&_limit={{opt.limit }}" class="item">{{tableOpt.page - 3}}</a></li>
+    {% endif %}
+
+    {% if tableOpt.page - 2 >= 1 %}
+    <li><a href="{{tableOpt.url}}_page={{tableOpt.page - 2}}&_limit={{opt.limit }}" class="item">{{tableOpt.page - 2}}</a></li>
+    {% endif %}
+
+    {% if tableOpt.page - 1 >= 1 %}
+    <li><a href="{{tableOpt.url}}_page={{tableOpt.page - 1}}&_limit={{opt.limit }}" class="item">{{tableOpt.page - 1}}</a></li>
+    {% endif %}
+
+    {% if tableOpt.count !== 0 %}
+    <li><span class="item selected">{{tableOpt.page}}</span></li>
+    {% endif %}
+
+    {% if tableOpt.page + 1 <= tableOpt.maxPage %}
+    <li><a href="{{tableOpt.url}}_page={{tableOpt.page + 1}}&_limit={{opt.limit }}" class="item">{{tableOpt.page + 1}}</a></li>
+    {% endif %}
+
+    {% if tableOpt.page + 2 <= tableOpt.maxPage %}
+    <li><a href="{{tableOpt.url}}_page={{tableOpt.page + 2}}&_limit={{opt.limit }}" class="item">{{tableOpt.page + 2}}</a></li>
+    {% endif %}
+
+    {% if tableOpt.page + 3 <= tableOpt.maxPage %}
+    <li><a href="{{tableOpt.url}}_page={{tableOpt.page + 3}}&_limit={{opt.limit }}" class="item">{{tableOpt.page + 3}}</a></li>
+    {% endif %}
+
+    {% if tableOpt.page + 4 <= tableOpt.maxPage %}
+    <li><span class="item">...</span></li>
+    <li><a href="{{tableOpt.url}}_page={{tableOpt.maxPage}}&_limit={{opt.limit }}" class="item">{{tableOpt.maxPage}}</a></li>
+    {% endif %}
+
+    {% if tableOpt.page < tableOpt.maxPage %}
+    <li><a href="{{tableOpt.url}}_page={{tableOpt.page + 1}}&_limit={{opt.limit }}" class="item lt">&gt;</a></li>
+    {% endif %}
+  </ul>
+</div>
+{% endmacro %}

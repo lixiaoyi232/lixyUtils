@@ -1,0 +1,113 @@
+{% extends "../layout/layout-member-center.html" %}
+
+{% block css %}
+{{ super() }}
+{% endblock %}
+
+{% block member_center_main %}
+
+<div class="layui-card">
+  <div class="layui-card-header">单聊</div>
+  <div class="layui-card-body">
+    <div>
+      {% if member.type == MemberType.school %}
+      <div id="myTable"></div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+  $(function () {
+    {% if member.type == MemberType.school %}
+    newTable({
+      // btns: {
+      //   items: [
+      //     'setCols',
+      //   ]
+      // },
+      // search: {
+      //   'class': 'selects',
+      //   labelWidth: '100',
+      //   submit: {
+      //     'class': 'layui-btn greenBtn'
+      //   },
+      //   items: [
+      //     {
+      //       label: '名称',
+      //       elements: {
+      //         eType: 'input',
+      //         name: 'name'
+      //       }
+      //     },
+      //     {
+      //       label: '所在地区',
+      //       elements: {
+      //         eType: 'select',
+      //         name: 'provinceId',
+      //         option: [
+      //           {value: 'all', label: '&nbsp;', selected: true},
+      //           {% for p in provinces %}
+      //           {value: '{{ p.id }}', label: '{{ p.name }}'},
+      //           {% endfor %}
+      //         ],
+      //       },
+      //     },
+      //     {
+      //       label: 'ID',
+      //       elements: {
+      //         eType: 'between',
+      //         name: 'id'
+      //       }
+      //     },
+      //     {
+      //       label: '创建时间',
+      //       elements: {
+      //         eType: 'date',
+      //         name: 'createdTime',
+      //         range: true
+      //       }
+      //     }
+      //   ]
+      // },
+      table: {
+        checkboxType: 'none',
+        tool: {
+          items: [
+            {
+              layEvent: 'into',
+              'class': 'layui-btn-primary',
+              label: '进入',
+              event: function (obj, config, render) {openWindow('/member-center/a-chat/' + obj.data.admin.id, undefined, {resizable: 'yes'})}
+            },
+          ]
+        },
+        templates: [
+          {
+            id: 'aa',
+            content: '[[ d.admin.account ]]'
+          },
+        ],
+        config: {
+          elem: '#aChat',
+          url: '/member-center/a-chat/table',
+          toolbar: '',
+          cols: [
+            [
+              {field: 'id', sort: true, title: 'ID', width:100, show: false},
+              {width:200, align: 'center', toolbar: '#operation'},
+              {field: 'aaccount', sort: true, title: '管理员', templet: '#aa'},
+              {field: 'mNumber', sort: true, title: '未读数'},
+            ]
+          ]
+        }
+      }
+    })
+    {% endif %}
+  })
+</script>
+{% endblock %}

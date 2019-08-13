@@ -1,0 +1,488 @@
+{% extends "../back.html" %}
+
+{% block css %}
+{{ super() }}
+{% endblock %}
+
+{% block body %}
+  <div class="layui-card myCard">
+    <div class="layui-card-header">修改订单</div>
+    <div class="layui-card-body layui-tab layui-tab-brief">
+      <div id="myForm"></div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+  $(function () {
+    newForm({
+      form: {
+        labelWidth: '120',
+        submit: {
+          event: function (data) {
+            $('[lay-filter="myFormSubmit"]').attr('disabled', true)
+            $('[lay-filter="myFormSubmit"]').addClass('layui-btn-disabled')
+            ajax({
+              method: 'POST',
+              url: '/admin/aid/aid/{{ aid.id }}',
+              data: JSON.stringify(data.field),
+              success: function () {
+                layer.msg('修改成功', {time: 2000, icon:6})
+                parent.tableRender()
+                window.setTimeout(function () {parent.layer.close(parent.layer.getFrameIndex(window.name))}, 2000)
+                // window.setTimeout(function () {window.location.href = '/admin/aid/aid'}, 2000)
+              },
+              fail: function () {
+                $('[lay-filter="myFormSubmit"]').attr('disabled', false)
+                $('[lay-filter="myFormSubmit"]').removeClass('layui-btn-disabled')
+              },
+              error: function () {
+                $('[lay-filter="myFormSubmit"]').attr('disabled', false)
+                $('[lay-filter="myFormSubmit"]').removeClass('layui-btn-disabled')
+              }
+            })
+          }
+        },
+        val: {
+          // 'aidApplyId': '{{ aid.aidApply.id }}',
+          // 'memberId': '{{ aid.member.id }}',
+          'number': '{{ aid.number }}',
+          'status': '{{ aid.status }}',
+          'inform': '{{ aid.inform }}',
+        },
+        items: [
+          {
+            label: '资助申请单号',
+            elements: [
+              {
+                eType: 'char',
+                name: 'aidApplyShow',
+                element: '<div class="layui-input-block" style="">{{ aid.aidApply.number }}</div>'
+              },
+              // {
+              //   eType: 'char',
+              //   name: 'aidApply',
+              //   element: '<button type="button" class="inblk layui-btn layui-btn-primary">修改资助申请单</button>',
+              //   events: [
+              //     {
+              //       type: 'delegate',
+              //       name: 'click',
+              //       query: 'button',
+              //       callback: function (e) {
+              //         e.preventDefault()
+              //         layer.closeAll()
+              //         var index = layer.open({
+              //           type: 1,
+              //           title: '选择资助申请单',
+              //           offset: ['5px', '5px'],
+              //           skin: 'layui-layer-rim',
+              //           area: [(document.body.clientWidth - 20) + 'px', (document.body.clientHeight - 20) + 'px'],
+              //           content: '<div id="chooseAal"></div>',
+              //           maxmin: true
+              //         })
+              //         newTable({
+              //           parent: '#chooseAal',
+              //           type: 'layer',
+              //           btns: {
+              //             items: [
+              //               {
+              //                 layEvent: 'backAal',
+              //                 'class': 'layui-btn-normal',
+              //                 label: '确认选择',
+              //                 event: function (obj, config, render) {
+              //                   var data = table.checkStatus(config.id).data
+              //                   if (data.length === 0) layer.close(index)
+              //                   else if (data.length > 0) {
+              //                     $('[name=aidApplyId]').val(data[0].id)
+              //                     $($('[name=aidApplyShow]').children()[0]).html(data[0].id)
+              //                     layer.close(index)
+              //                   }
+              //                 }
+              //               },
+              //               {
+              //                 layEvent: 'cancelAal',
+              //                 label: '取消',
+              //                 event: function (obj, config, render) {layer.close(index)}
+              //               }
+              //             ]
+              //           },
+              //           search: {
+              //             'class': 'selects',
+              //             labelWidth: '100',
+              //             items: [
+              //               {
+              //                 label: '状态',
+              //                 elements: {
+              //                   eType: 'select',
+              //                   name: 'status',
+              //                   option: [
+              //                     {value: 'all', label: '&nbsp;'},
+              //                     {% for i, j in AidApplyStatus %}
+              //                     {% if j !== AidApplyStatus.draft %}{value: '{{ j }}', label: '{{ j }}'},{% endif %}
+              //                     {% endfor %}
+              //                   ]
+              //                 }
+              //               },
+              //               // {
+              //               //   label: '学段',
+              //               //   elements: {
+              //               //     eType: 'select',
+              //               //     name: 'period',
+              //               //     option: [
+              //               //       {value: 'all', label: '&nbsp;'},
+              //               //       {% for i, j in StudentPeriod %}
+              //               //       {value: '{{ j }}', label: '{{ j }}'},
+              //               //       {% endfor %}
+              //               //     ]
+              //               //   }
+              //               // },
+              //               {
+              //                 label: 'ID',
+              //                 elements: {
+              //                   eType: 'between',
+              //                   name: 'id'
+              //                 }
+              //               },
+              //               {
+              //                 label: '创建时间',
+              //                 elements: {
+              //                   eType: 'date',
+              //                   name: 'createdTime',
+              //                   range: true
+              //                 }
+              //               }
+              //             ]
+              //           },
+              //           table: {
+              //             checkboxType: 'radio',
+              //             templates: [
+              //               {
+              //                 id: 'smst',
+              //                 content: '[[ semester(d.semester) ]]'
+              //               },
+              //             ],
+              //             config: {
+              //               elem: '#aidApply',
+              //               url: '/admin/aid/apply/table?inStatus={{ AidApplyStatus.own }},{{ AidApplyStatus.putaway }}',
+              //               cols: [
+              //                 [
+              //                   {field: 'id', sort: true, title: 'ID', width:100, fixed: 'left'},
+              //                   {field: 'name', sort: true, title: '学生'},
+              //                   {field: 'status', sort: true, title: '状态'},
+              //                   {field: 'number', sort: true, title: '申请单号'},
+              //                   {field: 'semester', sort: true, title: '申请学期', templet: '#smst'},
+              //                   {field: 'whGroupName', sort: true, title: '爱心团体'}
+              //                 ]
+              //               ]
+              //             }
+              //           }
+              //         })
+              //       }
+              //     }
+              //   ]
+              // },
+              // {
+              //   eType: 'input',
+              //   name: 'aidApplyId',
+              //   show: false,
+              //   layVerify: 'aalRqd'
+              // }
+            ]
+          },
+          {
+            label: '爱心团体/人士',
+            elements: [
+              {
+                eType: 'char',
+                name: 'memberShow',
+                element: '<div class="layui-input-block" style="">{{ aid.member.name }}</div>'
+              },
+              // {
+              //   eType: 'char',
+              //   name: 'member',
+              //   element: '<button type="button" class="inblk layui-btn layui-btn-primary">修改爱心团体/人士</button>',
+              //   events: [
+              //     {
+              //       type: 'delegate',
+              //       name: 'click',
+              //       query: 'button',
+              //       callback: function (e) {
+              //         layer.closeAll()
+              //         var index = layer.open({
+              //           type: 1,
+              //           title: '选择爱心团体/人士',
+              //           offset: ['5px', '5px'],
+              //           skin: 'layui-layer-rim',
+              //           area: [(document.body.clientWidth - 20) + 'px', (document.body.clientHeight - 20) + 'px'],
+              //           content: '<div id="cut"></div><div id="chooseWhg" m-if="true"></div><div id="chooseWhp" m-if="false"></div>',
+              //           maxmin: true
+              //         })
+              //         newForm({
+              //           parent: '#cut',
+              //           form: {
+              //             submit: {
+              //               show: false
+              //             },
+              //             val: {
+              //               table: 'whGroup'
+              //             },
+              //             items: [
+              //               {
+              //                 label: '表格',
+              //                 elements: {
+              //                   eType: 'select',
+              //                   name: 'table',
+              //                   layVerify: 'select',
+              //                   option: [
+              //                     {value: 'whGroup', label: '爱心团体'},
+              //                     {value: 'whPerson', label: '爱心人士'}
+              //                   ],
+              //                   events: [
+              //                     {
+              //                       name: 'laySelect',
+              //                       callback: function (data) {
+              //                         switch (data.value) {
+              //                           case 'whGroup': {
+              //                             $('#chooseWhg').attr('m-if', 'true')
+              //                             $('#chooseWhp').attr('m-if', 'false')
+              //                             mIfRender()
+              //                             $('[lay-filter=\'whGroupSearchSubmit\']').click()
+              //                             break
+              //                           }
+              //                           case 'whPerson': {
+              //                             $('#chooseWhg').attr('m-if', 'false')
+              //                             $('#chooseWhp').attr('m-if', 'true')
+              //                             mIfRender()
+              //                             $('[lay-filter=\'whPersonSearchSubmit\']').click()
+              //                             break
+              //                           }
+              //                         }
+              //                       }
+              //                     }
+              //                   ]
+              //                 }
+              //               }
+              //             ]
+              //           }
+              //         })
+              //         newTable({
+              //           parent: '#chooseWhg',
+              //           type: 'layer',
+              //           btns: {
+              //             items: [
+              //               {
+              //                 layEvent: 'backWhg',
+              //                 'class': 'layui-btn-normal',
+              //                 label: '确认选择',
+              //                 event: function (obj, config, render) {
+              //                   var data = table.checkStatus(config.id).data
+              //                   if (data.length === 0) layer.close(index)
+              //                   else if (data.length > 0) {
+              //                     $('[name=memberId]').val(data[0].id)
+              //                     $($('[name=memberShow]').children()[0]).html(data[0].name)
+              //                     layer.close(index)
+              //                   }
+              //                 }
+              //               },
+              //               {
+              //                 layEvent: 'cancelWhg',
+              //                 label: '取消',
+              //                 event: function (obj, config, render) {layer.close(index)}
+              //               }
+              //             ]
+              //           },
+              //           search: {
+              //             'class': 'selects',
+              //             labelWidth: '100',
+              //             items: [
+              //               {
+              //                 label: '名称',
+              //                 elements: {
+              //                   eType: 'input',
+              //                   name: 'name'
+              //                 }
+              //               },
+              //               {
+              //                 label: 'ID',
+              //                 elements: {
+              //                   eType: 'between',
+              //                   name: 'id'
+              //                 }
+              //               },
+              //               {
+              //                 label: '创建时间',
+              //                 elements: {
+              //                   eType: 'date',
+              //                   name: 'createdTime',
+              //                   range: true
+              //                 }
+              //               }
+              //             ]
+              //           },
+              //           table: {
+              //             checkboxType: 'radio',
+              //             templates: [
+              //               {
+              //                 id: 'ct',
+              //                 content: '[[# var createdTime = dateFormat(new Date(d.createdTime), \'YYYY-MM-DD HH:mm:ss\') ]][[ createdTime ]]'
+              //               },
+              //               {
+              //                 id: 'verify',
+              //                 content: '[[#  if(d.whGroup.verify === \'待审核\'){ ]]<span class="layui-badge layui-bg-orange">待</span>[[# } else if(d.whGroup.verify === \'审核通过\'){ ]]<span class="layui-badge layui-bg-blue">过</span>[[#  } else { ]]<span class="layui-badge layui-bg-gray">未</span>[[#  } ]]'
+              //               }
+              //             ],
+              //             config: {
+              //               elem: '#whGroup',
+              //               url: '/admin/member/whGroup/table',
+              //               // toolbar: 'whgToolbar',
+              //               cols: [
+              //                 [
+              //                   {field: 'id', sort: true, title: 'ID', width:100, fixed: 'left'},
+              //                   {field: 'name', sort: true, title: '团体名称'},
+              //                   {field: 'contactName', sort: true, title: '联系人姓名'},
+              //                   {field: 'phoneNumber', sort: true, title: '联系手机'},
+              //                   {field: 'email', sort: true, title: 'Email'},
+              //                   {field: 'createdTime', sort: true, title: '创建时间', templet: '#ct'},
+              //                   {field: 'verify', sort: true, title: '审核状态', align: 'center', templet: '#verify'}
+              //                 ]
+              //               ]
+              //             }
+              //           }
+              //         })
+              //         newTable({
+              //           parent: '#chooseWhp',
+              //           type: 'layer',
+              //           btns: {
+              //             items: [
+              //               {
+              //                 layEvent: 'backWhp',
+              //                 'class': 'layui-btn-normal',
+              //                 label: '确认选择',
+              //                 event: function (obj, config, render) {
+              //                   var data = table.checkStatus(config.id).data
+              //                   if (data.length === 0) layer.close(index)
+              //                   else if (data.length > 0) {
+              //                     $('[name=memberId]').val(data[0].id)
+              //                     $($('[name=memberShow]').children()[0]).html(data[0].name)
+              //                     layer.close(index)
+              //                   }
+              //                 }
+              //               },
+              //               {
+              //                 layEvent: 'cancelWhp',
+              //                 label: '取消',
+              //                 event: function (obj, config, render) {layer.close(index)}
+              //               }
+              //             ]
+              //           },
+              //           search: {
+              //             'class': 'selects',
+              //             labelWidth: '100',
+              //             items: [
+              //               {
+              //                 label: '姓名',
+              //                 elements: {
+              //                   eType: 'input',
+              //                   name: 'name'
+              //                 }
+              //               },
+              //               {
+              //                 label: 'ID',
+              //                 elements: {
+              //                   eType: 'between',
+              //                   name: 'id'
+              //                 }
+              //               },
+              //               {
+              //                 label: '创建时间',
+              //                 elements: {
+              //                   eType: 'date',
+              //                   name: 'createdTime',
+              //                   range: true
+              //                 }
+              //               }
+              //             ]
+              //           },
+              //           table: {
+              //             checkboxType: 'radio',
+              //             templates: [
+              //               {
+              //                 id: 'ct',
+              //                 content: '[[# var createdTime = dateFormat(new Date(d.createdTime), \'YYYY-MM-DD HH:mm:ss\') ]][[ createdTime ]]'
+              //               }
+              //             ],
+              //             config: {
+              //               elem: '#whPerson',
+              //               url: '/admin/member/whPerson/table',
+              //               cols: [
+              //                 [
+              //                   {field: 'id', sort: true, title: 'ID', width:100, fixed: 'left'},
+              //                   {field: 'name', sort: true, title: '姓名'},
+              //                   {field: 'email', sort: true, title: 'Email'},
+              //                   {field: 'nickName', sort: true, title: '昵称'},
+              //                   {field: 'phoneNumber', sort: true, title: '联系手机'},
+              //                   {field: 'createdTime', sort: true, title: '创建时间', templet: '#ct'}
+              //                 ]
+              //               ]
+              //             }
+              //           }
+              //         })
+              //       }
+              //     }
+              //   ]
+              // },
+              // {
+              //   eType: 'input',
+              //   name: 'memberId',
+              //   show: false,
+              //   layVerify: 'mmbRqd'
+              // }
+            ]
+          },
+          // {
+          //   label: '资助单号',
+          //   elements: {
+          //     eType: 'input',
+          //     name: 'number',
+          //   }
+          // },
+          {
+            label: '状态',
+            elements: {
+              eType: 'select',
+              name: 'status',
+              layVerify: 'select',
+              option: [
+                {value: 'null', label: '请选择'},
+                {% for i, j in AidStatus %}
+                {% if curAdmin.isSuperUser or (j != AidStatus.end and j != AidStatus.cancel) %}{value: '{{ j }}', label: '{{ j }}'},{% endif %}
+                {% endfor %}
+              ]
+            }
+          },
+          {
+            label: '通知内容',
+            elements: {
+              eType: 'input',
+              name: 'inform',
+            }
+          }
+        ],
+        verify: {
+          select: function (value) {
+            if (value === '' || value === 'null') return '必填项不能为空'
+          },
+          // aalRqd: function (value) {
+          //   if (value === '') return '资助申请单不能为空'
+          // },
+          // mmbRqd: function (value) {
+          //   if (value === '') return '爱心团体/人士不能为空'
+          // }
+        }
+      }
+    })
+  })
+</script>
+{% endblock %}

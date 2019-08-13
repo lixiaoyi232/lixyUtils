@@ -1,0 +1,131 @@
+{% extends "../layout/layout-member-center.html" %}
+
+{% block css %}
+{{ super() }}
+<link rel="stylesheet" href="/static/css/website/mytable.css">
+{% endblock %}
+
+{% block member_center_main %}
+<!-- <div id="table-comment"></div> -->
+<div class="layui-card myCard">
+  <div class="layui-card-header">收到的评论</div>
+  <div class="layui-card-body">
+    <div id="myTable"></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script src="/static/js/mytable.js"></script>
+<script>
+  // $(function () {
+  //   var table = new MyTable({
+  //     el: '#table-comment',
+  //     url: '/member-center/story-comment/table',
+  //     limit: 10,
+  //     cols: [
+  //       {
+  //         title: 'id',
+  //         html: function(comment) {
+  //           return comment.id
+  //         }
+  //       },
+  //       {
+  //         title: '标题',
+  //         html: function(comment) {
+  //           return '<a href="/story/' + comment.story.id + '">' + comment.story.title + '</a>'
+  //         }
+  //       },
+  //       {
+  //         title: '评论',
+  //         html: function(comment) {
+  //           return '<a href="/story/' + comment.story.id + '?_cid=' + comment.id + '#c' + comment.id + '">' + comment.text + '</a>'
+  //         }
+  //       }
+  //     ]
+  //   })
+
+  //   table.fetch()
+  // })
+  $(function () {
+    newTable({
+      btns: {
+        items: [
+          // 'setCols'
+        ]
+      },
+      search: {
+        'class': 'selects',
+        labelWidth: '100',
+        submit: {
+          'class': 'layui-btn greenBtn'
+        },
+        items: [
+          {
+            label: '评论',
+            elements: {
+              eType: 'input',
+              name: 'text'
+            }
+          },
+          // {
+          //   label: '评论时间',
+          //   elements: {
+          //     eType: 'date',
+          //     name: 'createdTime',
+          //     range: true
+          //   }
+          // },
+        ]
+      },
+      table: {
+        checkboxType: 'none',
+        // tool: {
+        //   items: [
+        //   ]
+        // },
+        templates: [
+          {
+            id: 'tCreatedTime',
+            content: '[[ dateFormat(d.createdTime, \'YYYY-MM-DD HH:mm:ss\') ]]'
+          },
+          {
+            id: 'tText',
+            content: '<a href="/story/[[ d.story.id ]]?_cid=[[ d.id ]]#c[[ d.id ]]" target="_blank" style="cursor: pointer;">[[ d.text ]]</a>'
+          },
+          {
+            id: 'tStoryTitle',
+            content: '<a href="/story/[[ d.story.id ]]" target="_blank" style="cursor: pointer;">[[ d.story.title ]]</a>'
+          },
+          {
+            id: 'tAuthorAccount',
+            content: '[[ d.author.account ]]'
+          },
+          {
+            id: 'tAuthorName',
+            content: '[[ d.author.name ]]'
+          },
+          {
+            id: 'tAuthorType',
+            content: '[[ d.author.type ]]'
+          },
+        ],
+        config: {
+          elem: '#storyCommented',
+          url: '/member-center/story-commented/table',
+          cols: [
+            [
+              {field: 'id', title: 'ID', align: 'center', show: false, sort: true, width: 100},
+              {field: 'text', title: '评论', sort: true, minWidth: 200, templet: '#tText'},
+              {field: 'storyTitle', title: '标题', align: 'center', sort: true, minWidth: 200, templet: '#tStoryTitle'},
+              // {field: 'createdTime', title: '评论时间', align: 'center', sort: true, width: 180, templet: '#tCreatedTime'},
+              // {align: 'center', width: 80, toolbar: '#operation'}
+            ]
+          ]
+        }
+      }
+    })
+  })
+</script>
+{% endblock %}

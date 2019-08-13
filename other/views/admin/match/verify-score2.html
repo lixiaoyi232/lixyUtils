@@ -1,0 +1,161 @@
+{% extends "../back.html" %}
+
+{% block css %}
+{{ super() }}
+{% endblock %}
+
+{% block body %}
+  <div class="layui-card myCard">
+    <div class="layui-card-header">二审</div>
+    <div class="layui-card-body layui-tab layui-tab-brief">
+      <div id="myForm"></div>
+      <div class="layui-btn-container buttons">
+        <button class="layui-btn layui-btn-normal" id="ok">打分</button>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+  $(function () {
+    newForm({
+      form: {
+        labelWidth: '100',
+        submit: {
+          show: false
+        },
+        items: [
+          {
+            label: '标题',
+            elements: {
+              eType: 'char',
+              name: 'title',
+              element: '<div class="layui-input-block" style="">{{ story.title }}</div>',
+              events: [
+                {
+                  type: 'delegate',
+                  name: 'click',
+                  query: 'a',
+                  callback: function (e) {
+                    layer.open({
+                      type: 2,
+                      title: '详情',
+                      shade: 0.8,
+                      area: ['90%', '90%'],
+                      content: '/admin/story/story/{{ story.id }}/info'
+                    })
+                  }
+                }
+              ]
+            }
+          },
+          {
+            label: '类别',
+            elements: {
+              eType: 'char',
+              name: 'type',
+              element: '<div class="layui-input-block" style="">{{ story.type.name }}</div>'
+            }
+          },
+          {
+            label: '作者',
+            elements: {
+              eType: 'char',
+              name: 'author',
+              element: '<div class="layui-input-block" style="">{{ story.author.account }}</div>'
+            }
+          },
+          {
+            label: '标签',
+            elements: {
+              eType: 'char',
+              name: 'tag',
+              element: '<div class="layui-input-block" style="">{{ story.tag }}</div>'
+            }
+          },
+          {
+            label: '状态',
+            elements: {
+              eType: 'char',
+              name: 'tag',
+              element: '<div class="layui-input-block" style="">{{ story.status }}</div>'
+            }
+          },
+          {
+            label: '一审得分',
+            elements: {
+              eType: 'char',
+              name: 'firstScore',
+              element: '<div class="layui-input-block" style="">{{ story.storyMatch.firstScore }}</div>'
+            }
+          },
+          {
+            label: '二审得分',
+            elements: {
+              eType: 'char',
+              name: 'secondScore',
+              element: '<div class="layui-input-block" style="">{{ story.storyMatch.secondScore }}</div>'
+            }
+          }
+        ]
+      }
+    })
+    $('#ok').on('click', function () {
+      $('button').attr('disabled', true)
+      $('button').addClass('layui-btn-disabled')
+
+      var str = '<form class="layui-form" id="giveScore" lay-filter="giveScore" action="" style="margin: 20px;"><div class="layui-form-item"><label class="layui-form-label">分数:</label><div class="layui-input-inline"><input type="number" name="score" lay-verify="required" autocomplete="off" class="layui-input" value="{{ story.storyMatch.secondScore }}"></div></div><div class="layui-form-item"><label class="layui-form-label"></label><button class="layui-btn layui-btn-normal" id="gs" lay-filter="gs" lay-submit>打分</button><button class="layui-btn layui-btn-primary" id="cancel">取消</button></div></form>'
+      layer.closeAll()
+      var index = layer.open({
+        type: 1,
+        title: '打分',
+        offset: '100px',
+        skin: 'layui-layer-rim',
+        area: ['360px', '240px'],
+        content: str,
+        cancel: function(index, layero){
+          $('button').attr('disabled', false)
+          $('button').removeClass('layui-btn-disabled')
+        }
+      })
+      form.render(null, 'giveScore')
+      $('[name=score]').focus()
+      $('#cancel').on('click', function () {
+        $('button').attr('disabled', false)
+        $('button').removeClass('layui-btn-disabled')
+        layer.close(index);
+        return false
+      })
+      $('[lay-filter=giveScore]').submit(function (e) {
+        e.preventDefault()
+        $('[lay-filter=gs]').click()
+      })
+      form.on('submit(gs)', function (data) {
+        ajax({
+          method: 'POST',
+          url: '/admin/match/verify1/{{ story.id }}/score2',
+          data: JSON.stringify(data.field),
+          success: function () {
+            layer.msg('打分成功', {time: 2000, icon:6})
+            layer.close(index)
+            parent.tableRender()
+            window.setTimeout(function () {parent.layer.close(parent.layer.getFrameIndex(window.name))}, 2000)
+            // window.setTimeout(function () {window.location.href = '/admin/match/verify'}, 2000)
+          },
+          fail: function () {
+            $('button').attr('disabled', false)
+            $('button').removeClass('layui-btn-disabled')
+          },
+          error: function () {
+            $('button').attr('disabled', false)
+            $('button').removeClass('layui-btn-disabled')
+          }
+        })
+        return false
+      })
+    })
+  })
+</script>
+{% endblock %}

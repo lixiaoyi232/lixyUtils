@@ -1,0 +1,160 @@
+{% extends "../back.html" %}
+
+{% block css %}
+{{ super() }}
+{% endblock %}
+
+{% block body %}
+  <div class="layui-card myCard">
+    <div class="layui-card-header">资助故事审核</div>
+    <div class="layui-card-body layui-tab layui-tab-brief">
+      <div id="myForm"></div>
+      <div class="layui-btn-container buttons">
+        <button class="layui-btn layui-btn-normal" id="ok">通过</button>
+        <button class="layui-btn layui-btn-danger" id="no">复议</button>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+  $(function () {
+    newForm({
+      form: {
+        labelWidth: '100',
+        submit: {
+          show: false
+        },
+        items: [
+          {
+            label: '标题',
+            elements: {
+              eType: 'char',
+              name: 'title',
+              element: '<div class="layui-input-block" style="">{{ story.title }}</div>'
+            }
+          },
+          {
+            label: '类别',
+            elements: {
+              eType: 'char',
+              name: 'type',
+              element: '<div class="layui-input-block" style="">{{ story.type.name }}</div>'
+            }
+          },
+          {
+            label: '作者',
+            elements: {
+              eType: 'char',
+              name: 'author',
+              element: '<div class="layui-input-block" style="">{{ story.author.account }}</div>'
+            }
+          },
+          {
+            label: '标签',
+            elements: {
+              eType: 'char',
+              name: 'tag',
+              element: '<div class="layui-input-block" style="">{{ story.tag }}</div>'
+            }
+          },
+          {
+            label: '状态',
+            elements: {
+              eType: 'char',
+              name: 'tag',
+              element: '<div class="layui-input-block" style="">{{ story.status }}</div>'
+            }
+          },
+          {
+            label: '复议理由',
+            elements: {
+              eType: 'char',
+              name: 'reason',
+              element: '<div class="layui-input-block" style="">{{ story.reason }}</div>'
+            }
+          }
+        ]
+      }
+    })
+    $('#ok').on('click', function () {
+      $('button').attr('disabled', true)
+      $('button').addClass('layui-btn-disabled')
+      ajax({
+        method: 'POST',
+        url: '/admin/aid/verify/{{ story.id }}',
+        data: JSON.stringify({pass: true}),
+        success: function () {
+          layer.msg('成功', {time: 2000, icon:6})
+          parent.tableRender()
+          window.setTimeout(function () {parent.layer.close(parent.layer.getFrameIndex(window.name))}, 2000)
+          // window.setTimeout(function () {window.location.href = '/admin/aid/verify'}, 2000)
+        },
+        fail: function () {
+          $('button').attr('disabled', false)
+          $('button').removeClass('layui-btn-disabled')
+        },
+        error: function () {
+          $('button').attr('disabled', false)
+          $('button').removeClass('layui-btn-disabled')
+        }
+      })
+    })
+    $('#no').on('click', function () {
+      $('button').attr('disabled', true)
+      $('button').addClass('layui-btn-disabled')
+      var str = '<form class="layui-form" id="back" lay-filter="back" action="" style="margin: 20px;"><div class="layui-form-item"><label class="layui-form-label">复议理由:</label><div class="layui-input-inline"><input type="text" name="reason" lay-verify="required" autocomplete="off" class="layui-input" value="{{ story.reason }}"></div></div><div class="layui-form-item"><label class="layui-form-label"></label><button class="layui-btn layui-btn-normal" id="bk" lay-filter="bk" lay-submit>提交</button><button class="layui-btn layui-btn-primary" id="cancel">取消</button></div></form>'
+      layer.closeAll()
+      var index = layer.open({
+        type: 1,
+        title: '驳回',
+        offset: '100px',
+        skin: 'layui-layer-rim',
+        area: ['360px', '240px'],
+        content: str,
+        cancel: function(index, layero){
+          $('button').attr('disabled', false)
+          $('button').removeClass('layui-btn-disabled')
+        }
+      })
+      form.render(null, 'back')
+      $('[name=reason]').focus()
+      $('#cancel').on('click', function () {
+        $('button').attr('disabled', false)
+        $('button').removeClass('layui-btn-disabled')
+        layer.close(index);
+        return false
+      })
+      $('[lay-filter=back]').submit(function (e) {
+        e.preventDefault()
+        $('[lay-filter=bk]').click()
+      })
+      form.on('submit(bk)', function (data) {
+        ajax({
+          method: 'POST',
+          url: '/admin/aid/verify/{{ story.id }}',
+          data: JSON.stringify(data.field),
+          success: function () {
+            layer.msg('驳回成功', {time: 2000, icon:6})
+            parent.tableRender()
+            window.setTimeout(function () {parent.layer.close(parent.layer.getFrameIndex(window.name))}, 2000)
+            // layer.close(index)
+            // window.setTimeout(function () {window.location.href = '/admin/aid/verify'}, 2000)
+          },
+          fail: function () {
+            $('button').attr('disabled', false)
+            $('button').removeClass('layui-btn-disabled')
+          },
+          error: function () {
+            $('button').attr('disabled', false)
+            $('button').removeClass('layui-btn-disabled')
+          }
+        })
+        return false
+      })
+    })
+  })
+</script>
+{% endblock %}

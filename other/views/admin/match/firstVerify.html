@@ -1,0 +1,529 @@
+{% extends "../back.html" %}
+
+{% block css %}
+{{ super() }}
+<style>
+  html {
+    overflow: hidden;
+  }
+</style>
+{% endblock %}
+
+{% block main %}
+  <div class="layui-card myCard">
+    <div class="layui-card-header">初赛故事管理</div>
+    <div class="layui-card-body">
+      <div id="myTable"></div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+  $(function () {
+    newTable({
+      btns: {
+        items: [
+          {
+            layEvent: 'export',
+            'class': 'layui-btn-normal',
+            label: '导出',
+            event: function (obj, config, render) {
+              layer.confirm('确认导出吗？', function(index){
+                window.location = '/admin/match/verify1/export' + (config.url.split('?')[1] != null ? '?' + config.url.split('?')[1] : '')
+                layer.close(index)
+              })
+            }
+          },
+          'setCols',
+          {% if curAdmin.isSuperUser or curAdmin.permissions.sty_sty_ad %}
+          {
+            layEvent: 'addToDigest',
+            'class': 'layui-btn-normal',
+            label: '精选',
+            event: function (obj, config, render) {
+              var data = table.checkStatus(config.id).data
+              var items = []
+              for (var i in data) if (data.hasOwnProperty(i)) items.push(data[i].id)
+              ajax({
+                method: 'POST',
+                url: '/admin/story/story/digest',
+                data: JSON.stringify({isDigest: true, data: items}),
+                success: function () {
+                  layer.msg('精选成功', {time: 2000, icon:6})
+                  render()
+                },
+              })
+            }
+          },
+          {
+            layEvent: 'removeToDigest',
+            'class': 'layui-btn-normal',
+            label: '去精',
+            event: function (obj, config, render) {
+              var data = table.checkStatus(config.id).data
+              var items = []
+              for (var i in data) if (data.hasOwnProperty(i)) items.push(data[i].id)
+              ajax({
+                method: 'POST',
+                url: '/admin/story/story/digest',
+                data: JSON.stringify({isDigest: false, data: items}),
+                success: function () {
+                  layer.msg('精选成功', {time: 2000, icon:6})
+                  render()
+                },
+              })
+            }
+          },
+          {
+            layEvent: 'addToImgDigest',
+            'class': 'layui-btn-normal',
+            label: '星图',
+            event: function (obj, config, render) {
+              var data = table.checkStatus(config.id).data
+              var items = []
+              for (var i in data) if (data.hasOwnProperty(i)) items.push(data[i].id)
+              ajax({
+                method: 'POST',
+                url: '/admin/story/story/imgDigest',
+                data: JSON.stringify({imgIsDigest: true, data: items}),
+                success: function () {
+                  layer.msg('星图成功', {time: 2000, icon:6})
+                  render()
+                },
+              })
+            }
+          },
+          {
+            layEvent: 'removeToImgDigest',
+            'class': 'layui-btn-normal',
+            label: '去星',
+            event: function (obj, config, render) {
+              var data = table.checkStatus(config.id).data
+              var items = []
+              for (var i in data) if (data.hasOwnProperty(i)) items.push(data[i].id)
+              ajax({
+                method: 'POST',
+                url: '/admin/story/story/imgDigest',
+                data: JSON.stringify({imgIsDigest: false, data: items}),
+                success: function () {
+                  layer.msg('去星成功', {time: 2000, icon:6})
+                  render()
+                },
+              })
+            }
+          },
+          {% endif %}
+        ]
+      },
+      search: {
+        'class': 'selects',
+        labelWidth: '100',
+        val: {
+          matchId: '{{ match.id }}'
+        },
+        items: [
+          {
+            label: '大赛',
+            elements: {
+              eType: 'select',
+              name: 'matchId',
+              option: [
+                {value: 'all', label: '&nbsp;', selected: true},
+                {% for match in matchs %}
+                {value: '{{ match.id }}', label: '{{ match.name }}'},
+                {% endfor %}
+              ]
+            }
+          },
+          {
+            label: '会员学校',
+            elements: {
+              eType: 'select',
+              name: 'schoolVerifyIn',
+              option: [
+                {value: 'all', label: '&nbsp;', selected: true},
+                {value: '{{ VerifyStatus.ok }}', label: '是'},
+                {value: '{{ VerifyStatus.wait }},{{ VerifyStatus.no }}', label: '否'},
+              ]
+            }
+          },
+          {
+            label: '学生账号',
+            elements: {
+              eType: 'input',
+              name: 'studentAccount'
+            }
+          },
+          {
+            label: '学生姓名',
+            elements: {
+              eType: 'input',
+              name: 'studentName'
+            }
+          },
+          {
+            label: '大陆省份',
+            elements: {
+              eType: 'input',
+              name: 'provinceName'
+            }
+          },
+          {
+            label: '学段',
+            elements: {
+              eType: 'select',
+              name: 'matchApplyPeriod',
+              option: [
+                {value: 'all', label: '&nbsp;'},
+                {% for i, j in StudentPeriod %}
+                {% if i != 'LiXiao' %}{value: '{{ j }}', label: '{{ j }}'},{% endif %}
+                {% endfor %}
+              ]
+            }
+          },
+          // {
+          //   label: '故事分类',
+          //   elements: {
+          //     eType: 'select',
+          //     name: 'typeId',
+          //     option: [
+          //       {value: 'all', label: '&nbsp;'},
+          //       {% for i in storyTypes %}
+          //       {value: '{{ i.id }}', label: '{{ i.name }}'},
+          //       {% endfor %}
+          //     ]
+          //   }
+          // },
+          {
+            label: '标题',
+            elements: {
+              eType: 'input',
+              name: 'title'
+            }
+          },
+          {
+            label: '指导教师',
+            elements: {
+              eType: 'input',
+              name: 'teacherName'
+            }
+          },
+          {
+            label: '学校编号',
+            elements: {
+              eType: 'input',
+              name: 'schoolAccount'
+            }
+          },
+          {
+            label: '学校名称',
+            elements: {
+              eType: 'input',
+              name: 'schoolName'
+            }
+          },
+          {
+            label: '状态',
+            elements: {
+              eType: 'select',
+              name: 'status',
+              option: [
+                {value: 'all', label: '&nbsp;', selected: true},
+                {% for i, j in StoryStatus %}
+                {% if j != StoryStatus.draft and j != StoryStatus.revamp %}{value: '{{ j }}', label: '{{ j }}'},{% endif %}
+                {% endfor %}
+              ]
+            }
+          },
+          {
+            label: '精华',
+            elements: {
+              eType: 'select',
+              name: 'isDigest',
+              option: [
+                {value: 'all', label: '&nbsp;', selected: true},
+                {value: 'true', label: '是'},
+                {value: 'false', label: '否'},
+              ]
+            }
+          },
+          {
+            label: '星图',
+            elements: {
+              eType: 'select',
+              name: 'imgIsDigest',
+              option: [
+                {value: 'all', label: '&nbsp;', selected: true},
+                {value: 'true', label: '是'},
+                {value: 'false', label: '否'},
+              ]
+            }
+          },
+          {
+            label: '一轮分数',
+            elements: {
+              eType: 'between',
+              name: 'storyMatchFirstScore'
+            }
+          },
+          {
+            label: '二轮分数',
+            elements: {
+              eType: 'between',
+              name: 'storyMatchSecondScore'
+            }
+          },
+          {
+            label: '一轮评审人',
+            elements: {
+              eType: 'select',
+              name: 'adminIdS',
+              option: [
+                {value: 'all', label: '&nbsp;'},
+                {% for i in admins %}
+                {value: '{{ i.id }}', label: '{{ i.account }}'},
+                {% endfor %}
+              ]
+            }
+          },
+          {
+            label: '提交时间',
+            elements: {
+              eType: 'date',
+              name: 'publishTime',
+              range: true
+            }
+          },
+        ]
+      },
+      table: {
+        tool: {
+          items: [
+            // 'del',
+            {% if curAdmin.isSuperUser or curAdmin.permissions.sty_sty_u %}
+            {
+              layEvent: 'toEdit',
+              label: '编辑',
+              event: function (obj, config, render) {
+                window.tableRender = render
+                layer.open({
+                  type: 2,
+                  title: '编辑',
+                  shade: 0.8,
+                  area: ['90%', '90%'],
+                  content: '/admin/story/story/' + obj.data.id
+                })
+              }
+            },
+            {% endif %}
+            {% if curAdmin.isSuperUser or curAdmin.permissions.mch_sfv_o %}
+            {
+              layEvent: 'score1',
+              label: '一审',
+              'class': 'layui-btn-primary [[# if(((new Date(d.storyMatch.matchApply.match.firstVerifyStart)) > (new Date()) || (new Date()) > (new Date(d.storyMatch.matchApply.match.firstVerifyEnd))) || (d.status !== \'{{ StoryStatus.wait }}\' && d.status !== \'{{ StoryStatus.published }}\')){ ]] none[[#  } ]]',
+              event: function (obj, config, render) {
+                var path = config.url.split('?')[0]
+                path = (path[path.length - 1] === '/' ? path.slice(0, path.length - 6) : (path.slice(0, path.length - 5)))
+                window.tableRender = render
+                layer.open({
+                  type: 2,
+                  title: '一审',
+                  shade: 0.8,
+                  area: ['90%', '90%'],
+                  content: path + obj.data.id + '/score1'
+                })
+              }
+            },
+            {% endif %}
+            {% if curAdmin.isSuperUser or curAdmin.permissions.mch_sfv_t %}
+            {
+              layEvent: 'score2',
+              label: '二审',
+              'class': 'layui-btn-primary [[# if(((new Date(d.storyMatch.matchApply.match.secondVerifyStart)) > (new Date()) || (new Date()) > (new Date(d.storyMatch.matchApply.match.secondVerifyEnd))) || d.status !== \'{{ StoryStatus.published }}\' || d.storyMatch.firstScore < d.storyMatch.matchApply.match.firstLine){ ]] none[[# } ]]',
+              event: function (obj, config, render) {
+                var path = config.url.split('?')[0]
+                path = (path[path.length - 1] === '/' ? path.slice(0, path.length - 6) : (path.slice(0, path.length - 5)))
+                window.tableRender = render
+                layer.open({
+                  type: 2,
+                  title: '二审',
+                  shade: 0.8,
+                  area: ['90%', '90%'],
+                  content: path + obj.data.id + '/score2'
+                })
+              }
+            },
+            {% endif %}
+            {% if curAdmin.isSuperUser or curAdmin.permissions.sty_sty_ad %}
+            {
+              layEvent: 'addDigest',
+              label: '精选',
+              'class': 'layui-btn-primary [[# if(d.isDigest){ ]] none[[#  } ]]',
+              event: function (obj, config, render) {
+                ajax({
+                  method: 'POST',
+                  url: '/admin/story/story/digest',
+                  data: JSON.stringify({isDigest: true, data: [obj.data.id]}),
+                  success: function () {
+                    layer.msg('精选成功', {time: 2000, icon:6})
+                    render()
+                  },
+                })
+              }
+            },
+            {
+              layEvent: 'removeDigest',
+              label: '去精',
+              'class': 'layui-btn-primary [[# if(!d.isDigest){ ]] none[[#  } ]]',
+              event: function (obj, config, render) {
+                ajax({
+                  method: 'POST',
+                  url: '/admin/story/story/digest',
+                  data: JSON.stringify({isDigest: false, data: [obj.data.id]}),
+                  success: function () {
+                    layer.msg('去精成功', {time: 2000, icon:6})
+                    render()
+                  },
+                })
+              }
+            },
+            {
+              layEvent: 'addImgDigest',
+              label: '星图',
+              'class': 'layui-btn-primary [[# if(d.imgIsDigest){ ]] none[[#  } ]]',
+              event: function (obj, config, render) {
+                ajax({
+                  method: 'POST',
+                  url: '/admin/story/story/imgDigest',
+                  data: JSON.stringify({imgIsDigest: true, data: [obj.data.id]}),
+                  success: function () {
+                    layer.msg('星图成功', {time: 2000, icon:6})
+                    render()
+                  },
+                })
+              }
+            },
+            {
+              layEvent: 'removeImgDigest',
+              label: '去星',
+              'class': 'layui-btn-primary [[# if(!d.imgIsDigest){ ]] none[[#  } ]]',
+              event: function (obj, config, render) {
+                ajax({
+                  method: 'POST',
+                  url: '/admin/story/story/imgDigest',
+                  data: JSON.stringify({imgIsDigest: false, data: [obj.data.id]}),
+                  success: function () {
+                    layer.msg('去星成功', {time: 2000, icon:6})
+                    render()
+                  },
+                })
+              }
+            },
+            {% endif %}
+          ]
+        },
+        templates: [
+          {
+            id: 'tMatchName',
+            content: '[[ d.storyMatch.matchApply.match.name ]]'
+          },
+          {
+            id: 'tSchoolVerifyIn',
+            content: '[[ d.school.verify === \'{{ VerifyStatus.ok }}\' ? \'是\' : \'否\' ]]'
+          },
+          {
+            id: 'tStudentAccount',
+            content: '[[ d.author.account ]]'
+          },
+          {
+            id: 'tStudentName',
+            content: '[[ d.author.name ]]'
+          },
+          {
+            id: 'tProvinceName',
+            content: '[[ d.storyMatch.matchApply.provinceName ]]'
+          },
+          {
+            id: 'tMatchApplyPeriod',
+            content: '[[ d.storyMatch.matchApply.period ]]'
+          },
+          {
+            id: 'tTypeName',
+            content: '[[ d.type.name ]]'
+          },
+          {
+            id: 'tTitle',
+            content: '<a href="/story/[[ d.id ]]" target="_blank" style="cursor: pointer;">[[ d.title ]]</a>'
+          },
+          {
+            id: 'tTeacherName',
+            content: '[[ d.storyMatch.matchApply.teacherName ]]'
+          },
+          {
+            id: 'tSchoolAccount',
+            content: '[[ d.school.member.account ]]'
+          },
+          {
+            id: 'tSchoolName',
+            content: '[[ d.school.member.name ]]'
+          },
+          {
+            id: 'tIsDigest',
+            content: '[[ d.isDigest ? \'是\' : \'否\' ]]'
+          },
+          {
+            id: 'tImgIsDigest',
+            content: '[[ d.imgIsDigest ? \'是\' : \'否\' ]]'
+          },
+          {
+            id: 'tAdminAccount',
+            content: '[[ d.school.admin != null ? d.school.admin.account : \'\' ]]'
+          },
+          {
+            id: 'tStoryMatchFirstScore',
+            content: '[[ d.storyMatch.firstScore ]]'
+          },
+          {
+            id: 'tStoryMatchSecondScore',
+            content: '[[ d.storyMatch.secondScore ]]'
+          },
+          {
+            id: 'tPublishTime',
+            content: '[[ dateFormat(d.publishTime, \'YYYY-MM-DD HH:mm:ss\') ]]'
+          }
+        ],
+        config: {
+          elem: '#verify',
+          url: '/admin/match/verify1/table',
+          cols: [
+            [
+              {field: 'id', sort: true, title: 'ID', width:100, align: 'center', fixed: 'left', show: false},
+              {field: 'studentName', sort: true, title: '学生姓名', minWidth:140, align: 'center', templet: '#tStudentName'},
+              {field: 'schoolName', sort: true, title: '学校名称', minWidth:250, align: 'center', templet: '#tSchoolName'},
+              {field: 'matchApplyPeriod', sort: true, title: '学段', align: 'center', templet: '#tMatchApplyPeriod'},
+              {field: 'title', sort: true, title: '标题', minWidth:150, templet: '#tTitle'},
+              {field: 'storyMatchFirstScore', sort: true, title: '一审分数', width:100, align: 'center', templet: '#tStoryMatchFirstScore'},
+              {field: 'storyMatchSecondScore', sort: true, title: '二审分数', width:100, align: 'center', templet: '#tStoryMatchSecondScore'},
+              {field: 'typeName', sort: true, title: '故事分类', minWidth:100, align: 'center', templet: '#tTypeName'},
+              {field: 'publishTime', sort: true, title: '提交时间', width:180, align: 'center', templet: '#tPublishTime'},
+              {field: 'teacherName', sort: true, title: '指导老师', minWidth:140, align: 'center', templet: '#tTeacherName'},
+              {field: 'schoolAccount', sort: true, title: '学校编号', minWidth:140, align: 'center', templet: '#tSchoolAccount'},
+              {field: 'studentAccount', sort: true, title: '学生账号', minWidth:140, align: 'center', templet: '#tStudentAccount'},
+              {field: 'adminAccount', sort: true, title: '一审评审人', minWidth:120, align: 'center', templet: '#tAdminAccount'},
+              {field: 'isDigest', sort: true, title: '精华', width: 80, align: 'center', templet: '#tIsDigest'},
+              {field: 'imgIsDigest', title: '星图', align: 'center', sort: true, width: 80, templet: '#tImgIsDigest'},
+              {field: 'matchName', sort: true, title: '大赛', templet: '#tMatchName'},
+              {field: 'schoolVerifyIn', sort: true, title: '会员学校', width:100, align: 'center', templet: '#tSchoolVerifyIn'},
+              {field: 'provinceName', title: '大陆省份', align: 'center', sort: true, minWidth: 150, templet: '#tProvinceName'},
+              {field: 'status', sort: true, title: '状态', align: 'center', show: false, width: 120},
+              {fixed: 'right', width:210, align: 'center', toolbar: '#operation'}
+            ]
+          ]
+        }
+      }
+    })
+  })
+</script>
+{% endblock %}

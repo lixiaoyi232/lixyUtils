@@ -1,0 +1,253 @@
+{% extends "../layout/layout-website.html" %}
+
+{% block css %}
+{{ super() }}
+<link rel="stylesheet" href="/static/css/website/mytable.css">
+{% endblock %}
+
+{% block body %}
+<!-- <a href="javascript:;" class="btn-new-score">新成绩</a>
+<div id="table-student-score"></div> -->
+  <div class="layui-card myCard">
+    <div class="layui-card-header">学生 {{studentMember.name}} 的成绩表</div>
+    <div class="layui-card-body">
+      <div id="myTable"></div>
+    </div>
+  </div>
+{% endblock %}
+
+
+{% block script %}
+{{ super() }}
+<script src="/static/js/mytable.js"></script>
+<script>
+  // $(function () {
+  //   var table = new MyTable({
+  //     el: '#table-student-score',
+  //     url: '/member-center/management/student/{{studentMember.id}}/score/table',
+  //     limit: 10,
+  //     cols: [
+  //       {
+  //         title: 'id',
+  //         html: function(score) {
+  //           return score.id
+  //         }
+  //       },
+  //       {
+  //         title: '学期',
+  //         html: function(score) {
+  //           if (score.semester) {
+  //             return score.semester / 2 + '年' + (score.semester % 2 === 0 ? '3月~7月' : '9月~下一年1月')
+  //           } else {
+  //             return ''
+  //           }
+  //         }
+  //       },
+  //       {
+  //         title: '类型',
+  //         html: function(score) {
+  //           return score.type
+  //         }
+  //       },
+  //       {
+  //         title: '语文',
+  //         html: function(score) {
+  //           return score.chinese
+  //         }
+  //       },
+  //       {
+  //         title: '数学',
+  //         html: function(score) {
+  //           return score.math
+  //         }
+  //       },
+  //       {
+  //         title: '英语',
+  //         html: function(score) {
+  //           return score.english
+  //         }
+  //       },
+  //       {
+  //         title: '生物',
+  //         html: function(score) {
+  //           return score.biology
+  //         }
+  //       },
+  //       {
+  //         title: '物理',
+  //         html: function(score) {
+  //           return score.physics
+  //         }
+  //       },
+  //       {
+  //         title: '化学',
+  //         html: function(score) {
+  //           return score.chemistry
+  //         }
+  //       },
+  //       {
+  //         title: '政治',
+  //         html: function(score) {
+  //           return score.politics
+  //         }
+  //       },
+  //       {
+  //         title: '地理',
+  //         html: function(score) {
+  //           return score.geography
+  //         }
+  //       },
+  //       {
+  //         title: '历史',
+  //         html: function(score) {
+  //           return score.history
+  //         }
+  //       },
+  //       {
+  //         title: '总分',
+  //         html: function(score) {
+  //           return score.total
+  //         }
+  //       },
+  //       {
+  //         title: '班级名次',
+  //         html: function(score) {
+  //           return score.classRanking
+  //         }
+  //       },
+  //       {
+  //         title: '年级名次',
+  //         html: function(score) {
+  //           return score.gradeRanking
+  //         }
+  //       },
+  //       {
+  //         title: '操作',
+  //         html: function(score) {
+  //           return '<a href="javascript:;" class="btn-edit-score">编辑</a>'
+  //         }
+  //       }
+  //     ],
+  //     onFetch: bindHandlers
+  //   })
+
+  //   table.fetch()
+
+  //   function bindHandlers(rowDatas) {
+  //     $('.btn-edit-score').on('click', function() {
+  //       var id = $(this).parents('tr').data('id')
+  //       layui.layer.open({
+  //         type: 2,
+  //         title: '编辑成绩',
+  //         area: ['80%', '80%'],
+  //         content: '/member-center/management/student/'+ rowDatas[id].student.member.id +'/score/' + id + '/edit'
+  //       })
+  //     })
+  //   }
+
+  //   $('.btn-new-score').on('click', function() {
+  //     layui.layer.open({
+  //       type: 2,
+  //       title: '新成绩',
+  //       area: ['80%', '80%'],
+  //       content: '/member-center/management/student/{{studentMember.id}}/score/new'
+  //     })
+  //   })
+
+  // })
+  $(function () {
+    newTable({
+      btns: {
+        items: [
+          {
+            layEvent: 'new',
+            'class': 'layui-btn brownBtn',
+            event: function (obj, config, render) {
+              // var path = config.url.split('?')[0]
+              // path = (path[path.length - 1] === '/' ? path.slice(0, path.length - 6) : (path.slice(0, path.length - 5)))
+              // window.location.href = path + 'new'
+              window.tableRender = render
+              layer.open({
+                type: 2,
+                title: '新建',
+                shade: 0.8,
+                area: ['90%', '90%'],
+                content: '/member-center/management/student/{{studentMember.id}}/score/new'
+              })
+            }
+          },
+          // 'setCols'
+        ]
+      },
+      table: {
+        checkboxType: 'none',
+        tool: {
+          items: [
+            {
+              layEvent: 'edit',
+              label: '编辑',
+              event: function (obj, config, render) {
+                // window.location.href = '/admin/member/student/' + obj.data.student.id + '/family'
+                window.tableRender = render
+                layer.open({
+                  type: 2,
+                  title: '编辑',
+                  shade: 0.8,
+                  area: ['90%', '90%'],
+                  content: '/member-center/management/student/'+ obj.data.student.member.id +'/score/' + obj.data.id + '/edit'
+                })
+              }
+            },
+          ]
+        },
+        templates: [
+          {
+            id: 'tProvinceName',
+            content: '[[ d.student.school.member.county.city.province.name ]]'
+          },
+          {
+            id: 'tStudentAccount',
+            content: '[[ d.student.member.account ]]'
+          },
+          {
+            id: 'tStudentName',
+            content: '[[ d.student.member.name ]]'
+          },
+          {
+            id: 'tSemester',
+            content: '[[ semester(d.semester) ]]'
+          },
+        ],
+        config: {
+          elem: '#score',
+          url: '/member-center/management/student/{{studentMember.id}}/score/table',
+          cols: [
+            [
+              {field: 'id', title: 'ID', align: 'center', show: false, sort: true, width: 100},
+              {align: 'center', width: 120, toolbar: '#operation'},
+              // {field: 'provinceName', title: '大陆省份', align: 'center', sort: true, minWidth: 150, templet: '#tProvinceName'},
+              // {field: 'studentAccount', title: '学生账号', align: 'center', sort: true, minWidth: 140, templet: '#tStudentAccount'},
+              // {field: 'studentName', title: '学生姓名', align: 'center', sort: true, minWidth: 140, templet: '#tStudentName'},
+              {field: 'chinese', title: '语文', align: 'center', sort: true, width: 100},
+              {field: 'math', title: '数学', align: 'center', sort: true, width: 100},
+              {field: 'english', title: '英语', align: 'center', sort: true, width: 100},
+              {field: 'biology', title: '生物', align: 'center', sort: true, width: 100},
+              {field: 'physics', title: '物理', align: 'center', sort: true, width: 100},
+              {field: 'chemistry', title: '化学', align: 'center', sort: true, width: 100},
+              {field: 'politics', title: '政治', align: 'center', sort: true, width: 100},
+              {field: 'geography', title: '地理', align: 'center', sort: true, width: 100},
+              {field: 'history', title: '历史', align: 'center', sort: true, width: 100},
+              {field: 'total', title: '总分', align: 'center', sort: true, width: 100},
+              {field: 'classRanking', title: '班级名次', align: 'center', sort: true, width: 120},
+              {field: 'gradeRanking', title: '年级名次', align: 'center', sort: true, width: 120},
+              {field: 'semester', title: '学期', align: 'center', sort: true, width: 180, templet: '#tSemester'},
+              {field: 'type', title: '类型', align: 'center', sort: true, width: 100},
+              // {field: 'publishUser', title: '提交人', align: 'center', sort: true, minWidth: 140},
+            ]
+          ]
+        }
+      }
+    })
+  })
+</script>
+{% endblock %}

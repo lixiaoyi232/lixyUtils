@@ -1,0 +1,313 @@
+{% extends "./back.html" %}
+
+{% block css %}
+{{ super() }}
+{% endblock %}
+
+{% block main %}
+<div class="layui-card myCard">
+  <div class="layui-card-header">网站管理</div>
+  <div class="layui-card-body layui-tab layui-tab-brief">
+    <div id="myForm"></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+  $(function () {
+    newForm({
+      form: {
+        labelWidth: '180',
+        submit: {
+          'class': 'layui-btn-warm',
+          event: function (data) {
+            $('[lay-filter="myFormSubmit"]').attr('disabled', true)
+            $('[lay-filter="myFormSubmit"]').addClass('layui-btn-disabled')
+            ajax({
+              method: 'POST',
+              url: '/admin/web/config',
+              data: JSON.stringify(data.field),
+              success: function () {
+                layer.msg('修改成功', {time: 2000, icon:6})
+                window.setTimeout(function () {window.location.reload()}, 2000)
+                // window.setTimeout(function () {window.location.href = '/admin/area/city'}, 2000)
+              },
+              fail: function () {
+                $('[lay-filter="myFormSubmit"]').attr('disabled', false)
+                $('[lay-filter="myFormSubmit"]').removeClass('layui-btn-disabled')
+              },
+              error: function () {
+                $('[lay-filter="myFormSubmit"]').attr('disabled', false)
+                $('[lay-filter="myFormSubmit"]').removeClass('layui-btn-disabled')
+              }
+            })
+          }
+        },
+        val: {
+          'logoImg': '{{ webConfig.logoImg }}',
+          'homeBannerImg': '{{ webConfig.homeBannerImg }}',
+          'homeStatisticsImg': '{{ webConfig.homeStatisticsImg }}',
+          'homeActivity1Img': '{{ webConfig.homeActivity1Img }}',
+          'homeActivity2Img': '{{ webConfig.homeActivity2Img }}',
+          'homeActivity3Img': '{{ webConfig.homeActivity3Img }}',
+          'homeActivity4Img': '{{ webConfig.homeActivity4Img }}',
+          'homeMatchImg': '{{ webConfig.homeMatchImg }}',
+          'westStoryBannerImg': '{{ webConfig.westStoryBannerImg }}',
+          'newsBannerImg': '{{ webConfig.newsBannerImg }}',
+          'news2BannerImg': '{{ webConfig.news2BannerImg }}',
+          'storyBannerImg': '{{ webConfig.storyBannerImg }}',
+          'storyBannerOneImg': '{{ webConfig.storyBannerOneImg }}',
+          'matchBannerImg': '{{ webConfig.matchBannerImg }}',
+          'memberListBannerImg': '{{ webConfig.memberListBannerImg }}',
+          'memberBanner1Img': '{{ webConfig.memberBanner1Img }}',
+          'memberBanner2Img': '{{ webConfig.memberBanner2Img }}',
+          'memberCenterBannerImg': '{{ webConfig.memberCenterBannerImg }}',
+          'linkSource': '{{ webConfig.linkSource }}',
+          'linkActivity': '{{ webConfig.linkActivity }}',
+          'linkVIPservice': '{{ webConfig.linkVIPservice }}',
+        },
+        items: [
+          {
+            label: 'LOGO图片',
+            elements: {
+              eType: 'file',
+              name: 'logoImg',
+              layVerify: 'logoImgV|required'
+            }
+          },
+          {
+            label: '首页横幅图片',
+            elements: {
+              eType: 'file',
+              name: 'homeBannerImg',
+              layVerify: 'homeBannerImgV|required'
+            }
+          },
+          {
+            label: '首页统计图片',
+            elements: {
+              eType: 'file',
+              name: 'homeStatisticsImg',
+              layVerify: 'homeStatisticsImgV|required'
+            }
+          },
+          {
+            label: '首页活动案例图片1',
+            elements: {
+              eType: 'file',
+              name: 'homeActivity1Img',
+              layVerify: 'homeActivity1ImgV|required'
+            }
+          },
+          {
+            label: '首页活动案例图片2',
+            elements: {
+              eType: 'file',
+              name: 'homeActivity2Img',
+              layVerify: 'homeActivity2ImgV|required'
+            }
+          },
+          {
+            label: '首页活动案例图片3',
+            elements: {
+              eType: 'file',
+              name: 'homeActivity3Img',
+              layVerify: 'homeActivity3ImgV|required'
+            }
+          },
+          {
+            label: '首页活动案例图片4',
+            elements: {
+              eType: 'file',
+              name: 'homeActivity4Img',
+              layVerify: 'homeActivity4ImgV|required'
+            }
+          },
+          {
+            label: '首页大赛图片',
+            elements: {
+              eType: 'file',
+              name: 'homeMatchImg',
+              layVerify: 'homeMatchImgV|required'
+            }
+          },
+          {
+            label: '新闻动态横幅图片',
+            elements: {
+              eType: 'file',
+              name: 'newsBannerImg',
+              layVerify: 'newsBannerImgV|required'
+            }
+          },
+          {
+            label: '媒体报道横幅图片',
+            elements: {
+              eType: 'file',
+              name: 'news2BannerImg',
+              layVerify: 'news2BannerImgV|required'
+            }
+          },
+          {
+            label: '西部故事横幅图片',
+            elements: {
+              eType: 'file',
+              name: 'westStoryBannerImg',
+              layVerify: 'westStoryBannerImgV|required'
+            }
+          },
+          {
+            label: '故事列表横幅图片',
+            elements: {
+              eType: 'file',
+              name: 'storyBannerImg',
+              layVerify: 'storyBannerImgV|required'
+            }
+          },
+          {
+            label: '故事详情页图片',
+            elements: {
+              eType: 'file',
+              name: 'storyBannerOneImg',
+              layVerify: 'storyBannerOneImgV|required'
+            }
+          },
+          {
+            label: '大赛横幅图片',
+            elements: {
+              eType: 'file',
+              name: 'matchBannerImg',
+              layVerify: 'matchBannerImgV|required'
+            }
+          },
+          {
+            label: '会员列表横幅图片',
+            elements: {
+              eType: 'file',
+              name: 'memberListBannerImg',
+              layVerify: 'memberListBannerImgV|required'
+            }
+          },
+          {
+            label: '学校系小主页横幅图片',
+            elements: {
+              eType: 'file',
+              name: 'memberBanner1Img',
+              layVerify: 'memberBanner1ImgV|required'
+            }
+          },
+          {
+            label: '非学校系小主页横幅图片',
+            elements: {
+              eType: 'file',
+              name: 'memberBanner2Img',
+              layVerify: 'memberBanner2ImgV|required'
+            }
+          },
+          {
+            label: '用户中心横幅图片',
+            elements: {
+              eType: 'file',
+              name: 'memberCenterBannerImg',
+              layVerify: 'memberCenterBannerImgV|required'
+            }
+          },
+          {
+            label: '平台缘起链接',
+            elements: {
+              eType: 'input',
+              name: 'linkSource',
+              display: 'block',
+              layVerify: 'linkSourceV|required'
+            }
+          },
+          {
+            label: '活动案例链接',
+            elements: {
+              eType: 'input',
+              name: 'linkActivity',
+              display: 'block',
+              layVerify: 'linkActivityV|required'
+            }
+          },
+          {
+            label: '会员服务链接',
+            elements: {
+              eType: 'input',
+              name: 'linkVIPservice',
+              display: 'block',
+              layVerify: 'linkVIPserviceV|required'
+            }
+          },
+        ],
+        verify: {
+          logoImgV: function (value) {
+            if (value === '' || value === 'null') return 'LOGO图片不能为空'
+          },
+          homeBannerImgV: function (value) {
+            if (value === '' || value === 'null') return '首页横幅图片不能为空'
+          },
+          homeStatisticsImgV: function (value) {
+            if (value === '' || value === 'null') return '首页统计图片不能为空'
+          },
+          homeActivity1ImgV: function (value) {
+            if (value === '' || value === 'null') return '首页活动案例图片1不能为空'
+          },
+          homeActivity2ImgV: function (value) {
+            if (value === '' || value === 'null') return '首页活动案例图片2不能为空'
+          },
+          homeActivity3ImgV: function (value) {
+            if (value === '' || value === 'null') return '首页活动案例图片3不能为空'
+          },
+          homeActivity4ImgV: function (value) {
+            if (value === '' || value === 'null') return '首页活动案例图片4不能为空'
+          },
+          homeMatchImgV: function (value) {
+            if (value === '' || value === 'null') return '首页大赛图片不能为空'
+          },
+          newsBannerImgV: function (value) {
+            if (value === '' || value === 'null') return '新闻动态横幅图片不能为空'
+          },
+          news2BannerImgV: function (value) {
+            if (value === '' || value === 'null') return '媒体报表横幅图片不能为空'
+          },
+          westStoryBannerImgV: function (value) {
+            if (value === '' || value === 'null') return '西部故事横幅图片不能为空'
+          },
+          storyBannerImgV: function (value) {
+            if (value === '' || value === 'null') return '故事列表横幅图片不能为空'
+          },
+          storyBannerOneImgV: function (value) {
+            if (value === '' || value === 'null') return '故事详情页图片不能为空'
+          },
+          matchBannerImgV: function (value) {
+            if (value === '' || value === 'null') return '大赛横幅图片不能为空'
+          },
+          memberListBannerImgV: function (value) {
+            if (value === '' || value === 'null') return '会员列表横幅图片不能为空'
+          },
+          memberBanner1ImgV: function (value) {
+            if (value === '' || value === 'null') return '学校系小主页横幅图片不能为空'
+          },
+          memberBanner2ImgV: function (value) {
+            if (value === '' || value === 'null') return '非学校系小主页横幅图片不能为空'
+          },
+          memberCenterBannerImgV: function (value) {
+            if (value === '' || value === 'null') return '用户中心横幅图片不能为空'
+          },
+          linkSourceV: function (value) {
+            if (value === '' || value === 'null') return '平台缘起链接不能为空'
+          },
+          linkActivityV: function (value) {
+            if (value === '' || value === 'null') return '活动案例链接不能为空'
+          },
+          linkVIPserviceV: function (value) {
+            if (value === '' || value === 'null') return '会员服务链接不能为空'
+          },
+        }
+      }
+    })
+  })
+</script>
+{% endblock %}

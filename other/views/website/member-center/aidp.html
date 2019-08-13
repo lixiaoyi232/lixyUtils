@@ -1,0 +1,247 @@
+{% extends "../layout/layout-member-center.html" %}
+
+{% block css %}
+{{ super() }}
+{% endblock %}
+
+{% block member_center_main %}
+
+<div class="layui-card">
+  <div class="layui-card-header">成员资助进展（成员资助总额：{{ aidTotal }}元）</div>
+  <div class="layui-card-body">
+    <div id="myTable"></div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+  $(function () {
+    {% if curMember.type == MemberType.whGroup or curMember.type == MemberType.whPerson %}
+    newTable({
+      btns: {
+        items: [
+          // 'setCols'
+        ]
+      },
+      search: {
+        'class': 'selects',
+        labelWidth: '100',
+        submit: {
+          'class': 'layui-btn greenBtn'
+        },
+        items: [
+          {
+            label: '资助单状态',
+            elements: {
+              eType: 'select',
+              name: 'status',
+              option: [
+                {value: 'all', label: '&nbsp;'},
+                {% for i, j in AidStatus %}
+                {value: '{{ j }}', label: '{{ j }}'},
+                {% endfor %}
+              ]
+            }
+          },
+          // {
+          //   label: '资助单号',
+          //   elements: {
+          //     eType: 'input',
+          //     name: 'number'
+          //   }
+          // },
+          // {
+          //   label: '申请单号',
+          //   elements: {
+          //     eType: 'input',
+          //     name: 'aidApplyNumber'
+          //   }
+          // },
+          // {
+          //   label: '学生账号',
+          //   elements: {
+          //     eType: 'input',
+          //     name: 'studentAccount'
+          //   }
+          // },
+          {
+            label: '学生姓名',
+            elements: {
+              eType: 'input',
+              name: 'studentName'
+            }
+          },
+          {% if curMember == whGroup %}
+          {
+            label: '资助人姓名',
+            elements: {
+              eType: 'input',
+              name: 'memberName'
+            }
+          },
+          {
+            label: '资助人账号',
+            elements: {
+              eType: 'input',
+              name: 'memberAccount'
+            }
+          },
+          {% endif %}
+          // {
+          //   label: '申请金额',
+          //   elements: {
+          //     eType: 'between',
+          //     name: 'aidApplyMoney'
+          //   }
+          // },
+          {
+            label: '大陆省份',
+            elements: {
+              eType: 'input',
+              name: 'provinceName'
+            }
+          },
+          // {
+          //   label: '学校编号',
+          //   elements: {
+          //     eType: 'input',
+          //     name: 'schoolAccount'
+          //   }
+          // },
+          {
+            label: '学校名称',
+            elements: {
+              eType: 'input',
+              name: 'schoolName'
+            }
+          },
+          // {
+          //   label: '爱心团体',
+          //   elements: {
+          //     eType: 'input',
+          //     name: 'group'
+          //   }
+          // },
+          {
+            label: '资助时间',
+            elements: {
+              eType: 'date',
+              name: 'createdTime',
+              range: true
+            }
+          },
+        ]
+      },
+      table: {
+        checkboxType: 'none',
+        tool: {
+          items: [
+            // {
+            //   layEvent: 'detail',
+            //   label: '明细',
+            //   'class': 'layui-btn-primary[[# if(d.status === \'{{ AidStatus.wait1 }}\' || d.status === \'{{ AidStatus.cancel }}\'){ ]] none[[#  } ]]',
+            //   event: function (obj, config, render) {
+            //     window.location.href = '/aid/aid/' + obj.data.id + '/detail'
+            //   }
+            // },
+            // {
+            //   layEvent: 'message',
+            //   label: '留言',
+            //   'class': 'layui-btn-primary[[# if(d.status === \'{{ AidStatus.wait1 }}\' || d.status === \'{{ AidStatus.cancel }}\'){ ]] none[[#  } ]]',
+            //   event: function (obj, config, render) {
+            //     window.location.href = '/aid/aid/' + obj.data.id + '/message'
+            //   }
+            // },
+            {
+              layEvent: 'info',
+              event: function (obj, config, render) {
+                // var path = config.url.split('?')[0]
+                // path = (path[path.length - 1] === '/' ? path.slice(0, path.length - 6) : (path.slice(0, path.length - 5)))
+                // openWindow(path + obj.data.id + '/info')
+                layer.open({
+                  type: 2,
+                  title: '详情',
+                  shade: 0.8,
+                  area: ['90%', '90%'],
+                  content: '/aid/aid/' + obj.data.aidApply.id + '/info'
+                })
+              }
+            },
+          ]
+        },
+        templates: [
+          {
+            id: 'tAidApplyNumber',
+            content: '[[ d.aidApply.number ]]'
+          },
+          {
+            id: 'tAidApplyMoney',
+            content: '[[ d.aidApply.money ]]'
+          },
+          {
+            id: 'tStudentAccount',
+            content: '[[ d.aidApply.account ]]'
+          },
+          {
+            id: 'tStudentName',
+            content: '<a href="/member/[[ d.aidApply.student.member.id ]]" target="_blank" style="cursor: pointer;">[[ d.aidApply.name ]]</a>'
+          },
+          {
+            id: 'tProvinceName',
+            content: '[[ d.aidApply.provinceName ]]'
+          },
+          {
+            id: 'tSchoolAccount',
+            content: '[[ d.aidApply.schoolAccount ]]'
+          },
+          {
+            id: 'tSchoolName',
+            content: '[[ d.aidApply.schoolName ]]'
+          },
+          {
+            id: 'tMemberName',
+            content: '<a href="/member/[[ d.member.id ]]" target="_blank" style="cursor: pointer;">[[ d.member.name ]]</a>'
+          },
+          {
+            id: 'tMemberAccount',
+            content: '[[ d.member.account ]]'
+          },
+          {
+            id: 'tPublishTime',
+            content: '[[ dateFormat(d.publishTime, \'YYYY-MM-DD HH:mm:ss\') ]]'
+          },
+        ],
+        config: {
+          elem: '#ptable',
+          url: '/member-center/aid/ptable',
+          cols: [
+            [
+              {field: 'id', title: 'ID', align: 'center', show: false, sort: true, width: 100},
+              {width:80, align: 'center', toolbar: '#operation'},
+              {field: 'status', title: '资助单状态', align: 'center', sort: true, width: 120},
+              {field: 'studentName', title: '学生姓名', align: 'center', sort: true, minWidth: 140, templet: '#tStudentName'},
+              {field: 'schoolName', title: '学校名称', align: 'center', sort: true, minWidth: 250, templet: '#tSchoolName'},
+              {field: 'provinceName', title: '大陆省份', align: 'center', sort: true, minWidth: 150, templet: '#tProvinceName'},
+              {% if curMember.type == MemberType.whGroup %}
+              {field: 'memberName', title: '资助人姓名', align: 'center', sort: true, minWidth: 140, templet: '#tMemberName'},
+              {field: 'memberAccount', title: '资助人账号', align: 'center', sort: true, minWidth: 140, templet: '#tMemberAccount'},
+              {% endif %}
+              {field: 'publishTime', title: '资助时间', align: 'center', sort: true, width: 180, templet: '#tPublishTime'},
+              {field: 'number', title: '资助单号', align: 'center', sort: true, show: false, width: 160},
+              {field: 'aidApplyNumber', title: '申请单号', align: 'center', sort: true, show: false, minWidth: 170, templet: '#tAidApplyNumber'},
+              {field: 'studentAccount', title: '学生账号', align: 'center', sort: true, show: false, minWidth: 140, templet: '#tStudentAccount'},
+              {field: 'aidApplyMoney', title: '申请金额', align: 'center', sort: true, show: false, minWidth: 120, templet: '#tAidApplyMoney'},
+              {field: 'schoolAccount', title: '学校编号', align: 'center', sort: true, show: false, minWidth: 140, templet: '#tSchoolAccount'},
+              {field: 'group', title: '爱心团体', align: 'center', sort: true, show: false, minWidth: 140},
+            ]
+          ]
+        }
+      }
+    })
+    {% endif %}
+  })
+</script>
+{% endblock %}

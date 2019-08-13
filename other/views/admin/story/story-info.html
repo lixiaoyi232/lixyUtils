@@ -1,0 +1,217 @@
+{% extends "../back.html" %}
+
+{% block css %}
+{{ super() }}
+{% endblock %}
+
+{% block body %}
+  <div class="layui-card myCard">
+    <div class="layui-card-header">{{ story.title }}</div>
+    <div class="layui-card-body layui-tab layui-tab-brief">
+      <div id="myForm"></div>
+    </div>
+  </div>
+  <!-- <div class="layui-card myCard">
+    <div class="layui-card-header">评论</div>
+    <div class="layui-card-body layui-tab layui-tab-brief">
+      <div id="myTable"></div>
+    </div>
+  </div> -->
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+  $(function () {
+    var serverData = []
+    newForm({
+      form: {
+        labelWidth: '100',
+        submit: {
+          show: false
+        },
+        items: [
+          {
+            label: '标题',
+            elements: {
+              eType: 'char',
+              name: 'title',
+              element: '<div class="layui-input-block" style="">{{ story.title }}</div>'
+            }
+          },
+          {
+            label: '类别',
+            elements: {
+              eType: 'char',
+              name: 'typeId',
+              element: '<div class="layui-input-block" style="">{{ story.type.name }}</div>'
+            }
+          },
+          {
+            label: '逻辑类别',
+            elements: {
+              eType: 'char',
+              name: 'logicType',
+              element: '<div class="layui-input-block" style="">{{ story.logicType }}</div>'
+            }
+          },
+          {
+            label: '作者',
+            elements: {
+              eType: 'char',
+              name: 'author',
+              element: '<div class="layui-input-block" style="">{{ story.author.name }}</div>'
+            }
+          },
+          // {
+          //   label: '作者',
+          //   elements: {
+          //     eType: 'select',
+          //     name: 'author',
+          //     layVerify: 'select',
+          //     laySearch: true,
+          //     option: [
+          //       {value: 'null', label: '请选择'},
+          //       {% for author in authors %}
+          //       {value: '{{ author.id }}', label: '{{ author.account }}'{% if author.id == story.author.id %}, selected: true{% endif %}},
+          //       {% endfor %}
+          //     ]
+          //   },
+          // },
+          {
+            label: '访问量',
+            elements: {
+              eType: 'char',
+              name: 'pageViews',
+              element: '<div class="layui-input-block" style="">{{ story.pageViews }}</div>'
+            }
+          },
+          {
+            label: '标签',
+            elements: {
+              eType: 'char',
+              name: 'tag',
+              element: '<div class="layui-input-block" style="">{{ story.tag }}</div>'
+            }
+          },
+          {
+            label: '状态',
+            elements: {
+              eType: 'char',
+              name: 'status',
+              element: '<div class="layui-input-block" style="">{{ story.status }}</div>'
+            }
+          },
+          {
+            label: '复议理由',
+            elements: {
+              eType: 'char',
+              name: 'status',
+              element: '<div class="layui-input-block" style="">{{ story.reason }}</div>'
+            }
+          },
+          {
+            label: '内容',
+            elements: {
+              eType: 'char',
+              name: 'contentShow',
+              element: '<div class="layui-input-block" style="">'
+                {% for block in story.content %}
+                  + '<div>'
+                  {% if block.type == 'text' %}
+                    + '<pre>' + decodeURIComponent('{{ block.text }}') + '</pre>'
+                  {% elseif block.type == 'image'%}
+                    + '<img src="{{block.url}}" alt=""><div>' + decodeURIComponent('{{ block.desc }}') + '</div>'
+                  {% endif %}
+                  + '</div>'
+                {% endfor %}
+                + '</div>'
+            }
+          }
+        ]
+      }
+    })
+    // +++++++++++++++++++++++++++++++++++++++++++++
+    // newTable({
+    //   btns: {
+    //     items: [
+    //       'dels',
+    //       'setCols'
+    //     ]
+    //   },
+    //   search: {
+    //     'class': 'selects',
+    //     labelWidth: '100',
+    //     items: [
+    //       {
+    //         label: '内容',
+    //         elements: {
+    //           eType: 'input',
+    //           name: 'text'
+    //         }
+    //       },
+    //       {
+    //         label: '创建时间',
+    //         elements: {
+    //           eType: 'date',
+    //           name: 'createdTime',
+    //           range: true
+    //         }
+    //       }
+    //     ]
+    //   },
+    //   table: {
+    //     tool: {
+    //       items: [
+    //         {
+    //           layEvent: 'edit',
+    //           event: function (obj) {
+    //             window.location.href = '/admin/story/comment/' + obj.data.id
+    //           }
+    //         },
+    //         {
+    //           layEvent: 'del',
+    //           event: function (obj, render) {
+    //             layer.confirm('真的删除行么', function(index){
+    //               ajax({
+    //                 method: 'DELETE',
+    //                 url: '/admin/story/comment/' + obj.data.id,
+    //                 success: function () {
+    //                   layer.msg('删除成功', {time: 2000, icon:6})
+    //                   render()
+    //                   layer.close(index)
+    //                 }
+    //               })
+    //             })
+    //           }
+    //         }
+    //       ]
+    //     },
+    //     templates: [
+    //       {
+    //         id: 'ct',
+    //         content: '[[# var createdTime = dateFormat(new Date(d.createdTime), \'YYYY-MM-DD HH:mm:ss\') ]][[ createdTime ]]'
+    //       },
+    //       {
+    //         id: 'at',
+    //         content: '[[ d.author.account ]]'
+    //       }
+    //     ],
+    //     config: {
+    //       elem: '#storyComment',
+    //       url: '/admin/story/comment/table',
+    //       cols: [
+    //         [
+    //           {field: 'id', sort: true, title: 'ID', width:100, fixed: 'left'},
+    //           {field: 'text', sort: true, title: '内容'},
+    //           {field: 'author', sort: true, title: '评论者', maxWidth: 180, templet: '#at'},
+    //           {field: 'createdTime', sort: true, title: '创建时间', maxWidth: 180, templet: '#ct'},
+    //           {fixed: 'right', width:200, align: 'center', toolbar: '#operation'}
+    //         ]
+    //       ]
+    //     }
+    //   }
+    // })
+  })
+</script>
+{% endblock %}

@@ -1,0 +1,3150 @@
+{% extends "./back.html" %}
+
+{% block css %}
+{{ super() }}
+{% endblock %}
+
+{% block main %}
+  <div class="layui-card myCard">
+    <div class="layui-card-header">数据中心</div>
+    <div class="layui-card-body">
+      <div id="cut"></div>
+      <div id="myTable"></div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+  $(function () {
+    var t = {
+      // 国家及地区
+      country: {
+        btns: {
+          items: [
+            'setCols'
+          ]
+        },
+        search: {
+          'class': 'selects',
+          labelWidth: '100',
+          items: [
+            {
+              label: '国家及地区名',
+              elements: {
+                eType: 'input',
+                name: 'name'
+              }
+            },
+            {
+              label: '国家及地区英文名',
+              elements: {
+                eType: 'input',
+                name: 'nameE'
+              }
+            },
+            {
+              label: '国家及地区编号',
+              elements: {
+                eType: 'input',
+                name: 'number'
+              }
+            },
+          ]
+        },
+        table: {
+          // tool: {
+          //   items: [
+          //     // 'info',
+          //   ]
+          // },
+          checkboxType: 'null',
+          config: {
+            elem: '#country',
+            url: '/admin/area/country/table',
+            cols: [
+              [
+                {field: 'id', title: 'ID', align: 'center', show: false, sort: true, width: 100, fixed: 'left'},
+                {field: 'name', title: '国家及地区名', align: 'center', sort: true, minWidth: 190},
+                {field: 'nameE', title: '国家及地区英文名', sort: true, align: 'center', minWidth: 330},
+                {field: 'number', title: '国家及地区编号', sort: true, align: 'center', minWidth: 100},
+              ]
+            ]
+          }
+        }
+      },
+      province: {
+        btns: {
+          items: [
+            'setCols'
+          ]
+        },
+        search: {
+          'class': 'selects',
+          labelWidth: '100',
+          items: [
+            {
+              label: '大陆省份名',
+              elements: {
+                eType: 'input',
+                name: 'name'
+              }
+            },
+            {
+              label: '大陆省份编号',
+              elements: {
+                eType: 'input',
+                name: 'number'
+              }
+            },
+          ]
+        },
+        table: {
+          // tool: {
+          //   items: [
+          //     // 'info',
+          //   ]
+          // },
+          checkboxType: 'null',
+          config: {
+            elem: '#province',
+            url: '/admin/area/province/table',
+            cols: [
+              [
+                {field: 'id', title: 'ID', align: 'center', show: false, sort: true, width: 100, fixed: 'left'},
+                {field: 'name', title: '大陆省份名', align: 'center', sort: true, minWidth: 150},
+                {field: 'number', title: '大陆省份编号', sort: true, align: 'center', minWidth: 100},
+                // {align: 'center', width:80, fixed: 'right', toolbar: '#operation'}
+              ]
+            ]
+          }
+        }
+      },
+      city: {
+        btns: {
+          items: [
+            'setCols'
+          ]
+        },
+        search: {
+          'class': 'selects',
+          labelWidth: '100',
+          items: [
+            {
+              label: '城市名',
+              elements: {
+                eType: 'input',
+                name: 'name'
+              }
+            },
+            {
+              label: '城市编号',
+              elements: {
+                eType: 'input',
+                name: 'number'
+              }
+            },
+            {
+              label: '大陆省份名',
+              elements: {
+                eType: 'input',
+                name: 'provinceName'
+              }
+            },
+          ]
+        },
+        table: {
+          // tool: {
+          //   items: [
+          //     // 'info',
+          //   ]
+          // },
+          checkboxType: 'null',
+          templates: [
+            {
+              id: 'tProvinceName',
+              content: '[[ d.province.name ]]'
+            },
+          ],
+          config: {
+            elem: '#city',
+            url: '/admin/area/city/table',
+            cols: [
+              [
+                {field: 'id', title: 'ID', align: 'center', show: false, sort: true, width: 100, fixed: 'left'},
+                {field: 'name', title: '城市名', align: 'center', sort: true, minWidth: 190},
+                {field: 'number', title: '城市编号', sort: true, align: 'center', minWidth: 100},
+                {field: 'provinceName', title: '大陆省份名', sort: true, align: 'center', minWidth: 150, templet: '#tProvinceName'},
+                // {align: 'center', width:80, fixed: 'right', toolbar: '#operation'}
+              ]
+            ]
+          }
+        }
+      },
+      county: {
+        btns: {
+          items: [
+            'setCols'
+          ]
+        },
+        search: {
+          'class': 'selects',
+          labelWidth: '100',
+          items: [
+            {
+              label: '区县名',
+              elements: {
+                eType: 'input',
+                name: 'name'
+              }
+            },
+            {
+              label: '区县编号',
+              elements: {
+                eType: 'input',
+                name: 'number'
+              }
+            },
+            {
+              label: '城市名',
+              elements: {
+                eType: 'input',
+                name: 'cityName'
+              }
+            },
+            {
+              label: '大陆省份名',
+              elements: {
+                eType: 'input',
+                name: 'provinceName'
+              }
+            },
+          ]
+        },
+        table: {
+          // tool: {
+          //   items: [
+          //     // 'info',
+          //   ]
+          // },
+          checkboxType: 'null',
+          templates: [
+            {
+              id: 'tCityName',
+              content: '[[ d.city.name ]]'
+            },
+            {
+              id: 'tProvinceName',
+              content: '[[ d.city.province.name ]]'
+            },
+          ],
+          config: {
+            elem: '#county',
+            url: '/admin/area/county/table',
+            cols: [
+              [
+                {field: 'id', title: 'ID', align: 'center', show: false, sort: true, width: 100, fixed: 'left'},
+                {field: 'name', title: '区县名', align: 'center', sort: true, minWidth: 250},
+                {field: 'number', title: '区县编号', sort: true, align: 'center', minWidth: 100},
+                {field: 'cityName', title: '城市名', sort: true, align: 'center', minWidth: 190, templet: '#tCityName'},
+                {field: 'provinceName', title: '大陆省份名', sort: true, align: 'center', minWidth: 150, templet: '#tProvinceName'},
+                // {align: 'center', width:80, fixed: 'right', toolbar: '#operation'}
+              ]
+            ]
+          }
+        }
+      },
+      // 学校用户
+      school: {
+        btns: {
+          items: [
+            'setCols'
+          ]
+        },
+        search: {
+          'class': 'selects',
+          labelWidth: '100',
+          items: [
+            {
+              label: '会员学校',
+              elements: {
+                eType: 'select',
+                name: 'schoolVerifyIn',
+                option: [
+                  {value: 'all', label: '&nbsp;', selected: true},
+                  {value: '{{ VerifyStatus.ok }}', label: '是'},
+                  {value: '{{ VerifyStatus.wait }},{{ VerifyStatus.no }}', label: '否'},
+                ]
+              }
+            },
+            {
+              label: '学校类型',
+              elements: {
+                eType: 'select',
+                name: 'schoolType',
+                option: [
+                  {value: 'all', label: '&nbsp;', selected: true},
+                  {% for i, j in SchoolType %}
+                  {value: '{{ j }}', label: '{{ j }}'},
+                  {% endfor %}
+                ]
+              }
+            },
+            {
+              label: '学校编号',
+              elements: {
+                eType: 'input',
+                name: 'account'
+              }
+            },
+            {
+              label: '学校名称',
+              elements: {
+                eType: 'input',
+                name: 'name'
+              }
+            },
+            {
+              label: '联系人姓名',
+              elements: {
+                eType: 'input',
+                name: 'contactName'
+              }
+            },
+            {
+              label: '联系手机',
+              elements: {
+                eType: 'input',
+                name: 'phoneNumber'
+              }
+            },
+            {
+              label: '管理员',
+              elements: {
+                eType: 'select',
+                name: 'adminId',
+                option: [
+                  {value: 'all', label: '&nbsp;', selected: true},
+                  {% for i in admins %}
+                  {value: '{{ i.id }}', label: '{{ i.account }}'},
+                  {% endfor %}
+                ]
+              }
+            },
+            {
+              label: '大陆省份',
+              elements: {
+                eType: 'input',
+                name: 'provinceName'
+              }
+            },
+            {
+              label: '城市',
+              elements: {
+                eType: 'input',
+                name: 'cityName'
+              }
+            },
+            {
+              label: '区县',
+              elements: {
+                eType: 'input',
+                name: 'countyName'
+              }
+            },
+            {
+              label: '注册时间',
+              elements: {
+                eType: 'date',
+                name: 'createdTime',
+                range: true
+              }
+            }
+          ]
+        },
+        table: {
+          // tool: {
+          //   items: [
+          //     'info',
+          //   ]
+          // },
+          checkboxType: 'null',
+          // lineStyle: [
+          //   {
+          //     condition: 'd.school.verify === \'待审核\'',  // res: table请求的返回值，curr:当前页码，count:数据总数，d:当前行数据
+          //     style: {
+          //       color: 'red',
+          //       backgroundColor: '#dff'
+          //     }
+          //   }
+          // ],
+          templates: [
+            {
+              id: 'tSchoolVerifyIn',
+              content: '[[ d.school.verify === \'{{ VerifyStatus.ok }}\' ? \'是\' : \'否\' ]]'
+            },
+            {
+              id: 'tSchoolType',
+              content: '[[ d.school.type != null ? d.school.type : \'\' ]]'
+            },
+            {
+              id: 'tAdminAccount',
+              content: '[[ d.school.admin != null ? d.school.admin.account : \'\' ]]'
+            },
+            {
+              id: 'tProvinceName',
+              content: '[[ d.county.city.province.name ]]'
+            },
+            {
+              id: 'tCityName',
+              content: '[[ d.county.city.name ]]'
+            },
+            {
+              id: 'tCountyName',
+              content: '[[ d.county.name ]]'
+            },
+            {
+              id: 'tAvatar',
+              content: '[[# if (d.avatar) { ]]<a href="[[ d.avatar ]]" style="cursor: pointer;" target="_blank"><img class="tableImg" src="[[ d.avatar ]]"></a>[[# } ]]'
+            },
+            {
+              id: 'tIsComplemented',
+              content: '[[# if (d.isComplemented) { ]]是[[# } else { ]]否[[# } ]]'
+            },
+            {
+              id: 'tCreatedTime',
+              content: '[[ dateFormat(d.createdTime, \'YYYY-MM-DD HH:mm:ss\') ]]'
+            }
+          ],
+          config: {
+            elem: '#school',
+            url: '/admin/member/school/table',
+            cols: [
+              [
+                {field: 'id', title: 'ID', align: 'center', show: false, sort: true, width: 100, fixed: 'left'},
+                {field: 'name', title: '学校名称', align: 'center', sort: true, minWidth: 250, fixed: 'left'},
+                {field: 'account', title: '学校编号', align: 'center', sort: true, minWidth: 140},
+                {field: 'schoolType', sort: true, title: '学校类型', width:100, align: 'center', templet: '#tSchoolType'},
+                {field: 'adminAccount', title: '管理员', align: 'center', sort: true, minWidth: 100, templet: '#tAdminAccount'},
+                {field: 'contactName', title: '联系人', align: 'center', sort: true, minWidth: 140},
+                {field: 'phoneNumber', title: '联系手机', align: 'center', sort: true, width: 120},
+                {field: 'email', title: 'Email', align: 'center', sort: true, minWidth: 180},
+                {field: 'createdTime', title: '注册时间', align: 'center', sort: true, width: 180, templet: '#tCreatedTime'},
+                {field: 'wechat', title: '微信号', align: 'center', sort: true, minWidth: 140},
+                {field: 'qq', title: 'QQ', align: 'center', sort: true, minWidth: 140},
+                {field: 'provinceName', title: '大陆省份', align: 'center', sort: true, minWidth: 150, templet: '#tProvinceName'},
+                {field: 'cityName', title: '城市', align: 'center', sort: true, minWidth: 190, templet: '#tCityName'},
+                {field: 'countyName', title: '区县', align: 'center', sort: true, minWidth: 250, templet: '#tCountyName'},
+                {field: 'schoolVerifyIn', sort: true, title: '会员学校', width:100, align: 'center', templet: '#tSchoolVerifyIn'},
+                {field: 'avatar', title: '头像', align: 'center', show: false, sort: true, width: 80, templet: '#tAvatar'},
+                {field: 'isComplemented', title: '完善信息', align: 'center', show: false, sort: true, width: 100, templet: '#tIsComplemented'},
+                // {fixed: 'right', width:80, align: 'center', toolbar: '#operation'}
+              ]
+            ]
+          }
+        }
+      },
+      student: {
+        btns: {
+          items: [
+            'setCols'
+          ]
+        },
+        search: {
+          'class': 'selects',
+          labelWidth: '100',
+          items: [
+            {
+              label: '会员学校',
+              elements: {
+                eType: 'select',
+                name: 'schoolVerifyIn',
+                option: [
+                  {value: 'all', label: '&nbsp;', selected: true},
+                  {value: '{{ VerifyStatus.ok }}', label: '是'},
+                  {value: '{{ VerifyStatus.wait }},{{ VerifyStatus.no }}', label: '否'},
+                ]
+              }
+            },
+            {
+              label: '学生账号',
+              elements: {
+                eType: 'input',
+                name: 'account'
+              }
+            },
+            {
+              label: '学生姓名',
+              elements: {
+                eType: 'input',
+                name: 'name'
+              }
+            },
+            {
+              label: '身份证号',
+              elements: {
+                eType: 'input',
+                name: 'idCard'
+              }
+            },
+            {
+              label: '学校编号',
+              elements: {
+                eType: 'input',
+                name: 'schoolAccount'
+              }
+            },
+            {
+              label: '学校名称',
+              elements: {
+                eType: 'input',
+                name: 'schoolName'
+              }
+            },
+            {
+              label: '联系手机',
+              elements: {
+                eType: 'input',
+                name: 'phoneNumber'
+              }
+            },
+            {
+              label: '学段',
+              elements: {
+                eType: 'select',
+                name: 'studentPeriod',
+                option: [
+                  {value: 'all', label: '&nbsp;', selected: true},
+                  {% for i, j in StudentPeriod %}
+                  {value: '{{ j }}', label: '{{ j }}'},
+                  {% endfor %}
+                ]
+              }
+            },
+            {
+              label: '大陆省份',
+              elements: {
+                eType: 'input',
+                name: 'provinceName'
+              }
+            },
+          ]
+        },
+        table: {
+          // tool: {
+          //   items: [
+          //     'info',
+          //   ]
+          // },
+          checkboxType: 'null',
+          templates: [
+            {
+              id: 'tSchoolVerifyIn',
+              content: '[[ d.student.school != null ? (d.student.school.verify === \'{{ VerifyStatus.ok }}\' ? \'是\' : \'否\') : \'\' ]]'
+            },
+            {
+              id: 'tSchoolAccount',
+              content: '[[ d.student.school != null ? d.student.school.member.account : \'\' ]]'
+            },
+            {
+              id: 'tSchoolName',
+              content: '[[ d.student.school != null ? d.student.school.member.name : \'\' ]]'
+            },
+            {
+              id: 'tAge',
+              content: '[[ d.idCard != null ? getAgeByIdCard(d.idCard) : \'\' ]]'
+            },
+            {
+              id: 'tProvinceName',
+              content: '[[ d.county.city.province.name ]]'
+            },
+            {
+              id: 'tStudentPeriod',
+              content: '[[#  if(d.student.period === \'{{ StudentPeriod.XiaoXue }}\'){ ]]<span class="layui-badge layui-bg-orange">小</span>[[# } else if(d.student.period === \'{{ StudentPeriod.ChuZhong }}\'){ ]]<span class="layui-badge layui-bg-blue">初</span>[[#  } else if(d.student.period === \'{{ StudentPeriod.GaoZhong }}\'){ ]]<span class="layui-badge layui-bg-red">高</span>[[#  } else { ]]<span class="layui-badge layui-bg-gray">离</span>[[#  } ]]'
+            },
+            {
+              id: 'tAvatar',
+              content: '[[# if (d.avatar) { ]]<a href="[[ d.avatar ]]" style="cursor: pointer;" target="_blank"><img class="tableImg" src="[[ d.avatar ]]"></a>[[# } ]]'
+            },
+            {
+              id: 'tIsComplemented',
+              content: '[[# if (d.isComplemented) { ]]是[[# } else { ]]否[[# } ]]'
+            },
+            {
+              id: 'tStudentYear',
+              content: '[[ d.student.yearOfEnrollment ]]'
+            },
+            {
+              id: 'tStudentClass',
+              content: '[[ d.student.class ]]'
+            },
+            {
+              id: 'tStudentGrade',
+              content: '[[ d.student.grade != null ? d.student.grade : \'\' ]]'
+            },
+            {
+              id: 'tStudentPhoto',
+              content: '[[# if (d.student.photo) { ]]<a href="[[ d.student.photo ]]" style="cursor: pointer;" target="_blank"><img class="tableImg" src="[[ d.student.photo ]]"></a>[[# } ]]'
+            },
+            {
+              id: 'tStudentAddress',
+              content: '[[ d.student.address != null ? d.student.address : \'\' ]]'
+            },
+            {
+              id: 'tStudentBirthday',
+              content: '[[ d.student.birthday != null ? d.student.birthday : \'\' ]]'
+            },
+            {
+              id: 'tStudentFamilyInfo',
+              content: '[[ d.student.familyInfo != null ? d.student.familyInfo : \'\' ]]'
+            },
+            {
+              id: 'tStudentPoverty',
+              content: '[[ d.student.poverty != null ? d.student.poverty : \'\' ]]'
+            },
+            {
+              id: 'tCreatedTime',
+              content: '[[ dateFormat(d.createdTime, \'YYYY-MM-DD HH:mm:ss\') ]]'
+            },
+          ],
+          config: {
+            elem: '#student',
+            url: '/admin/member/student/table',
+            cols: [
+              [
+                {field: 'id', title: 'ID', align: 'center', show: false, sort: true, width: 100, fixed: 'left'},
+                {field: 'name', title: '学生姓名', align: 'center', sort: true, minWidth: 140, fixed: 'left'},
+                // {field: 'nickName', title: '学生昵称', align: 'center', sort: true, minWidth: 140},
+                {field: 'schoolName', title: '学校名称', align: 'center', sort: true, minWidth: 250, templet: '#tSchoolName'},
+                {field: 'age', title: '年龄', align: 'center', width: 80, templet: '#tAge'},
+                {field: 'studentPeriod', title: '学段', align: 'center', sort: true, width: 80, templet: '#tStudentPeriod'},
+                {field: 'studentYear', title: '入学年份', align: 'center', sort: true, minWidth: 100, templet: '#tStudentYear'},
+                {field: 'schoolAccount', title: '学校编号', align: 'center', sort: true, minWidth: 140, templet: '#tSchoolAccount'},
+                {field: 'account', title: '学生账号', align: 'center', sort: true, minWidth: 140},
+                {field: 'createdTime', title: '注册时间', align: 'center', sort: true, width: 180, templet: '#tCreatedTime'},
+                {field: 'studentPoverty', title: '贫困状态', align: 'center', sort: true, minWidth: 160, templet: '#tStudentPoverty'},
+                {field: 'idCard', title: '身份证号', align: 'center', sort: true, width: 180},
+                {field: 'provinceName', title: '大陆省份', align: 'center', sort: true, minWidth: 150, templet: '#tProvinceName'},
+                {field: 'phoneNumber', title: '联系手机', align: 'center', sort: true, width: 140},
+                {field: 'gender', title: '性别', align: 'center', sort: true, width: 80},
+                {field: 'nation', title: '民族', align: 'center', sort: true, width: 80},
+                {field: 'wechat', title: '微信号', align: 'center', sort: true, minWidth: 140},
+                {field: 'qq', title: 'QQ', align: 'center', sort: true, minWidth: 140},
+                {field: 'avatar', title: '头像', align: 'center', sort: true, width: 80, templet: '#tAvatar'},
+                {field: 'studentClass', title: '班级', align: 'center', sort: true, width: 80, templet: '#tStudentClass'},
+                {field: 'studentGrade', title: '年级', align: 'center', sort: true, width: 80, templet: '#tStudentGrade'},
+                {field: 'studentPhoto', title: '照片', align: 'center', sort: true, width: 80, templet: '#tStudentPhoto'},
+                {field: 'studentBirthday', title: '出生日期', align: 'center', sort: true, width: 120, templet: '#tStudentBirthday'},
+                {field: 'studentFamilyInfo', title: '家庭情况简述', align: 'center', sort: true, minWidth: 200, templet: '#tStudentFamilyInfo'},
+                {field: 'schoolVerifyIn', title: '会员学校', align: 'center', show: false, sort: true, width:100, templet: '#tSchoolVerifyIn'},
+                {field: 'email', title: 'Email', align: 'center', show: false, sort: true, minWidth: 180},
+                {field: 'isComplemented', title: '完善信息', align: 'center', show: false, sort: true, width: 100, templet: '#tIsComplemented'},
+                {field: 'studentAddress', title: '地址', align: 'center', show: false, sort: true, minWidth: 120, templet: '#tStudentAddress'},
+                // {align: 'center', width: 80, fixed: 'right', toolbar: '#operation'}
+              ]
+            ]
+          }
+        }
+      },
+      family: {
+        btns: {
+          items: [
+            'setCols'
+          ]
+        },
+        search: {
+          'class': 'selects',
+          labelWidth: '100',
+          items: [
+            {
+              label: '大陆省份',
+              elements: {
+                eType: 'input',
+                name: 'provinceName'
+              }
+            },
+            {
+              label: '学校编号',
+              elements: {
+                eType: 'input',
+                name: 'schoolAccount'
+              }
+            },
+            {
+              label: '学校名称',
+              elements: {
+                eType: 'input',
+                name: 'schoolName'
+              }
+            },
+            {
+              label: '学生账号',
+              elements: {
+                eType: 'input',
+                name: 'studentAccount'
+              }
+            },
+            {
+              label: '学生姓名',
+              elements: {
+                eType: 'input',
+                name: 'studentName'
+              }
+            },
+            {
+              label: '称呼',
+              elements: {
+                eType: 'input',
+                name: 'address'
+              }
+            },
+            {
+              label: '姓名',
+              elements: {
+                eType: 'input',
+                name: 'name'
+              }
+            },
+            {
+              label: '出生年份',
+              elements: {
+                eType: 'date',
+                name: 'birthyear',
+                type: 'year',
+                range: true
+              }
+            },
+            {
+              label: '职业',
+              elements: {
+                eType: 'input',
+                name: 'profession'
+              }
+            },
+            {
+              label: '健康状况',
+              elements: {
+                eType: 'input',
+                name: 'health'
+              }
+            },
+            {
+              label: '年收入',
+              elements: {
+                eType: 'between',
+                name: 'income'
+              }
+            },
+            // {
+            //   label: '提交人',
+            //   elements: {
+            //     eType: 'input',
+            //     name: 'publishUser'
+            //   }
+            // },
+          ]
+        },
+        table: {
+          // tool: {
+          //   items: [
+          //   ]
+          // },
+          checkboxType: 'null',
+          templates: [
+            {
+              id: 'tProvinceName',
+              content: '[[ d.student.school.member.county.city.province.name ]]'
+            },
+            {
+              id: 'tSchoolAccount',
+              content: '[[ d.student.school.member.account ]]'
+            },
+            {
+              id: 'tSchoolName',
+              content: '[[ d.student.school.member.name ]]'
+            },
+            {
+              id: 'tStudentAccount',
+              content: '[[ d.student.member.account ]]'
+            },
+            {
+              id: 'tStudentName',
+              content: '[[ d.student.member.name ]]'
+            },
+          ],
+          config: {
+            elem: '#family',
+            url: '/admin/member/family/table',
+            cols: [
+              [
+                {field: 'id', title: 'ID', align: 'center', show: false, sort: true, width: 100, fixed: 'left'},
+                {field: 'provinceName', title: '大陆省份', align: 'center', sort: true, minWidth: 150, templet: '#tProvinceName'},
+                {field: 'schoolAccount', title: '学校编号', align: 'center', sort: true, minWidth: 140, templet: '#tSchoolAccount'},
+                {field: 'schoolName', title: '学校名称', align: 'center', sort: true, minWidth: 250, templet: '#tSchoolName'},
+                {field: 'studentAccount', title: '学生账号', align: 'center', sort: true, minWidth: 140, templet: '#tStudentAccount'},
+                {field: 'studentName', title: '学生姓名', align: 'center', sort: true, minWidth: 140, templet: '#tStudentName'},
+                {field: 'address', title: '称呼', align: 'center', sort: true, width: 100},
+                {field: 'name', title: '姓名', align: 'center', sort: true, width: 100},
+                {field: 'birthyear', title: '出生年份', align: 'center', sort: true, width: 100},
+                {field: 'profession', title: '职业', align: 'center', sort: true, minWidth: 150},
+                {field: 'health', title: '健康状况', align: 'center', sort: true, minWidth: 100},
+                {field: 'income', title: '年收入', align: 'center', sort: true, minWidth: 100},
+                // {field: 'publishUser', title: '提交人', align: 'center', sort: true, minWidth: 140},
+                // {align: 'center', width: 80, fixed: 'right', toolbar: '#operation'}
+              ]
+            ]
+          }
+        }
+      },
+      score: {
+        btns: {
+          items: [
+            'setCols'
+          ]
+        },
+        search: {
+          'class': 'selects',
+          labelWidth: '100',
+          submit: {
+            event: function (data, config, render) {
+              var queryObj = {semester: ''}
+              if (data.field.semesterDate !== '') {
+                var semesterArr = data.field.semesterDate.split('___')
+                semesterArr[0] = new Date(semesterArr[0] * 1)
+                semesterArr[1] = new Date(semesterArr[1] * 1)
+                queryObj.semester = ((semesterArr[0].getMonth() ? semesterArr[0].getFullYear() : (semesterArr[0].getFullYear() - 1)) * 2 + (semesterArr[0].getMonth() >= 1 && semesterArr[0].getMonth() <= 6 ? 0 : 1)) + '*' + ((semesterArr[1].getMonth() ? semesterArr[1].getFullYear() : (semesterArr[1].getFullYear() - 1)) * 2 + (semesterArr[1].getMonth() >= 1 && semesterArr[1].getMonth() <= 6 ? 0 : 1))
+              }
+              config.url = setQuery(config.url, queryObj)
+              render(config)
+            }
+          },
+          items: [
+            {
+              label: '大陆省份',
+              elements: {
+                eType: 'input',
+                name: 'provinceName'
+              }
+            },
+            {
+              label: '学校编号',
+              elements: {
+                eType: 'input',
+                name: 'schoolAccount'
+              }
+            },
+            {
+              label: '学校名称',
+              elements: {
+                eType: 'input',
+                name: 'schoolName'
+              }
+            },
+            {
+              label: '学生账号',
+              elements: {
+                eType: 'input',
+                name: 'studentAccount'
+              }
+            },
+            {
+              label: '学生姓名',
+              elements: {
+                eType: 'input',
+                name: 'studentName'
+              }
+            },
+            {
+              label: '资助学期',
+              elements: {
+                eType: 'date',
+                name: 'semesterDate',
+                type: 'month',
+                range: true,
+              }
+            },
+            {
+              label: '类型',
+              elements: {
+                eType: 'select',
+                name: 'type',
+                option: [
+                  {value: 'all', label: '&nbsp;'},
+                  {% for i, j in StudentScoreType %}
+                  {value: '{{ j }}', label: '{{ j }}'},
+                  {% endfor %}
+                ]
+              }
+            },
+            // {
+            //   label: '提交人',
+            //   elements: {
+            //     eType: 'input',
+            //     name: 'publishUser'
+            //   }
+            // },
+          ]
+        },
+        table: {
+          // tool: {
+          //   items: [
+          //   ]
+          // },
+          templates: [
+            {
+              id: 'tProvinceName',
+              content: '[[ d.student.school.member.county.city.province.name ]]'
+            },
+            {
+              id: 'tSchoolAccount',
+              content: '[[ d.student.school.member.account ]]'
+            },
+            {
+              id: 'tSchoolName',
+              content: '[[ d.student.school.member.name ]]'
+            },
+            {
+              id: 'tStudentAccount',
+              content: '[[ d.student.member.account ]]'
+            },
+            {
+              id: 'tStudentName',
+              content: '[[ d.student.member.name ]]'
+            },
+            {
+              id: 'tSemester',
+              content: '[[ semester(d.semester) ]]'
+            },
+          ],
+          config: {
+            elem: '#score',
+            url: '/admin/member/score/table',
+            cols: [
+              [
+                {field: 'id', title: 'ID', align: 'center', show: false, sort: true, width: 100, fixed: 'left'},
+                {field: 'provinceName', title: '大陆省份', align: 'center', sort: true, minWidth: 150, templet: '#tProvinceName'},
+                {field: 'schoolAccount', title: '学校编号', align: 'center', sort: true, minWidth: 140, templet: '#tSchoolAccount'},
+                {field: 'schoolName', title: '学校名称', align: 'center', sort: true, minWidth: 250, templet: '#tSchoolName'},
+                {field: 'studentAccount', title: '学生账号', align: 'center', sort: true, minWidth: 140, templet: '#tStudentAccount'},
+                {field: 'studentName', title: '学生姓名', align: 'center', sort: true, minWidth: 140, templet: '#tStudentName'},
+                {field: 'chinese', title: '语文', align: 'center', sort: true, width: 100},
+                {field: 'math', title: '数学', align: 'center', sort: true, width: 100},
+                {field: 'english', title: '英语', align: 'center', sort: true, width: 100},
+                {field: 'biology', title: '生物', align: 'center', sort: true, width: 100},
+                {field: 'physics', title: '物理', align: 'center', sort: true, width: 100},
+                {field: 'chemistry', title: '化学', align: 'center', sort: true, width: 100},
+                {field: 'politics', title: '政治', align: 'center', sort: true, width: 100},
+                {field: 'geography', title: '地理', align: 'center', sort: true, width: 100},
+                {field: 'history', title: '历史', align: 'center', sort: true, width: 100},
+                {field: 'total', title: '总分', align: 'center', sort: true, width: 100},
+                {field: 'classRanking', title: '班级名次', align: 'center', sort: true, width: 120},
+                {field: 'gradeRanking', title: '年级名次', align: 'center', sort: true, width: 120},
+                {field: 'semester', title: '学期', align: 'center', sort: true, width: 180, templet: '#tSemester'},
+                {field: 'type', title: '类型', align: 'center', sort: true, width: 100},
+                // {field: 'publishUser', title: '提交人', align: 'center', sort: true, minWidth: 140},
+                // {align: 'center', width: 80, fixed: 'right', toolbar: '#operation'}
+              ]
+            ]
+          }
+        }
+      },
+      teacher: {
+        btns: {
+          items: [
+            'setCols'
+          ]
+        },
+        search: {
+          'class': 'selects',
+          labelWidth: '100',
+          items: [
+            {
+              label: '大陆省份',
+              elements: {
+                eType: 'input',
+                name: 'provinceName',
+              }
+            },
+            {
+              label: '会员学校',
+              elements: {
+                eType: 'select',
+                name: 'schoolVerifyIn',
+                option: [
+                  {value: 'all', label: '&nbsp;', selected: true},
+                  {value: '{{ VerifyStatus.ok }}', label: '是'},
+                  {value: '{{ VerifyStatus.wait }},{{ VerifyStatus.no }}', label: '否'},
+                ]
+              }
+            },
+            {
+              label: '老师账号',
+              elements: {
+                eType: 'input',
+                name: 'account'
+              }
+            },
+            {
+              label: '老师姓名',
+              elements: {
+                eType: 'input',
+                name: 'name'
+              }
+            },
+            {
+              label: '身份证号',
+              elements: {
+                eType: 'input',
+                name: 'idCard'
+              }
+            },
+            {
+              label: '学校编号',
+              elements: {
+                eType: 'input',
+                name: 'schoolAccount'
+              }
+            },
+            {
+              label: '学校名称',
+              elements: {
+                eType: 'input',
+                name: 'schoolName'
+              }
+            },
+            {
+              label: '联系手机',
+              elements: {
+                eType: 'input',
+                name: 'phoneNumber'
+              }
+            },
+          ]
+        },
+        table: {
+          // tool: {
+          //   items: [
+          //     'info',
+          //   ]
+          // },
+          checkboxType: 'null',
+          templates: [
+            {
+              id: 'tProvinceName',
+              content: '[[ d.county.city.province.name ]]'
+            },
+            {
+              id: 'tSchoolVerifyIn',
+              content: '[[# if (d.teacher.school.verify === \'{{ VerifyStatus.ok }}\') { ]]是[[# } else { ]]否[[# } ]]'
+            },
+            {
+              id: 'tSchoolAccount',
+              content: '[[ d.teacher.school.member.account ]]'
+            },
+            {
+              id: 'tSchoolName',
+              content: '[[ d.teacher.school.member.name ]]'
+            },
+            {
+              id: 'tAvatar',
+              content: '[[# if (d.avatar) { ]]<a href="[[ d.avatar ]]" style="cursor: pointer;" target="_blank"><img class="tableImg" src="[[ d.avatar ]]"></a>[[# } ]]'
+            },
+            {
+              id: 'tIsComplemented',
+              content: '[[# if (d.isComplemented) { ]]是[[# } else { ]]否[[# } ]]'
+            },
+            {
+              id: 'tTeacherAddress',
+              content: '[[ d.teacher.address != null ? d.teacher.address : \'\' ]]'
+            },
+            {
+              id: 'tCreatedTime',
+              content: '[[ dateFormat(d.createdTime, \'YYYY-MM-DD HH:mm:ss\') ]]'
+            },
+          ],
+          config: {
+            elem: '#teacher',
+            url: '/admin/member/teacher/table',
+            cols: [
+              [
+                {field: 'id', title: 'ID', align: 'center', show: false, sort: true, width: 100, fixed: 'left'},
+                {field: 'name', title: '老师姓名', align: 'center', sort: true, minWidth: 140, fixed: 'left'},
+                {field: 'account', title: '老师账号', align: 'center', sort: true, minWidth: 140},
+                {field: 'nickName', title: '老师昵称', align: 'center', sort: true, minWidth: 140},
+                {field: 'schoolName', title: '学校名称', align: 'center', sort: true, minWidth: 250, templet: '#tSchoolName'},
+                {field: 'phoneNumber', title: '联系手机', align: 'center', sort: true, width: 140},
+                {field: 'createdTime', title: '注册时间', align: 'center', sort: true, width: 180, templet: '#tCreatedTime'},
+                {field: 'schoolAccount', title: '学校编号', align: 'center', sort: true, minWidth: 140, templet: '#tSchoolAccount'},
+                {field: 'email', title: 'Email', align: 'center', sort: true, minWidth: 180},
+                {field: 'qq', title: 'QQ', align: 'center', sort: true, minWidth: 140},
+                {field: 'wechat', title: '微信号', align: 'center', sort: true, minWidth: 140},
+                {field: 'gender', title: '性别', align: 'center', sort: true, width: 80},
+                {field: 'provinceName', title: '大陆省份', align: 'center', sort: true, minWidth: 150, templet: '#tProvinceName'},
+                {field: 'nation', title: '民族', align: 'center', sort: true, width: 80},
+                {field: 'avatar', title: '头像', align: 'center', sort: true, width: 80, templet: '#tAvatar'},
+                {field: 'teacherAddress', title: '地址', align: 'center', sort: true, minWidth: 120, templet: '#tTeacherAddress'},
+                {field: 'schoolVerifyIn', title: '会员学校', align: 'center', show: false, sort: true, width:100, templet: '#tSchoolVerifyIn'},
+                {field: 'idCard', title: '身份证号', align: 'center', show: false, sort: true, width: 180},
+                {field: 'isComplemented', title: '完善信息', align: 'center', show: false, sort: true, width: 100, templet: '#tIsComplemented'},
+                // {align: 'center', width: 80, fixed: 'right', toolbar: '#operation'}
+              ]
+            ]
+          }
+        }
+      },
+      whGroup: {
+        btns: {
+          items: [
+            'setCols'
+          ]
+        },
+        search: {
+          'class': 'selects',
+          labelWidth: '100',
+          items: [
+            {
+              label: '团体账号',
+              elements: {
+                eType: 'input',
+                name: 'account'
+              }
+            },
+            {
+              label: '团体名称',
+              elements: {
+                eType: 'input',
+                name: 'name'
+              }
+            },
+            {
+              label: '联系人姓名',
+              elements: {
+                eType: 'input',
+                name: 'contactName'
+              }
+            },
+            {
+              label: '联系手机',
+              elements: {
+                eType: 'input',
+                name: 'phoneNumber'
+              }
+            },
+            {
+              label: 'Email',
+              elements: {
+                eType: 'input',
+                name: 'email'
+              }
+            },
+          ]
+        },
+        table: {
+          // tool: {
+          //   items: [
+          //     'info',
+          //   ]
+          // },
+          checkboxType: 'null',
+          templates: [
+            {
+              id: 'tProvinceName',
+              content: '[[ d.county != null ? d.county.city.province.name : \'\' ]]'
+            },
+            {
+              id: 'tAvatar',
+              content: '[[# if (d.avatar) { ]]<a href="[[ d.avatar ]]" style="cursor: pointer;" target="_blank"><img class="tableImg" src="[[ d.avatar ]]"></a>[[# } ]]'
+            },
+            {
+              id: 'tIsComplemented',
+              content: '[[# if (d.isComplemented) { ]]是[[# } else { ]]否[[# } ]]'
+            },
+            {
+              id: 'tCreatedTime',
+              content: '[[ dateFormat(d.createdTime, \'YYYY-MM-DD HH:mm:ss\') ]]'
+            },
+          ],
+          config: {
+            elem: '#whGroup',
+            url: '/admin/member/whGroup/table',
+            cols: [
+              [
+                {field: 'id', title: 'ID', align: 'center', show: false, sort: true, width: 100, fixed: 'left'},
+                {field: 'name', title: '团体名称', align: 'center', sort: true, minWidth: 140, fixed: 'left'},
+                {field: 'account', title: '团体账号', align: 'center', sort: true, minWidth: 140},
+                {field: 'contactName', title: '联系人姓名', align: 'center', sort: true, minWidth: 140},
+                {field: 'phoneNumber', title: '联系手机', align: 'center', sort: true, width: 120},
+                {field: 'email', title: 'Email', align: 'center', sort: true, minWidth: 180},
+                {field: 'createdTime', title: '注册时间', align: 'center', sort: true, width: 180, templet: '#tCreatedTime'},
+                {field: 'provinceName', title: '大陆省份', align: 'center', sort: true, minWidth: 150, templet: '#tProvinceName'},
+                {field: 'qq', title: 'QQ', align: 'center', sort: true, minWidth: 140},
+                {field: 'wechat', title: '微信号', align: 'center', sort: true, minWidth: 140},
+                {field: 'avatar', title: '头像', align: 'center', sort: true, width: 80, templet: '#tAvatar'},
+                {field: 'isComplemented', title: '完善信息', align: 'center', show: false, sort: true, width: 100, templet: '#tIsComplemented'},
+                // {align: 'center', width:80, fixed: 'right', toolbar: '#operation'}
+              ]
+            ]
+          }
+        }
+      },
+      whPerson: {
+        btns: {
+          items: [
+            'setCols'
+          ]
+        },
+        search: {
+          'class': 'selects',
+          labelWidth: '120',
+          items: [
+            {
+              label: '爱心人士账号',
+              elements: {
+                eType: 'input',
+                name: 'account'
+              }
+            },
+            {
+              label: '爱心人士姓名',
+              elements: {
+                eType: 'input',
+                name: 'name'
+              }
+            },
+            {
+              label: '身份证号',
+              elements: {
+                eType: 'input',
+                name: 'idCard'
+              }
+            },
+            {
+              label: '团体账号',
+              elements: {
+                eType: 'input',
+                name: 'whGroupAccount'
+              }
+            },
+            {
+              label: '团体名称',
+              elements: {
+                eType: 'input',
+                name: 'whGroupName'
+              }
+            },
+            {
+              label: '联系手机',
+              elements: {
+                eType: 'input',
+                name: 'phoneNumber'
+              }
+            },
+            {
+              label: 'Email',
+              elements: {
+                eType: 'input',
+                name: 'email'
+              }
+            },
+          ]
+        },
+        table: {
+          // tool: {
+          //   items: [
+          //     'info'
+          //   ]
+          // },
+          checkboxType: 'null',
+          templates: [
+            {
+              id: 'tProvinceName',
+              content: '[[ d.county != null ? d.county.city.province.name : \'\' ]]'
+            },
+            {
+              id: 'tWhGroupAccount',
+              content: '[[ d.whPerson.whGroup.member.account ]]'
+            },
+            {
+              id: 'tWhGroupName',
+              content: '[[ d.whPerson.whGroup.member.name ]]'
+            },
+            {
+              id: 'tAvatar',
+              content: '[[# if (d.avatar) { ]]<a href="[[ d.avatar ]]" style="cursor: pointer;" target="_blank"><img class="tableImg" src="[[ d.avatar ]]"></a>[[# } ]]'
+            },
+            {
+              id: 'tIsComplemented',
+              content: '[[# if (d.isComplemented) { ]]是[[# } else { ]]否[[# } ]]'
+            },
+            {
+              id: 'tCreatedTime',
+              content: '[[ dateFormat(d.createdTime, \'YYYY-MM-DD HH:mm:ss\') ]]'
+            },
+          ],
+          config: {
+            elem: '#whPerson',
+            url: '/admin/member/whPerson/table',
+            cols: [
+              [
+                {field: 'id', title: 'ID', align: 'center', show: false, sort: true, width: 100, fixed: 'left'},
+                {field: 'name', title: '用户姓名', align: 'center', sort: true, minWidth: 140, fixed: 'left'},
+                {field: 'account', title: '用户账号', align: 'center', sort: true, minWidth: 140},
+                {field: 'nickName', title: '用户昵称', align: 'center', sort: true, minWidth: 140},
+                {field: 'whGroupName', title: '团体名称', align: 'center', sort: true, minWidth: 140, templet: '#tWhGroupName'},
+                {field: 'phoneNumber', title: '联系手机', align: 'center', sort: true, width: 140},
+                {field: 'email', title: 'Email', align: 'center', sort: true, minWidth: 180},
+                {field: 'createdTime', title: '注册时间', align: 'center', sort: true, width: 180, templet: '#tCreatedTime'},
+                {field: 'provinceName', title: '大陆省份', align: 'center', sort: true, minWidth: 150, templet: '#tProvinceName'},
+                {field: 'wechat', title: '微信号', align: 'center', sort: true, minWidth: 140},
+                {field: 'qq', title: 'QQ', align: 'center', sort: true, minWidth: 140},
+                {field: 'avatar', title: '头像', align: 'center', sort: true, width: 80, templet: '#tAvatar'},
+                {field: 'gender', title: '性别', align: 'center', sort: true, width: 80},
+                {field: 'whGroupAccount', title: '团体账号', align: 'center', show: false, sort: true, minWidth: 140, templet: '#tWhGroupAccount'},
+                {field: 'idCard', title: '身份证号', align: 'center', show: false, sort: true, width: 180},
+                {field: 'nation', title: '民族', align: 'center', show: false, sort: true, width: 80},
+                {field: 'isComplemented', title: '完善信息', align: 'center', show: false, sort: true, width: 100, templet: '#tIsComplemented'},
+                // {align: 'center', width: 80, fixed: 'right', toolbar: '#operation'}
+              ]
+            ]
+          }
+        }
+      },
+      other: {
+        btns: {
+          items: [
+            'setCols'
+          ]
+        },
+        search: {
+          'class': 'selects',
+          labelWidth: '120',
+          items: [
+            {
+              label: '其他人士账号',
+              elements: {
+                eType: 'input',
+                name: 'account'
+              }
+            },
+            {
+              label: '其他人士姓名',
+              elements: {
+                eType: 'input',
+                name: 'name'
+              }
+            },
+            {
+              label: '身份证号',
+              elements: {
+                eType: 'input',
+                name: 'idCard'
+              }
+            },
+            {
+              label: '联系手机',
+              elements: {
+                eType: 'input',
+                name: 'phoneNumber'
+              }
+            },
+          ]
+        },
+        table: {
+          // tool: {
+          //   items: [
+          //     'info'
+          //   ]
+          // },
+          checkboxType: 'null',
+          templates: [
+            {
+              id: 'tProvinceName',
+              content: '[[ d.county != null ? d.county.city.province.name : \'\' ]]'
+            },
+            {
+              id: 'tAvatar',
+              content: '[[# if (d.avatar) { ]]<a href="[[ d.avatar ]]" style="cursor: pointer;" target="_blank"><img class="tableImg" src="[[ d.avatar ]]"></a>[[# } ]]'
+            },
+            {
+              id: 'tIsComplemented',
+              content: '[[# if (d.isComplemented) { ]]是[[# } else { ]]否[[# } ]]'
+            },
+            {
+              id: 'tCreatedTime',
+              content: '[[ dateFormat(d.createdTime, \'YYYY-MM-DD HH:mm:ss\') ]]'
+            },
+          ],
+          config: {
+            elem: '#other',
+            url: '/admin/member/other/table',
+            cols: [
+              [
+                {field: 'id', title: 'ID', align: 'center', show: false, sort: true, width: 100, fixed: 'left'},
+                {field: 'nickName', title: '用户昵称', align: 'center', sort: true, minWidth: 140, fixed: 'left'},
+                {field: 'name', title: '用户姓名', align: 'center', sort: true, minWidth: 140},
+                {field: 'account', title: '用户账号', align: 'center', sort: true, minWidth: 140},
+                {field: 'createdTime', title: '注册时间', align: 'center', sort: true, width: 180, templet: '#tCreatedTime'},
+                {field: 'phoneNumber', title: '联系手机', align: 'center', sort: true, width: 140},
+                {field: 'provinceName', title: '大陆省份', align: 'center', sort: true, minWidth: 150, templet: '#tProvinceName'},
+                {field: 'qq', title: 'QQ', align: 'center', sort: true, minWidth: 140},
+                {field: 'wechat', title: '微信号', align: 'center', sort: true, minWidth: 140},
+                {field: 'avatar', title: '头像', align: 'center', sort: true, width: 80, templet: '#tAvatar'},
+                {field: 'idCard', title: '身份证号', align: 'center', sort: true, width: 180},
+                {field: 'gender', title: '性别', align: 'center', sort: true, width: 80},
+                {field: 'nation', title: '民族', align: 'center', sort: true, width: 80},
+                {field: 'email', title: 'Email', align: 'center', show: false, sort: true, minWidth: 180},
+                {field: 'isComplemented', title: '完善信息', align: 'center', show: false, sort: true, width: 100, templet: '#tIsComplemented'},
+                // {align: 'center', width: 80, fixed: 'right', toolbar: '#operation'}
+              ]
+            ]
+          }
+        }
+      },
+      match: {
+        btns: {
+          items: [
+            'setCols'
+          ]
+        },
+        search: {
+          'class': 'selects',
+          labelWidth: '100',
+          items: [
+            {
+              label: '大赛名称',
+              elements: {
+                eType: 'input',
+                name: 'name'
+              }
+            },
+            {
+              label: '届数',
+              elements: {
+                eType: 'between',
+                name: 'number'
+              }
+            },
+            {
+              label: '二审分数线',
+              elements: {
+                eType: 'between',
+                name: 'firstLine'
+              }
+            },
+            {
+              label: '复赛分数线',
+              elements: {
+                eType: 'between',
+                name: 'secondLine'
+              }
+            },
+          ]
+        },
+        table: {
+          tool: {
+            items: [
+              'info'
+            ]
+          },
+          checkboxType: 'null',
+          templates: [
+            {
+              id: 'tStatus',
+              content: '[[ (new Date(d.matchApplyStart)) < (new Date()) && (new Date()) < (new Date(d.matchEnd)) ? \'进行中\' : \'完成\' ]]'
+            },
+            {
+              id: 'tMatchApplyStart',
+              content: '[[ dateFormat(d.matchApplyStart, \'YYYY-MM-DD\') ]]'
+            },
+            {
+              id: 'tMatchApplyEnd',
+              content: '[[ dateFormat(d.matchApplyEnd, \'YYYY-MM-DD\') ]]'
+            },
+            {
+              id: 'tStoryStart',
+              content: '[[ dateFormat(d.storyStart, \'YYYY-MM-DD\') ]]'
+            },
+            {
+              id: 'tStoryEnd',
+              content: '[[ dateFormat(d.storyEnd, \'YYYY-MM-DD\') ]]'
+            },
+            {
+              id: 'tFinalStoryStart',
+              content: '[[ dateFormat(d.finalStoryStart, \'YYYY-MM-DD\') ]]'
+            },
+            {
+              id: 'tFinalStoryEnd',
+              content: '[[ dateFormat(d.finalStoryEnd, \'YYYY-MM-DD\') ]]'
+            },
+            {
+              id: 'tFirstVerifyStart',
+              content: '[[ dateFormat(d.firstVerifyStart, \'YYYY-MM-DD\') ]]'
+            },
+            {
+              id: 'tFirstVerifyEnd',
+              content: '[[ dateFormat(d.firstVerifyEnd, \'YYYY-MM-DD\') ]]'
+            },
+            {
+              id: 'tSecondVerifyStart',
+              content: '[[ dateFormat(d.secondVerifyStart, \'YYYY-MM-DD\') ]]'
+            },
+            {
+              id: 'tSecondVerifyEnd',
+              content: '[[ dateFormat(d.secondVerifyEnd, \'YYYY-MM-DD\') ]]'
+            },
+            {
+              id: 'tFinalVerifyStart',
+              content: '[[ dateFormat(d.finalVerifyStart, \'YYYY-MM-DD\') ]]'
+            },
+            {
+              id: 'tFinalVerifyEnd',
+              content: '[[ dateFormat(d.finalVerifyEnd, \'YYYY-MM-DD\') ]]'
+            },
+            {
+              id: 'tMatchEnd',
+              content: '[[ dateFormat(d.matchEnd, \'YYYY-MM-DD\') ]]'
+            },
+          ],
+          config: {
+            elem: '#match',
+            url: '/admin/match/match/table',
+            cols: [
+              [
+                {field: 'id', title: 'ID', align: 'center', show: false, sort: true, width: 100, fixed: 'left'},
+                {field: 'name', title: '大赛名称', align: 'center', sort: true, minWidth: 200, fixed: 'left'},
+                {field: 'number', title: '大赛届数', align: 'center', sort: true, width: 100},
+                {field: 'matchApplyStart', title: '报名开始', align: 'center', sort: true, minWidth: 180, templet: '#tMatchApplyStart'},
+                {field: 'matchApplyEnd', title: '报名结束', align: 'center', sort: true, minWidth: 180, templet: '#tMatchApplyEnd'},
+                {field: 'storyStart', title: '初赛开始', align: 'center', sort: true, minWidth: 180, templet: '#tStoryStart'},
+                {field: 'firstVerifyStart', title: '一审开始', align: 'center', sort: true, minWidth: 180, templet: '#tFirstVerifyStart'},
+                {field: 'firstVerifyEnd', title: '一审结束', align: 'center', sort: true, minWidth: 180, templet: '#tFirstVerifyEnd'},
+                {field: 'secondVerifyStart', title: '二审开始', align: 'center', sort: true, minWidth: 180, templet: '#tSecondVerifyStart'},
+                {field: 'secondVerifyEnd', title: '二审结束', align: 'center', sort: true, minWidth: 180, templet: '#tSecondVerifyEnd'},
+                {field: 'storyEnd', title: '初赛结束', align: 'center', sort: true, minWidth: 180, templet: '#tStoryEnd'},
+                {field: 'finalStoryStart', title: '复赛开始', align: 'center', sort: true, minWidth: 180, templet: '#tFinalStoryStart'},
+                {field: 'finalStoryEnd', title: '复赛结束', align: 'center', sort: true, minWidth: 180, templet: '#tFinalStoryEnd'},
+                {field: 'finalVerifyStart', title: '复赛审核开始', align: 'center', sort: true, minWidth: 180, templet: '#tFinalVerifyStart'},
+                {field: 'finalVerifyEnd', title: '复赛审核结束', align: 'center', sort: true, minWidth: 180, templet: '#tFinalVerifyEnd'},
+                {field: 'matchEnd', title: '大赛结束', align: 'center', sort: true, minWidth: 180, templet: '#tMatchEnd'},
+                {field: 'firstLine', title: '二审分数线', align: 'center', sort: true, width: 120},
+                {field: 'secondLine', title: '复赛分数线', align: 'center', sort: true, width: 120},
+                {field: 'info', title: '大赛说明', align: 'center', sort: true, minWidth: 200},
+                {field: 'status', title: '状态', align: 'center', width: 80, templet: '#tStatus'},
+                // {align: 'center', width: 80, fixed: 'right', toolbar: '#operation'}
+              ]
+            ]
+          }
+        }
+      },
+      matchApply: {
+        btns: {
+          items: [
+            'setCols'
+          ]
+        },
+        search: {
+          'class': 'selects',
+          labelWidth: '100',
+          items: [
+            {
+              label: '大赛',
+              elements: {
+                eType: 'select',
+                name: 'matchId',
+                option: [
+                  {value: 'all', label: '&nbsp;', selected: true},
+                  {% for match in matchs %}
+                  {value: '{{ match.id }}', label: '{{ match.name }}'},
+                  {% endfor %}
+                ]
+              }
+            },
+            {
+              label: '会员学校',
+              elements: {
+                eType: 'select',
+                name: 'schoolVerifyIn',
+                option: [
+                  {value: 'all', label: '&nbsp;', selected: true},
+                  {value: '{{ VerifyStatus.ok }}', label: '是'},
+                  {value: '{{ VerifyStatus.wait }},{{ VerifyStatus.no }}', label: '否'},
+                ]
+              }
+            },
+            {
+              label: '学生账号',
+              elements: {
+                eType: 'input',
+                name: 'account'
+              }
+            },
+            {
+              label: '学生姓名',
+              elements: {
+                eType: 'input',
+                name: 'name'
+              }
+            },
+            {
+              label: '大陆省份',
+              elements: {
+                eType: 'input',
+                name: 'provinceName'
+              }
+            },
+            {
+              label: '身份证号',
+              elements: {
+                eType: 'input',
+                name: 'idCard'
+              }
+            },
+            {
+              label: '学校编号',
+              elements: {
+                eType: 'input',
+                name: 'schoolAccount'
+              }
+            },
+            {
+              label: '学校名称',
+              elements: {
+                eType: 'input',
+                name: 'schoolName'
+              }
+            },
+            {
+              label: '报名时间',
+              elements: {
+                eType: 'date',
+                name: 'createdTime',
+                range: true
+              }
+            },
+            {
+              label: '审核状态',
+              elements: {
+                eType: 'select',
+                name: 'status',
+                option: [
+                  {value: 'all', label: '&nbsp;'},
+                  {% for i, j in MatchApplyStatus %}
+                  {value: '{{ j }}', label: '{{ j }}'},
+                  {% endfor %}
+                ]
+              }
+            },
+            {
+              label: '学段',
+              elements: {
+                eType: 'select',
+                name: 'period',
+                option: [
+                  {value: 'all', label: '&nbsp;'},
+                  {% for i, j in StudentPeriod %}
+                  {% if i != 'LiXiao' %}{value: '{{ j }}', label: '{{ j }}'},{% endif %}
+                  {% endfor %}
+                ]
+              }
+            }
+          ]
+        },
+        table: {
+          // tool: {
+          //   items: [
+          //     'info'
+          //   ]
+          // },
+          checkboxType: 'null',
+          templates: [
+            {
+              id: 'tMatchName',
+              content: '[[ d.match.name ]]'
+            },
+            {
+              id: 'tSchoolVerifyIn',
+              content: '[[# if (d.student.school.verify === \'{{ VerifyStatus.ok }}\') { ]]是[[# } else { ]]否[[# } ]]'
+            },
+            // {
+            //   id: 'tAge',
+            //   content: '[[ getAgeByIdCard(d.student.member.idCard, d.createdTime) ]]'
+            // },
+            {
+              id: 'tBirthday',
+              content: '[[ getBirthdayByIdCard(d.student.member.idCard) ]]'
+            },
+            {
+              id: 'tStudentIdCard',
+              content: '[[ d.student.member.idCard ]]'
+            },
+            {
+              id: 'tPhoto',
+              content: '[[# if (d.photo) { ]]<a href="[[ d.photo ]]" style="cursor: pointer;" target="_blank"><img class="tableImg" src="[[ d.photo ]]"></a>[[# } ]]'
+            },
+            {
+              id: 'tSchoolAccount',
+              content: '[[ d.student.school.member.account ]]'
+            },
+            {
+              id: 'tSchoolName',
+              content: '[[ d.student.school.member.name ]]'
+            },
+            {
+              id: 'tStudentPhone',
+              content: '[[ d.student.member.phoneNumber ]]'
+            },
+            {
+              id: 'tCreatedTime',
+              content: '[[ dateFormat(d.createdTime, \'YYYY-MM-DD HH:mm:ss\') ]]'
+            }
+          ],
+          config: {
+            elem: '#matchApply',
+            url: '/admin/match/apply/table',
+            cols: [
+              [
+                {field: 'id', sort: true, title: 'ID', width:100, align: 'center', fixed: 'left', show: false},
+                {field: 'status', sort: true, title: '审核状态', width:100, align: 'center'},
+                {field: 'name', sort: true, title: '学生姓名', minWidth:140, align: 'center'},
+                {field: 'schoolName', sort: true, title: '学校名称', minWidth:250, align: 'center', templet: '#tSchoolName'},
+                {field: 'period', sort: true, title: '学段', align: 'center'},
+                {field: 'photo', title: '照片', align: 'center', templet: '#tPhoto'},
+                {field: 'age', sort: true, title: '年龄', align: 'center'},
+                {field: 'grade', sort: true, title: '年级', align: 'center'},
+                {field: 'schoolAccount', sort: true, title: '学校编号', minWidth:140, align: 'center', templet: '#tSchoolAccount'},
+                {field: 'account', sort: true, title: '学生账号', minWidth:140, align: 'center'},
+                {field: 'teacherName', sort: true, title: '指导教师', minWidth:140, align: 'center'},
+                {field: 'createdTime', sort: true, title: '报名时间', width:180, align: 'center', templet: '#tCreatedTime'},
+                {field: 'birthday', title: '出生日期', width:120, align: 'center'},
+                {field: 'idCard', title: '身份证号', width:180, align: 'center', sort: true},
+                {field: 'phoneNumber', sort: true, title: '手机', width:120, align: 'center'},
+                {field: 'matchName', sort: true, title: '大赛', minWidth:100, templet: '#tMatchName'},
+                {field: 'address', sort: true, title: '邮寄地址', minWidth:140},
+                {field: 'schoolVerifyIn', sort: true, title: '会员学校', width:100, align: 'center', templet: '#tSchoolVerifyIn'},
+                {field: 'provinceName', sort: true, title: '大陆省份', minWidth:150, align: 'center'},
+                // {field: 'remark1', sort: true, title: '评语1', align: 'center'},
+                // {field: 'remark2', sort: true, title: '评语2', align: 'center'},
+                // {fixed: 'right', width:80, align: 'center', toolbar: '#operation'}
+              ]
+            ]
+          }
+        }
+      },
+      story: {
+        btns: {
+          items: [
+            'setCols'
+          ]
+        },
+        search: {
+          'class': 'selects',
+          labelWidth: '100',
+          items: [
+            {
+              label: '标题',
+              elements: {
+                eType: 'input',
+                name: 'title'
+              }
+            },
+            {
+              label: '类别',
+              elements: {
+                eType: 'select',
+                name: 'typeId',
+                option: [
+                  {value: 'all', label: '&nbsp;', selected: true},
+                  {% for type in types %}
+                  {value: '{{ type.id }}', label: '{{ type.name }}'},
+                  {% endfor %}
+                ]
+              }
+            },
+            {
+              label: '逻辑类别',
+              elements: {
+                eType: 'select',
+                name: 'logicType',
+                option: [
+                  {value: 'all', label: '&nbsp;', selected: true},
+                  {% for i, j in LogicType %}
+                  {value: '{{ j }}', label: '{{ j }}'},
+                  {% endfor %}
+                ]
+              }
+            },
+            {
+              label: '浏览量',
+              elements: {
+                eType: 'between',
+                name: 'pageViews',
+              }
+            },
+            {
+              label: '标签',
+              elements: {
+                eType: 'input',
+                name: 'tag',
+              }
+            },
+            {
+              label: '状态',
+              elements: {
+                eType: 'select',
+                name: 'status',
+                option: [
+                  {value: 'all', label: '&nbsp;', selected: true},
+                  {% for i, j in StoryStatus %}
+                  {value: '{{ j }}', label: '{{ j }}'},
+                  {% endfor %}
+                ]
+              }
+            },
+            {
+              label: '精华',
+              elements: {
+                eType: 'select',
+                name: 'isDigest',
+                option: [
+                  {value: 'all', label: '&nbsp;', selected: true},
+                  {value: 'true', label: '是'},
+                  {value: 'false', label: '否'},
+                ]
+              }
+            },
+            {
+              label: '星图',
+              elements: {
+                eType: 'select',
+                name: 'imgIsDigest',
+                option: [
+                  {value: 'all', label: '&nbsp;', selected: true},
+                  {value: 'true', label: '是'},
+                  {value: 'false', label: '否'},
+                ]
+              }
+            },
+            {
+              label: '提交时间',
+              elements: {
+                eType: 'date',
+                name: 'publishTime',
+                range: true
+              }
+            },
+            {
+              label: '大陆省份',
+              elements: {
+                eType: 'input',
+                name: 'provinceName',
+              }
+            },
+            {
+              label: '作者账号',
+              elements: {
+                eType: 'input',
+                name: 'authorAccount',
+              }
+            },
+            {
+              label: '作者姓名',
+              elements: {
+                eType: 'input',
+                name: 'authorName',
+              }
+            },
+            {
+              label: '作者类型',
+              elements: {
+                eType: 'select',
+                name: 'authorType',
+                option: [
+                  {value: 'all', label: '&nbsp;', selected: true},
+                  {% for i, j in MemberType %}
+                  {value: '{{ j }}', label: '{{ j }}'},
+                  {% endfor %}
+                ]
+              }
+            },
+            {
+              label: '大赛',
+              elements: {
+                eType: 'input',
+                name: 'matchName',
+              }
+            },
+            {
+              label: '作品类别',
+              elements: {
+                eType: 'select',
+                name: 'storyMatchStage',
+                option: [
+                  {value: 'all', label: '&nbsp;', selected: true},
+                  {% for i, j in StoryStage %}
+                  {value: '{{ j }}', label: '{{ j }}'},
+                  {% endfor %}
+                ]
+              }
+            },
+            {
+              label: '一审分数',
+              elements: {
+                eType: 'between',
+                name: 'storyMatchFirstScore',
+              }
+            },
+            {
+              label: '二审分数',
+              elements: {
+                eType: 'between',
+                name: 'storyMatchSecondScore',
+              }
+            },
+            {
+              label: '奖项',
+              elements: {
+                eType: 'select',
+                name: 'storyMatchAward',
+                option: [
+                  {value: 'all', label: '&nbsp;', selected: true},
+                  {% for i, j in Award %}
+                  {value: '{{ j }}', label: '{{ j }}'},
+                  {% endfor %}
+                ]
+              }
+            },
+            {
+              label: '是否获奖',
+              elements: {
+                eType: 'select',
+                name: 'haveStoryMatchAward',
+                option: [
+                  {value: 'all', label: '&nbsp;', selected: true},
+                  {value: 'true', label: '是'},
+                  {value: 'false', label: '否'},
+                ]
+              }
+            },
+          ]
+        },
+        table: {
+          // tool: {
+          //   items: [
+          //     'info'
+          //   ]
+          // },
+          checkboxType: 'null',
+          templates: [
+            {
+              id: 'tTitle',
+              content: '<a href="/story/[[ d.id ]]" target="_blank" style="cursor: pointer;">[[ d.title ]]</a>'
+            },
+            {
+              id: 'tTypeName',
+              content: '[[ d.type.name ]]'
+            },
+            {
+              id: 'tIsDigest',
+              content: '[[ d.isDigest ? \'是\' : \'否\' ]]'
+            },
+            {
+              id: 'tImgIsDigest',
+              content: '[[ d.imgIsDigest ? \'是\' : \'否\' ]]'
+            },
+            {
+              id: 'tPublishTime',
+              content: '[[ dateFormat(d.publishTime, \'YYYY-MM-DD HH:mm:ss\') ]]'
+            },
+            {
+              id: 'tProvinceName',
+              content: '[[ d.author.county.city.province.name ]]'
+            },
+            {
+              id: 'tAuthorAccount',
+              content: '[[ d.author.account ]]'
+            },
+            {
+              id: 'tAuthorName',
+              content: '[[ d.author.name ]]'
+            },
+            {
+              id: 'tAuthorType',
+              content: '[[ d.author.type ]]'
+            },
+            {
+              id: 'tStoryMatchStage',
+              content: '[[ d.storyMatch != null ? d.storyMatch.stage : \'\' ]]'
+            },
+            {
+              id: 'tStoryMatchFirstScore',
+              content: '[[ d.storyMatch != null ? d.storyMatch.firstScore : \'\' ]]'
+            },
+            {
+              id: 'tStoryMatchSecondScore',
+              content: '[[ d.storyMatch != null ? d.storyMatch.secondScore : \'\' ]]'
+            },
+            {
+              id: 'tStoryMatchAward',
+              content: '[[ d.storyMatch != null && d.storyMatch.award != null ? d.storyMatch.award : \'\' ]]'
+            },
+            {
+              id: 'tMatchName',
+              content: '[[ d.storyMatch != null && d.storyMatch.matchApply != null && d.storyMatch.matchApply.match != null ? d.storyMatch.matchApply.match.name : \'\' ]]'
+            },
+          ],
+          config: {
+            elem: '#story',
+            url: '/admin/story/story/table',
+            cols: [
+              [
+                {field: 'id', title: 'ID', align: 'center', show: false, sort: true, width: 100, fixed: 'left'},
+                {field: 'title', title: '标题', align: 'center', sort: true, minWidth: 200, fixed: 'left', templet: '#tTitle'},
+                {field: 'typeName', title: '类别', align: 'center', sort: true, minWidth: 150, templet: '#tTypeName'},
+                {field: 'logicType', title: '逻辑类别', align: 'center', sort: true, width: 100},
+                {field: 'pageViews', title: '访问量', align: 'center', sort: true, width: 100},
+                {field: 'tag', title: '标签', align: 'center', sort: true, minWidth: 100},
+                {field: 'status', title: '状态', align: 'center', sort: true, width: 120},
+                {field: 'isDigest', title: '精华', align: 'center', sort: true, width: 80, templet: '#tIsDigest'},
+                {field: 'imgIsDigest', title: '星图', align: 'center', sort: true, width: 80, templet: '#tImgIsDigest'},
+                {field: 'publishTime', title: '提交时间', align: 'center', sort: true, width: 180, templet: '#tPublishTime'},
+                {field: 'provinceName', title: '大陆省份', align: 'center', sort: true, minWidth: 150, templet: '#tProvinceName'},
+                {field: 'authorAccount', title: '作者账号', align: 'center', sort: true, minWidth: 140, templet: '#tAuthorAccount'},
+                {field: 'authorName', title: '作者姓名', align: 'center', sort: true, minWidth: 140, templet: '#tAuthorName'},
+                {field: 'authorType', title: '作者类型', align: 'center', sort: true, width: 100, templet: '#tAuthorType'},
+                {field: 'storyMatchStage', title: '作品类别', align: 'center', show: false, sort: true, width: 100, templet: '#tStoryMatchStage'},
+                {field: 'storyMatchFirstScore', title: '一审分数', align: 'center', show: false, sort: true, width: 100, templet: '#tStoryMatchFirstScore'},
+                {field: 'matchName', title: '大赛', align: 'center', show: false, sort: true, width: 100, templet: '#tMatchName'},
+                {field: 'storyMatchSecondScore', title: '二审分数', align: 'center', show: false, sort: true, width: 100, templet: '#tStoryMatchSecondScore'},
+                {field: 'storyMatchAward', title: '奖项', align: 'center', show: false, sort: true, width: 100, templet: '#tStoryMatchAward'},
+                // {align: 'center', width: 80, fixed: 'right', toolbar: '#operation'}
+              ]
+            ]
+          }
+        }
+      },
+      storyType: {
+        btns: {
+          items: [
+            'setCols'
+          ]
+        },
+        search: {
+          'class': 'selects',
+          labelWidth: '100',
+          items: [
+            {
+              label: '类别名',
+              elements: {
+                eType: 'input',
+                name: 'name'
+              }
+            },
+            {
+              label: '创建时间',
+              elements: {
+                eType: 'date',
+                name: 'createdTime',
+                range: true
+              }
+            }
+          ]
+        },
+        table: {
+          tool: {
+            items: [
+              'info'
+            ]
+          },
+          checkboxType: 'null',
+          templates: [
+            {
+              id: 'tCreatedTime',
+              content: '[[ dateFormat(d.createdTime, \'YYYY-MM-DD HH:mm:ss\') ]]'
+            }
+          ],
+          config: {
+            elem: '#storyType',
+            url: '/admin/story/type/table',
+            cols: [
+              [
+                {field: 'id', title: 'ID', align: 'center', show: false, sort: true, width: 100, fixed: 'left'},
+                {field: 'name', title: '类别名', align: 'center', sort: true, minWidth: 200},
+                {field: 'createdTime', title: '创建时间', align: 'center', sort: true, minWidth: 180, templet: '#tCreatedTime'},
+                // {align: 'center', width: 80, fixed: 'right', toolbar: '#operation'}
+              ]
+            ]
+          }
+        }
+      },
+      storyComment: {
+        btns: {
+          items: [
+            'setCols'
+          ]
+        },
+        search: {
+          'class': 'selects',
+          labelWidth: '100',
+          items: [
+            {
+              label: '内容',
+              elements: {
+                eType: 'input',
+                name: 'text'
+              }
+            },
+            {
+              label: '创建时间',
+              elements: {
+                eType: 'date',
+                name: 'createdTime',
+                range: true
+              }
+            },
+            {
+              label: '评论人账号',
+              elements: {
+                eType: 'input',
+                name: 'authorAccount',
+              }
+            },
+            {
+              label: '评论人姓名',
+              elements: {
+                eType: 'input',
+                name: 'authorName',
+              }
+            },
+            {
+              label: '评论人类型',
+              elements: {
+                eType: 'select',
+                name: 'authorType',
+                option: [
+                  {value: 'all', label: '&nbsp;', selected: true},
+                  {% for i, j in MemberType %}
+                  {value: '{{ j }}', label: '{{ j }}'},
+                  {% endfor %}
+                ]
+              }
+            },
+          ]
+        },
+        table: {
+          // tool: {
+          //   items: [
+          //     'info'
+          //   ]
+          // },
+          checkboxType: 'null',
+          templates: [
+            {
+              id: 'tCreatedTime',
+              content: '[[ dateFormat(d.createdTime, \'YYYY-MM-DD HH:mm:ss\') ]]'
+            },
+            {
+              id: 'tStoryTitle',
+              content: '<a href="/story/[[ d.story.id ]]" target="_blank" style="cursor: pointer;">[[ d.story.title ]]</a>'
+            },
+            {
+              id: 'tAuthorAccount',
+              content: '[[ d.author.account ]]'
+            },
+            {
+              id: 'tAuthorName',
+              content: '[[ d.author.name ]]'
+            },
+            {
+              id: 'tAuthorType',
+              content: '[[ d.author.type ]]'
+            },
+          ],
+          config: {
+            elem: '#storyComment',
+            url: '/admin/story/comment/table',
+            cols: [
+              [
+              {field: 'id', title: 'ID', align: 'center', show: false, sort: true, width: 100, fixed: 'left'},
+              {field: 'text', title: '评论内容', sort: true, minWidth: 200},
+              {field: 'createdTime', title: '评论时间', align: 'center', sort: true, width: 180, templet: '#tCreatedTime'},
+              {field: 'storyTitle', title: '标题', align: 'center', sort: true, minWidth: 200, templet: '#tStoryTitle'},
+              {field: 'authorAccount', title: '评论人账号', align: 'center', sort: true, minWidth: 140, templet: '#tAuthorAccount'},
+              {field: 'authorName', title: '评论人姓名', align: 'center', sort: true, minWidth: 140, templet: '#tAuthorName'},
+              {field: 'authorType', title: '评论人类型', align: 'center', sort: true, width: 120, templet: '#tAuthorType'},
+              // {align: 'center', width: 80, fixed: 'right', toolbar: '#operation'}
+              ]
+            ]
+          }
+        }
+      },
+      aidApply: {
+        btns: {
+          items: [
+            'setCols'
+          ]
+        },
+        search: {
+          'class': 'selects',
+          labelWidth: '120',
+          submit: {
+            event: function (data, config, render) {
+              var queryObj = {semester: ''}
+              if (data.field.semesterDate !== '') {
+                var semesterArr = data.field.semesterDate.split('___')
+                semesterArr[0] = new Date(semesterArr[0] * 1)
+                semesterArr[1] = new Date(semesterArr[1] * 1)
+                queryObj.semester = ((semesterArr[0].getMonth() ? semesterArr[0].getFullYear() : (semesterArr[0].getFullYear() - 1)) * 2 + (semesterArr[0].getMonth() >= 1 && semesterArr[0].getMonth() <= 6 ? 0 : 1)) + '*' + ((semesterArr[1].getMonth() ? semesterArr[1].getFullYear() : (semesterArr[1].getFullYear() - 1)) * 2 + (semesterArr[1].getMonth() >= 1 && semesterArr[1].getMonth() <= 6 ? 0 : 1))
+              }
+              config.url = setQuery(config.url, queryObj)
+              render(config)
+            }
+          },
+          items: [
+            {
+              label: '状态',
+              elements: {
+                eType: 'select',
+                name: 'status',
+                option: [
+                  {value: 'all', label: '&nbsp;'},
+                  {% for i, j in AidApplyStatus %}
+                  {value: '{{ j }}', label: '{{ j }}'},
+                  {% endfor %}
+                ]
+              }
+            },
+            {
+              label: '学生账号',
+              elements: {
+                eType: 'input',
+                name: 'account'
+              }
+            },
+            {
+              label: '学生姓名',
+              elements: {
+                eType: 'input',
+                name: 'name'
+              }
+            },
+            {
+              label: '大陆省份',
+              elements: {
+                eType: 'input',
+                name: 'provinceName'
+              }
+            },
+            {
+              label: '年级',
+              elements: {
+                eType: 'between',
+                name: 'grade'
+              }
+            },
+            {
+              label: '申请学期',
+              elements: {
+                eType: 'date',
+                name: 'semesterDate',
+                type: 'month',
+                range: true
+              }
+            },
+            {
+              label: '学校编号',
+              elements: {
+                eType: 'input',
+                name: 'schoolAccount'
+              }
+            },
+            {
+              label: '学校名称',
+              elements: {
+                eType: 'input',
+                name: 'schoolName'
+              }
+            },
+            // {
+            //   label: '指导教师账号',
+            //   elements: {
+            //     eType: 'input',
+            //     name: 'teacherAccount'
+            //   }
+            // },
+            // {
+            //   label: '指导教师姓名',
+            //   elements: {
+            //     eType: 'input',
+            //     name: 'teacherName'
+            //   }
+            // },
+            {
+              label: '申请单号',
+              elements: {
+                eType: 'input',
+                name: 'number'
+              }
+            },
+            {
+              label: '申请金额',
+              elements: {
+                eType: 'between',
+                name: 'money'
+              }
+            },
+            {
+              label: '用途',
+              elements: {
+                eType: 'input',
+                name: 'use'
+              }
+            },
+            {
+              label: '开户行',
+              elements: {
+                eType: 'input',
+                name: 'bank'
+              }
+            },
+            {
+              label: '开户人',
+              elements: {
+                eType: 'input',
+                name: 'bankUser'
+              }
+            },
+            {
+              label: '开户账号',
+              elements: {
+                eType: 'input',
+                name: 'bankNumber'
+              }
+            },
+            {
+              label: '提交时间',
+              elements: {
+                eType: 'date',
+                name: 'publishTime',
+                range: true
+              }
+            },
+            {
+              label: '提交人',
+              elements: {
+                eType: 'input',
+                name: 'publishUser'
+              }
+            },
+            {
+              label: '贫困状态',
+              elements: {
+                eType: 'input',
+                name: 'poverty'
+              }
+            },
+          ]
+        },
+        table: {
+          // tool: {
+          //   items: [
+          //     'info',
+          //   ]
+          // },
+          checkboxType: 'null',
+          templates: [
+            {
+              id: 'tSemester',
+              content: '[[ semester(d.semester) ]]'
+            },
+            {
+              id: 'tPhoto',
+              content: '[[# if (d.photo != null) { ]]<a href="[[ d.photo ]]" target="_blank" style="cursor: pointer;"><img class="tableImg" src="[[ d.photo ]]"></a>[[# } else { ]] [[# } ]]'
+            },
+            {
+              id: 'tPublishTime',
+              content: '[[ dateFormat(d.publishTime, \'YYYY-MM-DD HH:mm:ss\') ]]'
+            },
+          ],
+          config: {
+            elem: '#aidApply',
+            url: '/admin/aid/apply/table',
+            cols: [
+              [
+                {field: 'id', title: 'ID', align: 'center', show: false, sort: true, width: 100, fixed: 'left'},
+                {field: 'name', title: '学生姓名', align: 'center', sort: true, minWidth: 140, fixed: 'left'},
+                {field: 'account', title: '学生账号', align: 'center', sort: true, minWidth: 140},
+                {field: 'schoolName', title: '学校名称', align: 'center', sort: true, minWidth: 250},
+                {field: 'status', title: '状态', align: 'center', sort: true, width: 100},
+                {field: 'semester', title: '申请学期', align: 'center', sort: true, width: 180, templet: '#tSemester'},
+                {field: 'period', title: '学段', align: 'center', sort: true, width: 80},
+                {field: 'grade', title: '年级', align: 'center', sort: true, width: 80},
+                {field: 'photo', title: '照片', align: 'center', width: 80, templet: '#tPhoto'},
+                {field: 'gender', title: '性别', align: 'center', sort: true, width: 80},
+                {field: 'birthday', title: '出生年月', align: 'center', sort: true, width: 120},
+                {field: 'familyInfo', title: '情况简述', align: 'center', sort: true, minWidth: 200},
+                {field: 'poverty', title: '贫困状态', align: 'center', sort: true, minWidth: 160},
+                {field: 'use', title: '用途', align: 'center', sort: true, minWidth: 200},
+                {field: 'bankNumber', title: '开户账号', align: 'center', sort: true, minWidth: 160},
+                {field: 'bankUser', title: '开户人', align: 'center', sort: true, minWidth: 140},
+                {field: 'bank', title: '开户行', align: 'center', sort: true, minWidth: 140},
+                {field: 'money', title: '申请金额', align: 'center', sort: true, width: 100},
+                {field: 'provinceName', title: '大陆省份', align: 'center', sort: true, minWidth: 150},
+                {field: 'schoolAccount', title: '学校编号', align: 'center', sort: true, minWidth: 140},
+                {field: 'number', title: '申请单号', align: 'center', sort: true, width: 180},
+                {field: 'publishTime', title: '提交时间', align: 'center', sort: true, width: 180, templet: '#tPublishTime'},
+                {field: 'publishUser', title: '提交人', align: 'center', sort: true, minWidth: 140},
+                {field: 'nation', title: '民族', align: 'center', show: false, sort: true, width: 80},
+                // {align: 'center', width: 80, fixed: 'right', toolbar: '#operation'}
+              ]
+            ]
+          }
+        }
+      },
+      aid: {
+        btns: {
+          items: [
+            'setCols',
+          ]
+        },
+        search: {
+          'class': 'selects',
+          labelWidth: '100',
+          items: [
+            {
+              label: '通知内容',
+              elements: {
+                eType: 'select',
+                name: 'inform',
+                option: [
+                  {value: 'all', label: '&nbsp;'},
+                  {value: 'true', label: '有'},
+                  {value: 'false', label: '无'},
+                ]
+              }
+            },
+            {
+              label: '状态',
+              elements: {
+                eType: 'select',
+                name: 'status',
+                option: [
+                  {value: 'all', label: '&nbsp;'},
+                  {% for i, j in AidStatus %}
+                  {value: '{{ j }}', label: '{{ j }}'},
+                  {% endfor %}
+                ]
+              }
+            },
+            {
+              label: '资助单号',
+              elements: {
+                eType: 'input',
+                name: 'number'
+              }
+            },
+            {
+              label: '申请单号',
+              elements: {
+                eType: 'input',
+                name: 'aidApplyNumber'
+              }
+            },
+            {
+              label: '学生账号',
+              elements: {
+                eType: 'input',
+                name: 'studentAccount'
+              }
+            },
+            {
+              label: '学生姓名',
+              elements: {
+                eType: 'input',
+                name: 'studentName'
+              }
+            },
+            {
+              label: '大陆省份',
+              elements: {
+                eType: 'input',
+                name: 'provinceName'
+              }
+            },
+            {
+              label: '学校编号',
+              elements: {
+                eType: 'input',
+                name: 'schoolAccount'
+              }
+            },
+            {
+              label: '学校名称',
+              elements: {
+                eType: 'input',
+                name: 'schoolName'
+              }
+            },
+            {
+              label: '爱心团体',
+              elements: {
+                eType: 'input',
+                name: 'group'
+              }
+            },
+            {
+              label: '资助人账号',
+              elements: {
+                eType: 'input',
+                name: 'memberAccount'
+              }
+            },
+            {
+              label: '资助人姓名',
+              elements: {
+                eType: 'input',
+                name: 'memberName'
+              }
+            },
+            {
+              label: '提交时间',
+              elements: {
+                eType: 'date',
+                name: 'publishTime',
+                range: true
+              }
+            },
+            {
+              label: '提交人',
+              elements: {
+                eType: 'input',
+                name: 'publishUser'
+              }
+            },
+          ]
+        },
+        table: {
+          // tool: {
+          //   items: [
+          //     'info',
+          //   ]
+          // },
+          checkboxType: 'null',
+          templates: [
+            {
+              id: 'tAidApplyNumber',
+              content: '[[ d.aidApply.number ]]'
+            },
+            {
+              id: 'tStudentAccount',
+              content: '[[ d.aidApply.account ]]'
+            },
+            {
+              id: 'tStudentName',
+              content: '[[ d.aidApply.name ]]'
+            },
+            {
+              id: 'tProvinceName',
+              content: '[[ d.aidApply.provinceName ]]'
+            },
+            {
+              id: 'tSchoolAccount',
+              content: '[[ d.aidApply.schoolAccount ]]'
+            },
+            {
+              id: 'tSchoolName',
+              content: '[[ d.aidApply.schoolName ]]'
+            },
+            {
+              id: 'tMemberAccount',
+              content: '[[ d.member.account ]]'
+            },
+            {
+              id: 'tMemberName',
+              content: '[[ d.member.name ]]'
+            },
+            {
+              id: 'tPublishTime',
+              content: '[[ dateFormat(d.publishTime, \'YYYY-MM-DD HH:mm:ss\') ]]'
+            },
+          ],
+          config: {
+            elem: '#aid',
+            url: '/admin/aid/aid/table',
+            cols: [
+              [
+                {field: 'id', title: 'ID', align: 'center', show: false, sort: true, width: 100, fixed: 'left'},
+                {field: 'studentName', title: '学生姓名', align: 'center', sort: true, minWidth: 140, templet: '#tStudentName', fixed: 'left'},
+                {field: 'schoolName', title: '学校名称', align: 'center', sort: true, minWidth: 250, templet: '#tSchoolName'},
+                {field: 'memberAccount', title: '资助人账号', align: 'center', sort: true, minWidth: 140, templet: '#tMemberAccount'},
+                {field: 'memberName', title: '资助人姓名', align: 'center', sort: true, minWidth: 140, templet: '#tMemberName'},
+                {field: 'group', title: '爱心团体', align: 'center', sort: true, minWidth: 140},
+                {field: 'status', title: '状态', align: 'center', sort: true, width: 100},
+                {field: 'inform', title: '通知内容', align: 'center', sort: true, minWidth: 200},
+                {field: 'provinceName', title: '大陆省份', align: 'center', sort: true, minWidth: 150, templet: '#tProvinceName'},
+                {field: 'schoolAccount', title: '学校编号', align: 'center', sort: true, minWidth: 140, templet: '#tSchoolAccount'},
+                {field: 'studentAccount', title: '学生账号', align: 'center', sort: true, minWidth: 140, templet: '#tStudentAccount'},
+                {field: 'number', title: '资助单号', align: 'center', sort: true, width: 160},
+                {field: 'aidApplyNumber', title: '申请单号', align: 'center', sort: true, minWidth: 170, templet: '#tAidApplyNumber'},
+                {field: 'publishTime', title: '提交时间', align: 'center', sort: true, width: 180, templet: '#tPublishTime'},
+                {field: 'publishUser', title: '提交人', align: 'center', sort: true, minWidth: 140},
+                // {align: 'center', width: 80, fixed: 'right', toolbar: '#operation'}
+              ]
+            ]
+          }
+        }
+      },
+      aidDetail: {
+        btns: {
+          items: [
+            'setCols',
+          ]
+        },
+        search: {
+          'class': 'selects',
+          labelWidth: '100',
+          submit: {
+            event: function (data, config, render) {
+              var queryObj = {semester: ''}
+              if (data.field.semesterDate !== '') {
+                var semesterArr = data.field.semesterDate.split('___')
+                semesterArr[0] = new Date(semesterArr[0] * 1)
+                semesterArr[1] = new Date(semesterArr[1] * 1)
+                queryObj.semester = ((semesterArr[0].getMonth() ? semesterArr[0].getFullYear() : (semesterArr[0].getFullYear() - 1)) * 2 + (semesterArr[0].getMonth() >= 1 && semesterArr[0].getMonth() <= 6 ? 0 : 1)) + '*' + ((semesterArr[1].getMonth() ? semesterArr[1].getFullYear() : (semesterArr[1].getFullYear() - 1)) * 2 + (semesterArr[1].getMonth() >= 1 && semesterArr[1].getMonth() <= 6 ? 0 : 1))
+              }
+              config.url = setQuery(config.url, queryObj)
+              render(config)
+            }
+          },
+          items: [
+            {
+              label: '资助学期',
+              elements: {
+                eType: 'date',
+                name: 'semesterDate',
+                type: 'month',
+                range: true,
+              }
+            },
+            {
+              label: '资助单号',
+              elements: {
+                eType: 'input',
+                name: 'aidNumber'
+              }
+            },
+            {
+              label: '资助人账号',
+              elements: {
+                eType: 'input',
+                name: 'memberAccount'
+              }
+            },
+            {
+              label: '资助人姓名',
+              elements: {
+                eType: 'input',
+                name: 'memberName'
+              }
+            },
+            {
+              label: '受助人账号',
+              elements: {
+                eType: 'input',
+                name: 'aidApplyBankNumber'
+              }
+            },
+            {
+              label: '受助人账号',
+              elements: {
+                eType: 'input',
+                name: 'aidApplyAccount'
+              }
+            },
+            {
+              label: '受助人姓名',
+              elements: {
+                eType: 'input',
+                name: 'aidApplyName'
+              }
+            },
+            {
+              label: '学校编号',
+              elements: {
+                eType: 'input',
+                name: 'aidApplySchoolAccount'
+              }
+            },
+            {
+              label: '学校名称',
+              elements: {
+                eType: 'input',
+                name: 'aidApplySchoolName'
+              }
+            },
+            {
+              label: '资助金额',
+              elements: {
+                eType: 'between',
+                name: 'money'
+              }
+            },
+            {
+              label: '寄款时间',
+              elements: {
+                eType: 'date',
+                name: 'payDate',
+                range: true
+              }
+            },
+            {
+              label: '提交时间',
+              elements: {
+                eType: 'date',
+                name: 'createdTime',
+                range: true
+              }
+            },
+          ]
+        },
+        table: {
+          // tool: {
+          //   items: [
+          //     'info',
+          //   ]
+          // },
+          checkboxType: 'null',
+          templates: [
+            {
+              id: 'tSemester',
+              content: '[[ semester(d.semester) ]]'
+            },
+            {
+              id: 'tAidNumber',
+              content: '[[ d.aid.number ]]'
+            },
+            {
+              id: 'tMemberAccount',
+              content: '[[ d.aid.member.account ]]'
+            },
+            {
+              id: 'tMemberName',
+              content: '[[ d.aid.member.name ]]'
+            },
+            {
+              id: 'tAidApplyBankNumber',
+              content: '[[ d.aid.aidApply.bankNumber ]]'
+            },
+            {
+              id: 'tAidApplyAccount',
+              content: '[[ d.aid.aidApply.account ]]'
+            },
+            {
+              id: 'tAidApplyName',
+              content: '[[ d.aid.aidApply.name ]]'
+            },
+            {
+              id: 'tAidApplySchoolAccount',
+              content: '[[ d.aid.aidApply.schoolAccount ]]'
+            },
+            {
+              id: 'tAidApplySchoolName',
+              content: '[[ d.aid.aidApply.schoolName ]]'
+            },
+            {
+              id: 'tPayDate',
+              content: '[[ dateFormat(d.payDate, \'YYYY-MM-DD\') ]]'
+            },
+            {
+              id: 'tCreatedTime',
+              content: '[[ dateFormat(d.createdTime, \'YYYY-MM-DD HH:mm:ss\') ]]'
+            },
+          ],
+          config: {
+            elem: '#aidDetail',
+            url: '/admin/aid/detail/table',
+            cols: [
+              [
+                {field: 'id', title: 'ID', align: 'center', show: false, sort: true, width: 100, fixed: 'left'},
+                {field: 'semester', title: '资助学期', align: 'center', sort: true, minWidth: 180, templet: '#tSemester', fixed: 'left'},
+                {field: 'aidNumber', title: '资助单号', align: 'center', sort: true, minWidth: 160, templet: '#tAidNumber'},
+                {field: 'memberAccount', title: '资助人账号', align: 'center', sort: true, minWidth: 140, templet: '#tMemberAccount'},
+                {field: 'memberName', title: '资助人姓名', align: 'center', sort: true, minWidth: 140, templet: '#tMemberName'},
+                {field: 'aidApplyBankNumber', title: '受助人账号', align: 'center', sort: true, minWidth: 160, templet: '#tAidApplyBankNumber'},
+                {field: 'aidApplyAccount', title: '受助人账号', align: 'center', sort: true, minWidth: 140, templet: '#tAidApplyAccount'},
+                {field: 'aidApplyName', title: '受助人姓名', align: 'center', sort: true, minWidth: 140, templet: '#tAidApplyName'},
+                {field: 'aidApplySchoolAccount', title: '学校编号', align: 'center', sort: true, minWidth: 140, templet: '#tAidApplySchoolAccount'},
+                {field: 'aidApplySchoolName', title: '学校名称', align: 'center', sort: true, minWidth: 250, templet: '#tAidApplySchoolName'},
+                {field: 'money', title: '资助金额', align: 'center', sort: true, minWidth: 100},
+                {field: 'payDate', title: '寄款时间', align: 'center', sort: true, minWidth: 120, templet: '#tPayDate'},
+                {field: 'createdTime', title: '提交时间', align: 'center', sort: true, minWidth: 180, templet: '#tCreatedTime'},
+                // {align: 'center', width: 80, fixed: 'right', toolbar: '#operation'}
+              ]
+            ]
+          }
+        }
+      },
+      aidMessage: {
+        btns: {
+          items: [
+            'setCols',
+          ]
+        },
+        search: {
+          'class': 'selects',
+          labelWidth: '100',
+          items: [
+            {
+              label: '回复人',
+              elements: {
+                eType: 'input',
+                name: 'memberName'
+              }
+            },
+            {
+              label: '回复类型',
+              elements: {
+                eType: 'select',
+                name: 'type',
+                option: [
+                  {value: 'all', label: '&nbsp;', selected: true},
+                  {% for i, j in AidMessageType %}
+                  {value: '{{ j }}', label: '{{ j }}'},
+                  {% endfor %}
+                ]
+              }
+            },
+            {
+              label: '主题',
+              elements: {
+                eType: 'input',
+                name: 'subject'
+              }
+            },
+            {
+              label: '内容',
+              elements: {
+                eType: 'input',
+                name: 'content'
+              }
+            },
+          ]
+        },
+        table: {
+          // tool: {
+          //   items: [
+          //     'info',
+          //   ]
+          // },
+          checkboxType: 'null',
+          templates: [
+            {
+              id: 'mn',
+              content: '[[ d.member.name ]]'
+            },
+            {
+              id: 'c',
+              content: '<pre>[[ decodeURIComponent(d.content) ]]</pre>'
+            },
+            {
+              id: 'i1',
+              content: '[[# if (d.img1) { ]]<a href="[[ d.img1 ]]" style="cursor: pointer;" target="_blank"><img class="tableImg" src="[[ d.img1 ]]"></a>[[# } ]]'
+            },
+            {
+              id: 'i2',
+              content: '[[# if (d.img2) { ]]<a href="[[ d.img2 ]]" style="cursor: pointer;" target="_blank"><img class="tableImg" src="[[ d.img2 ]]"></a>[[# } ]]'
+            },
+            {
+              id: 'i3',
+              content: '[[# if (d.img3) { ]]<a href="[[ d.img3 ]]" style="cursor: pointer;" target="_blank"><img class="tableImg" src="[[ d.img3 ]]"></a>[[# } ]]'
+            },
+            {
+              id: 'tCreatedTime',
+              content: '[[ dateFormat(d.createdTime, \'YYYY-MM-DD HH:mm:ss\') ]]'
+            },
+          ],
+          config: {
+            elem: '#aidMessage',
+            url: '/admin/aid/message/table',
+            cols: [
+              [
+                {field: 'id', sort: true, title: 'ID', width:100, show: false},
+                {field: 'memberName', sort: true, title: '回复人', templet: '#mn'},
+                {field: 'type', sort: true, title: '回复类型'},
+                {field: 'subject', sort: true, title: '主题'},
+                {field: 'content', sort: true, title: '内容', templet: '#c'},
+                {field: 'img1', sort: true, title: '图片1', templet: '#i1'},
+                {field: 'img2', sort: true, title: '图片2', templet: '#i2'},
+                {field: 'img3', sort: true, title: '图片3', templet: '#i3'},
+                {field: 'createdTime', sort: true, title: '提交时间', width:180, align: 'center', templet: '#tCreatedTime'},
+                // {width:80, align: 'center', toolbar: '#operation'}
+              ]
+            ]
+          }
+        }
+      },
+      article: {
+        btns: {
+          items: [
+            'setCols',
+          ]
+        },
+        search: {
+          'class': 'selects',
+          labelWidth: '100',
+          items: [
+            {
+              label: '标题',
+              elements: {
+                eType: 'input',
+                name: 'title'
+              }
+            },
+            {
+              label: '显示',
+              elements: {
+                eType: 'select',
+                name: 'show',
+                option: [
+                  {value: 'all', label: '&nbsp;', selected: true},
+                  {value: 'true', label: '是'},
+                  {value: 'false', label: '否'},
+                ]
+              }
+            },
+            {
+              label: '类型',
+              elements: {
+                eType: 'select',
+                name: 'type',
+                option: [
+                  {value: 'all', label: '&nbsp;', selected: true},
+                  {% for i, j in ArticleType %}
+                  {value: '{{ j }}', label: '{{ j }}'},
+                  {% endfor %}
+                ]
+              }
+            },
+            {
+              label: '来源',
+              elements: {
+                eType: 'input',
+                name: 'from'
+              }
+            },
+          ]
+        },
+        table: {
+          // tool: {
+          //   items: [
+          //     'info',
+          //   ]
+          // },
+          checkboxType: 'null',
+          templates: [
+            {
+              id: 'tFrom',
+              content: '<a href="[[ d.from.href ]]">[[ d.from.label ]]</a>'
+            },
+            {
+              id: 'tShow',
+              content: '[[ d.show ? \'是\' : \'否\' ]]'
+            },
+          ],
+          config: {
+            elem: '#article',
+            url: '/admin/article/article/table',
+            cols: [
+              [
+                {field: 'id', title: 'ID', align: 'center', show: false, sort: true, width: 100, fixed: 'left'},
+                {field: 'title', title: '标题', align: 'center', sort: true, minWidth: 200, fixed: 'left'},
+                {field: 'show', title: '显示', align: 'center', sort: true, width: 80, templet: '#tShow'},
+                {field: 'type', title: '类型', align: 'center', sort: true, minWidth: 100},
+                {field: 'from', title: '来源', align: 'center', minWidth: 200, templet: '#tFrom'},
+                // {align: 'center', width: 80, fixed: 'right', toolbar: '#operation'}
+              ]
+            ]
+          }
+        }
+      },
+      dfile: {
+        btns: {
+          items: [
+            'setCols',
+          ]
+        },
+        search: {
+          'class': 'selects',
+          labelWidth: '100',
+          items: [
+            {
+              label: '标题',
+              elements: {
+                eType: 'input',
+                name: 'title'
+              }
+            },
+            {
+              label: '发布时间',
+              elements: {
+                eType: 'date',
+                name: 'createdTime',
+                range: true
+              }
+            },
+          ]
+        },
+        table: {
+          // tool: {
+          //   items: [
+          //   ]
+          // },
+          checkboxType: 'null',
+          templates: [
+            {
+              id: 'tTitle',
+              content: '<a href="[[ d.link ]]?filename=[[ encodeURIComponent(d.title) ]][[ (d.filename = d.link.split(\'.\')[1], d.filename) != null ? \'.\' + d.filename : \'\' ]]&_=' + (new Date()).getTime() + '" target="_blank">[[ d.title ]]</a>'
+            },
+            {
+              id: 'tCreatedTime',
+              content: '[[ dateFormat(d.createdTime, \'YYYY-MM-DD HH:mm:ss\') ]]'
+            }
+          ],
+          config: {
+            elem: '#dfile',
+            url: '/admin/article/dfile/table',
+            cols: [
+              [
+                {field: 'id', title: 'ID', align: 'center', show: false, sort: true, width: 100, fixed: 'left'},
+                {field: 'title', title: '标题', align: 'center', sort: true, minWidth: 200, templet: '#tTitle'},
+                {field: 'createdTime', title: '发布时间', align: 'center', sort: true, minWidth: 180, templet: '#tCreatedTime'},
+                // {align: 'center', width: 80, fixed: 'right', toolbar: '#operation'}
+              ]
+            ]
+          }
+        }
+      },
+      survey: {
+        btns: {
+          items: [
+            'setCols'
+          ]
+        },
+        search: {
+          'class': 'selects',
+          labelWidth: '100',
+          items: [
+            {
+              label: '状态',
+              elements: {
+                eType: 'select',
+                name: 'status',
+                option: [
+                  {value: 'all', label: '&nbsp;'},
+                  {% for i, j in SurveyStatus %}
+                  {value: '{{ j }}', label: '{{ j }}'},
+                  {% endfor %}
+                ]
+              }
+            },
+            {
+              label: 'ID',
+              elements: {
+                eType: 'between',
+                name: 'id'
+              }
+            },
+            {
+              label: '创建时间',
+              elements: {
+                eType: 'date',
+                name: 'createdTime',
+                range: true
+              }
+            }
+          ]
+        },
+        table: {
+          // tool: {
+          //   items: [
+          //     'info',
+          //   ]
+          // },
+          checkboxType: 'null',
+          templates: [
+          ],
+          config: {
+            elem: '#survey',
+            url: '/admin/survey/survey/table',
+            cols: [
+              [
+                {field: 'id', sort: true, title: 'ID', width:100, fixed: 'left', show: false},
+                {field: 'title', sort: true, title: '标题'},
+                {field: 'status', sort: true, title: '状态'},
+                // {fixed: 'right', width:80, align: 'center', toolbar: '#operation'}
+              ]
+            ]
+          }
+        }
+      },
+    }
+    newForm({
+      parent: '#cut',
+      form: {
+        submit: {
+          show: false
+        },
+        val: {
+          table: 'country'
+        },
+        done: function () {
+          newTable(t['country'])
+        },
+        items: [
+          {
+            label: '表格',
+            elements: {
+              eType: 'select',
+              name: 'table',
+              option: [
+                {value: 'country', label: '国家及地区'},
+                {value: 'province', label: '大陆省份'},
+                {value: 'city', label: '城市'},
+                {value: 'county', label: '区县'},
+                {value: 'school', label: '学校用户'},
+                {value: 'student', label: '学生用户'},
+                {value: 'family', label: '家庭成员'},
+                {value: 'score', label: '成绩'},
+                {value: 'teacher', label: '老师用户'},
+                {value: 'whGroup', label: '爱心团体'},
+                {value: 'whPerson', label: '爱心人士'},
+                {value: 'other', label: '其他人士'},
+                {value: 'match', label: '大赛'},
+                {value: 'matchApply', label: '大赛申请表'},
+                {value: 'story', label: '故事'},
+                {value: 'storyType', label: '故事类别'},
+                {value: 'storyComment', label: '故事评论'},
+                {value: 'aidApply', label: '资助申请表'},
+                {value: 'aid', label: '资助单'},
+                {value: 'aidDetail', label: '资助明细'},
+                {value: 'aidMessage', label: '资助回复'},
+                {value: 'article', label: '文章'},
+                {value: 'dfile', label: '文件下载'},
+                {value: 'survey', label: '调查问卷'},
+              ],
+              events: [
+                {
+                  name: 'laySelect',
+                  callback: function (data) {
+                    newTable(t[data.value])
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    })
+  })
+</script>
+{% endblock %}

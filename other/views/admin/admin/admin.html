@@ -1,0 +1,90 @@
+{% extends "../back.html" %}
+
+{% block css %}
+{{ super() }}
+<style>
+  html {
+    overflow: hidden;
+  }
+</style>
+{% endblock %}
+
+{% block main %}
+  <div class="layui-card myCard">
+    <div class="layui-card-header">后台用户管理</div>
+    <div class="layui-card-body">
+      <div id="myTable"></div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+  $(function () {
+    newTable({
+      btns: {
+        items: [
+          'new',
+          'dels',
+          'setCols'
+        ]
+      },
+      search: {
+        'class': 'selects',
+        labelWidth: '100',
+        items: [
+          {
+            label: '用户名',
+            elements: {
+              eType: 'input',
+              name: 'account'
+            }
+          },
+          // {
+          //   label: 'ID',
+          //   elements: {
+          //     eType: 'between',
+          //     name: 'id'
+          //   }
+          // },
+          {
+            label: '创建时间',
+            elements: {
+              eType: 'date',
+              name: 'createdTime',
+              range: true
+            }
+          }
+        ]
+      },
+      table: {
+        tool: {
+          items: [
+            'edit',
+            'del'
+          ]
+        },
+        templates: [
+          {
+            id: 'tCreatedTime',
+            content: '[[ dateFormat(d.createdTime, \'YYYY-MM-DD HH:mm:ss\') ]]'
+          }
+        ],
+        config: {
+          elem: '#admin',
+          url: '/admin/admin/admin/table',
+          cols: [
+            [
+              {field: 'id', title: 'ID', align: 'center', show: false, sort: true, width: 100, fixed: 'left'},
+              {field: 'account', title: '用户姓名', align: 'center', sort: true, minWidth: 120},
+              {field: 'createdTime', title: '创建时间', align: 'center', sort: true, minWidth: 180, templet: '#tCreatedTime'},
+              {align: 'center', width: 120, fixed: 'right', toolbar: '#operation'}
+            ]
+          ]
+        }
+      }
+    })
+  })
+</script>
+{% endblock %}

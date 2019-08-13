@@ -1,0 +1,125 @@
+{% extends "../back.html" %}
+
+{% block css %}
+{{ super() }}
+{% endblock %}
+
+{% block main %}
+  <div class="layui-card myCard">
+    <div class="layui-card-header">用户故事统计</div>
+    <div class="layui-card-body">
+      <div id="myTable"></div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+  $(function () {
+    newTable({
+      btns: {
+        items: [
+          'setCols'
+        ]
+      },
+      search: {
+        'class': 'selects',
+        labelWidth: '100',
+        items: [
+          {
+            label: '身份',
+            elements: {
+              eType: 'select',
+              name: 'type',
+              option: [
+                {value: 'all', label: '&nbsp;', selected: true},
+                {% for i, j in MemberType %}
+                {% if j != MemberType.other %}{value: '{{ j }}', label: '{{ j }}'},{% endif %}
+                {% endfor %}
+              ],
+            },
+          },
+          {
+            label: '团体账号',
+            elements: {
+              eType: 'input',
+              name: 'groupAccount'
+            }
+          },
+          {
+            label: '团体名称',
+            elements: {
+              eType: 'input',
+              name: 'groupName'
+            }
+          },
+          {
+            label: '用户账号',
+            elements: {
+              eType: 'input',
+              name: 'account'
+            }
+          },
+          {
+            label: '用户名称',
+            elements: {
+              eType: 'input',
+              name: 'name'
+            }
+          },
+          {
+            label: '时间段',
+            elements: {
+              eType: 'date',
+              name: 'storiesPublishTime',
+              range: true
+            }
+          }
+        ]
+      },
+      table: {
+        templates: [
+          {
+            id: 'tSchoolVerifyIn',
+            // content: '[[# if (d.group.school == null) { ]] [[# } else if (d.group.school.verify === \'{{ VerifyStatus.ok }}\') { ]]是[[# } else { ]]否[[# } ]]'
+            content: '[[ d.group != null && d.group.school != null ? (d.group.school.verify === \'{{ VerifyStatus.ok }}\' ? "是" : "否") : "" ]]'
+          },
+          {
+            id: 'tProvinceName',
+            content: '[[# if (d.county != null) { ]][[ d.county.city.province.name ]][[# } else { ]][[# } ]]'
+          },
+          {
+            id: 'tGroupAccount',
+            content: '[[ d.group != null ? d.group.account : "" ]]'
+          },
+          {
+            id: 'tGroupName',
+            content: '[[ d.group != null ? d.group.name : "" ]]'
+          },
+        ],
+        config: {
+          elem: '#member',
+          url: '/admin/count/member/table',
+          cols: [
+            [
+              {field: 'id', sort: true, title: 'ID', width:100, align: 'center', fixed: 'left', show: false},
+              {field: 'schoolVerifyIn', sort: true, title: '会员学校', width:100, align: 'center', templet: '#tSchoolVerifyIn'},
+              {field: 'provinceName', sort: true, title: '大陆省份', minWidth:150, align: 'center', templet: '#tProvinceName'},
+              {field: 'groupAccount', sort: true, title: '团体账号', minWidth:140, align: 'center', templet: '#tGroupAccount'},
+              {field: 'groupName', sort: true, title: '团体名称', minWidth:140, align: 'center', templet: '#tGroupName'},
+              {field: 'account', sort: true, title: '用户账号', minWidth:140, align: 'center'},
+              {field: 'name', sort: true, title: '用户名称', minWidth:140, align: 'center'},
+              {field: 'type', sort: true, title: '身份', width:100, align: 'center'},
+              {field: 'aidStoryCount', title: '资助故事数', width:120, align: 'center'},
+              {field: 'matchStoryCount', title: '征文故事数', width:120, align: 'center'},
+              {field: 'normalStoryCount', title: '其他故事数', width:120, align: 'center'},
+              {field: 'storyCount', title: '故事总数', width:120, align: 'center'},
+            ]
+          ]
+        }
+      }
+    })
+  })
+</script>
+{% endblock %}

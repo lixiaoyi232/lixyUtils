@@ -1,0 +1,104 @@
+{% extends "../back.html" %}
+
+{% block css %}
+{{ super() }}
+{% endblock %}
+
+{% block body %}
+  <div class="layui-card myCard">
+    <div class="layui-card-header">新建后台用户</div>
+    <div class="layui-card-body layui-tab layui-tab-brief">
+      <div id="myForm"></div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+  $(function () {
+    newForm({
+      form: {
+        labelWidth: '100',
+        done: function () {
+          ajax({
+            method: 'GET',
+            url: '/admin/admin/admin/new/json',
+            success: function (data) {
+              authtree.render('#pmsnTree', data.data.trees, {inputname: 'authids[]', layfilter: 'lay-check-auth', openall: true})
+            }
+          })
+        },
+        submit: {
+          event: function (data) {
+            $('[lay-filter="myFormSubmit"]').attr('disabled', true)
+            $('[lay-filter="myFormSubmit"]').addClass('layui-btn-disabled')
+            data.field.permissions = authtree.getChecked('#pmsnTree')
+            ajax({
+              method: 'POST',
+              url: '/admin/admin/admin/new',
+              data: JSON.stringify(data.field),
+              success: function () {
+                layer.msg('新建成功', {time: 2000, icon:6})
+                parent.tableRender()
+                window.setTimeout(function () {parent.layer.close(parent.layer.getFrameIndex(window.name))}, 2000)
+                // window.setTimeout(function () {window.location.href = '/admin/admin/admin'}, 2000)
+              },
+              fail: function () {
+                $('[lay-filter="myFormSubmit"]').attr('disabled', false)
+                $('[lay-filter="myFormSubmit"]').removeClass('layui-btn-disabled')
+              },
+              error: function () {
+                $('[lay-filter="myFormSubmit"]').attr('disabled', false)
+                $('[lay-filter="myFormSubmit"]').removeClass('layui-btn-disabled')
+              }
+            })
+          }
+        },
+        items: [
+          {
+            label: '用户名',
+            elements: {
+              eType: 'input',
+              name: 'account',
+              layVerify: 'required'
+            }
+          },
+          {
+            label: '密码',
+            elements: {
+              eType: 'input',
+              type: 'password',
+              name: 'password',
+              layVerify: 'required|pass'
+            }
+          },
+          {
+            label: '确认密码',
+            elements: {
+              eType: 'input',
+              type: 'password',
+              name: 'confirmPassword',
+              layVerify: 'same'
+            }
+          },
+          {
+            label: '权限',
+            elements: {
+              eType: 'char',
+              name: 'permissions" id="pmsnTree',
+              element: ''
+            }
+          }
+        ],
+        verify: {
+          pass: [/(.+){6,20}$/, '密码必须6到20位'],
+          same: function (value) {
+            if (value !== $('[name=password]').val()) return '确认密码必须和密码一致'
+          }
+        }
+      }
+    })
+  })
+</script>
+{% endblock %}

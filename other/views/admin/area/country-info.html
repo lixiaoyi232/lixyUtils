@@ -1,0 +1,56 @@
+{% extends "../back.html" %}
+
+{% block css %}
+{{ super() }}
+{% endblock %}
+
+{% block body %}
+  <div class="layui-card myCard">
+    <div class="layui-card-header">{{ country.name }}</div>
+    <div class="layui-card-body layui-tab layui-tab-brief">
+      <div id="myForm"></div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+  $(function () {
+    newForm({
+      form: {
+        labelWidth: '100',
+        submit: {
+          show: false
+        },
+        items: [
+          {
+            label: '国家及地区名',
+            elements: {
+              eType: 'char',
+              name: 'name',
+              element: '<div class="layui-input-block" style="">{{ country.name }}</div>'
+            }
+          },
+          {
+            label: '国家及地区英文名',
+            elements: {
+              eType: 'char',
+              name: 'nameE',
+              element: '<div class="layui-input-block" style="">{{ country.nameE }}</div>'
+            }
+          },
+          {
+            label: '国家及地区编号',
+            elements: {
+              eType: 'char',
+              name: 'number',
+              element: '<div class="layui-input-block" style="">{{ country.number }}</div>'
+            }
+          }
+        ]
+      }
+    })
+  })
+</script>
+{% endblock %}

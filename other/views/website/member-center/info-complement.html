@@ -1,0 +1,1191 @@
+{% extends "../layout/layout-member-center.html" %}
+
+
+{% block member_center_main %}
+<div class="layui-card myCard">
+  <div class="layui-card-header">完善信息&nbsp;&nbsp;&nbsp; {% if curMember.type == MemberType.other %}<span class="notice">提示：其他人士完成信息后，会自动变成爱心人士。</span>{% endif %}</div>
+  <div class="layui-card-body layui-tab layui-tab-brief">
+    <div id="myForm1"></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block script %}
+  {{ super() }}
+  <script>
+    $(function () {
+      {% if curMember.type == MemberType.student %}
+      newForm({
+        parent: '#myForm1',
+        form: {
+          labelWidth: '300',
+          done: function () {
+            $('[lay-filter="myForm1Submit"]').css('marginTop', 30)
+          },
+          submit: {
+            'class': 'layui-btn brownBtn layui-btn-lg lgWidth',
+            event: function (data) {
+              $('[lay-filter="myForm1Submit"]').attr('disabled', true)
+              $('[lay-filter="myForm1Submit"]').addClass('layui-btn-disabled')
+              ajax({
+                method: 'POST',
+                url: '/member-center/info-complement',
+                data: JSON.stringify(data.field),
+                success: function () {
+                  layui.layer.msg('操作成功',{ time: 1000 })
+                  window.setTimeout(function () {
+                    location.href = '/member-center/info'
+                  }, 1100)
+                  // layer.msg('修改成功', {time: 2000, icon:6})
+                  // parent.tableRender()
+                  // window.setTimeout(function () {parent.layer.close(parent.layer.getFrameIndex(window.name))}, 2000)
+                },
+                fail: function () {
+                  $('[lay-filter="myForm1Submit"]').attr('disabled', false)
+                  $('[lay-filter="myForm1Submit"]').removeClass('layui-btn-disabled')
+                },
+                error: function () {
+                  $('[lay-filter="myForm1Submit"]').attr('disabled', false)
+                  $('[lay-filter="myForm1Submit"]').removeClass('layui-btn-disabled')
+                }
+              })
+            }
+          },
+          val: {
+            // 'nickName': '{{ curMember.nickName }}',
+            'gender': '{{ curMember.gender }}',
+            'nation': '{{ curMember.nation }}',
+            'address': '{{ curMember.student.address }}',
+            'intro': decodeURIComponent('{{ curMember.intro }}'),
+            'photo': '{{ curMember.student.photo }}',
+            'avatar': '{{ curMember.avatar }}',
+            'email': '{{ curMember.email }}',
+            'wechat': '{{ curMember.wechat }}',
+            'qq': '{{ curMember.qq }}',
+            'grade': '{{ curMember.student.grade }}',
+            'class': '{{ curMember.student.class }}',
+          },
+          items: [
+            {
+              label: '性别',
+              elements: {
+                eType: 'select',
+                name: 'gender',
+                layVerify: 'select',
+                option: [
+                  {value: 'null', label: '请选择'},
+                  {% for i, j in Gender %}
+                  {value: '{{ j }}', label: '{{ j }}'},
+                  {% endfor %}
+                ],
+              }
+            },
+            {
+              label: '民族',
+              elements: {
+                eType: 'input',
+                name: 'nation',
+                layVerify: 'required'
+              }
+            },
+            {
+              label: '住址',
+              elements: {
+                eType: 'input',
+                name: 'address',
+                layVerify: 'required'
+              }
+            },
+            {
+              label: '简介',
+              elements: {
+                eType: 'textarea',
+                name: 'intro',
+                layVerify: 'required'
+              }
+            },
+            {
+              label: '本人照片',
+              elements: {
+                eType: 'file',
+                name: 'photo',
+                btnClass: 'layui-btn greenBtn',
+              }
+            },
+            {
+              label: '头像',
+              elements: {
+                eType: 'file',
+                name: 'avatar',
+                layVerify: '',
+                btnClass: 'layui-btn greenBtn'
+              }
+            },
+            {
+              label: 'Email',
+              elements: {
+                eType: 'input',
+                name: 'email',
+              }
+            },
+            {
+              label: '微信号',
+              elements: {
+                eType: 'input',
+                name: 'wechat',
+              }
+            },
+            {
+              label: 'QQ',
+              elements: {
+                eType: 'input',
+                name: 'qq',
+              }
+            },
+            {
+              label: '学校',
+              elements: {
+                eType: 'char',
+                name: 'schoolName',
+                element: '<div class="layui-input-block" style="">{{ curMember.student.school.member.name }}</div>'
+              }
+            },
+            {
+              label: '年级',
+              elements: {
+                eType: 'select',
+                name: 'grade',
+                layVerify: 'select',
+                option: [
+                  {value: 'null', label: '请选择'},
+                  {value: '1', label: '1'},
+                  {value: '2', label: '2'},
+                  {value: '3', label: '3'},
+                  {% if curMember.student.period == StudentPeriod.XiaoXue %}
+                  {value: '4', label: '4'},
+                  {value: '5', label: '5'},
+                  {value: '6', label: '6'},
+                  {% endif %}
+                ]
+              }
+            },
+            {
+              label: '班级',
+              elements: {
+                eType: 'input',
+                name: 'class',
+                layVerify: 'required'
+              }
+            },
+            {% if curMember.student.period == StudentPeriod.ChuZhong or curMember.student.period == StudentPeriod.GaoZhong %}
+            {
+              label: '小学学校',
+              elements: [
+                {
+                  eType: 'char',
+                  name: 'schoolShowps',
+                  element: '<div class="layui-form-label"><button type="button" class="inblk layui-btn layui-btn-primary">修改学校</button></div><div class="layui-input-block schoolsps" style="">请选择学校</div>&nbsp;&nbsp;&nbsp; <span class="notice">注意： 如果列表中没有你的学校，请选择非会员学校。</span>',
+                  events: [
+                    {
+                      type: 'delegate',
+                      name: 'click',
+                      query: 'button',
+                      callback: function (e) {
+                        var index = layer.open({
+                          type: 1,
+                          title: '选择学校',
+                          offset: ['5px', '5px'],
+                          skin: 'layui-layer-rim',
+                          area: [(document.body.clientWidth - 20) + 'px', (document.body.clientHeight - 20) + 'px'],
+                          content: '<div id="chooseSch"></div>',
+                          maxmin: true
+                        })
+                        newTable({
+                          parent: '#chooseSch',
+                          btns: {
+                            items: [
+                              {
+                                layEvent: 'backSch',
+                                'class': 'layui-btn greenBtn',
+                                label: '确认选择',
+                                event: function (obj, config, render) {
+                                  var data = table.checkStatus(config.id).data
+                                  if (data.length === 0) layer.close(index)
+                                  else if (data.length > 0) {
+                                    $('[name=primarySchoolId]').val(data[0].school.id)
+                                    $('.schoolsps').html(data[0].name)
+                                    layer.close(index)
+                                  }
+                                }
+                              },
+                              {
+                                layEvent: 'cancelSch',
+                                label: '取消',
+                                event: function (obj, config, render) {layer.close(index)}
+                              },
+                              {
+                                layEvent: 'clear',
+                                label: '非会员学校',
+                                event: function (obj, config, render) {
+                                  $('[name=primarySchoolId]').val(0)
+                                  $('.schoolsps').html('非会员学校')
+                                  layer.close(index)
+                                }
+                              },
+                            ]
+                          },
+                          search: {
+                            'class': 'selects',
+                            labelWidth: '100',
+                            submit: {
+                              'class': 'layui-btn greenBtn'
+                            },
+                            items: [
+                              {
+                                label: '会员学校',
+                                elements: {
+                                  eType: 'select',
+                                  name: 'schoolVerifyIn',
+                                  option: [
+                                    {value: 'all', label: '&nbsp;', selected: true},
+                                    {value: '{{ VerifyStatus.ok }}', label: '是'},
+                                    {value: '{{ VerifyStatus.wait }},{{ VerifyStatus.no }}', label: '否'},
+                                  ]
+                                }
+                              },
+                              {
+                                label: '学校编号',
+                                elements: {
+                                  eType: 'input',
+                                  name: 'account'
+                                }
+                              },
+                              {
+                                label: '学校名称',
+                                elements: {
+                                  eType: 'input',
+                                  name: 'name'
+                                }
+                              },
+                              {
+                                label: '大陆省份',
+                                elements: {
+                                  eType: 'input',
+                                  name: 'provinceName'
+                                }
+                              },
+                              // {
+                              //   label: '联系人姓名',
+                              //   elements: {
+                              //     eType: 'input',
+                              //     name: 'contactName'
+                              //   }
+                              // },
+                              // {
+                              //   label: '联系手机',
+                              //   elements: {
+                              //     eType: 'input',
+                              //     name: 'phoneNumber'
+                              //   }
+                              // },
+                            ]
+                          },
+                          table: {
+                            checkboxType: 'radio',
+                            templates: [
+                              {
+                                id: 'tSchoolVerifyIn',
+                                content: '[[ d.school.verify === \'{{ VerifyStatus.ok }}\' ? \'是\' : \'否\' ]]'
+                              },
+                              {
+                                id: 'tProvinceName',
+                                content: '[[ d.county.city.province.name ]]'
+                              },
+                              {
+                                id: 'tAvatar',
+                                content: '[[# if (d.avatar) { ]]<a href="[[ d.avatar ]]" style="cursor: pointer;" target="_blank"><img class="tableImg" src="[[ d.avatar ]]"></a>[[# } ]]'
+                              },
+                              {
+                                id: 'tIsComplemented',
+                                content: '[[# if (d.isComplemented) { ]]是[[# } else { ]]否[[# } ]]'
+                              },
+                            ],
+                            config: {
+                              elem: '#schoolps',
+                              url: '/member/school/table',
+                              cols: [
+                                [
+                                  {field: 'id', title: 'ID', align: 'center', show: false, sort: true, width: 100, fixed: 'left'},
+                                  {field: 'account', title: '学校编号', align: 'center', sort: true, minWidth: 140, fixed: 'left'},
+                                  {field: 'name', title: '学校名称', align: 'center', sort: true, minWidth: 250},
+                                  {field: 'schoolVerifyIn', sort: true, title: '会员学校', width:100, align: 'center', templet: '#tSchoolVerifyIn'},
+                                  {field: 'provinceName', title: '大陆省份', align: 'center', sort: true, minWidth: 150, templet: '#tProvinceName'},
+                                  // {field: 'contactName', title: '联系人姓名', align: 'center', sort: true, minWidth: 140},
+                                  // {field: 'phoneNumber', title: '联系手机', align: 'center', sort: true, width: 120},
+                                  // {field: 'email', title: 'Email', align: 'center', sort: true, minWidth: 100},
+                                  // {field: 'wechat', title: '微信号', align: 'center', show: false, sort: true, minWidth: 100},
+                                  // {field: 'qq', title: 'QQ', align: 'center', show: false, sort: true, minWidth: 100},
+                                  // {field: 'avatar', title: '头像', align: 'center', show: false, sort: true, width: 80, templet: '#tAvatar'},
+                                  // {field: 'isComplemented', title: '完善信息', align: 'center', show: false, sort: true, width: 100, templet: '#tIsComplemented'},
+                                ]
+                              ],
+                            }
+                          }
+                        })
+                      }
+                    }
+                  ]
+                },
+                {
+                  eType: 'input',
+                  name: 'primarySchoolId',
+                  show: false,
+                  layVerify: 'schRqd|required',
+                }
+              ]
+            },
+            {
+              label: '小学入学年份',
+              elements: {
+                eType: 'date',
+                name: 'psYearOfEnrollment',
+                layVerify: 'required',
+                type: 'year'
+              }
+            },
+            {
+              label: '小学班级',
+              elements: {
+                eType: 'input',
+                name: 'psClass',
+                layVerify: 'required'
+              }
+            },
+              {% if curMember.student.period == StudentPeriod.GaoZhong %}
+            {
+              label: '初中学校',
+              elements: [
+                {
+                  eType: 'char',
+                  name: 'schoolShowms',
+                  element: '<div class="layui-form-label"><button type="button" class="inblk layui-btn layui-btn-primary">修改学校</button></div><div class="layui-input-block schoolsms" style="">请选择学校</div>&nbsp;&nbsp;&nbsp; <span class="notice">注意： 如果列表中没有你的学校，请选择非会员学校。</span>',
+                  events: [
+                    {
+                      type: 'delegate',
+                      name: 'click',
+                      query: 'button',
+                      callback: function (e) {
+                        var index = layer.open({
+                          type: 1,
+                          title: '选择学校',
+                          offset: ['5px', '5px'],
+                          skin: 'layui-layer-rim',
+                          area: [(document.body.clientWidth - 20) + 'px', (document.body.clientHeight - 20) + 'px'],
+                          content: '<div id="chooseSch"></div>',
+                          maxmin: true
+                        })
+                        newTable({
+                          parent: '#chooseSch',
+                          btns: {
+                            items: [
+                              {
+                                layEvent: 'backSch',
+                                'class': 'layui-btn greenBtn',
+                                label: '确认选择',
+                                event: function (obj, config, render) {
+                                  var data = table.checkStatus(config.id).data
+                                  if (data.length === 0) layer.close(index)
+                                  else if (data.length > 0) {
+                                    $('[name=middleSchoolId]').val(data[0].school.id)
+                                    $('.schoolsms').html(data[0].name)
+                                    layer.close(index)
+                                  }
+                                }
+                              },
+                              {
+                                layEvent: 'cancelSch',
+                                label: '取消',
+                                event: function (obj, config, render) {layer.close(index)}
+                              },
+                              {
+                                layEvent: 'clear',
+                                label: '非会员学校',
+                                event: function (obj, config, render) {
+                                  $('[name=middleSchoolId]').val(0)
+                                  $('.schoolsms').html('非会员学校')
+                                  layer.close(index)
+                                }
+                              },
+                            ]
+                          },
+                          search: {
+                            'class': 'selects',
+                            labelWidth: '100',
+                            submit: {
+                              'class': 'layui-btn greenBtn'
+                            },
+                            items: [
+                              {
+                                label: '会员学校',
+                                elements: {
+                                  eType: 'select',
+                                  name: 'schoolVerifyIn',
+                                  option: [
+                                    {value: 'all', label: '&nbsp;', selected: true},
+                                    {value: '{{ VerifyStatus.ok }}', label: '是'},
+                                    {value: '{{ VerifyStatus.wait }},{{ VerifyStatus.no }}', label: '否'},
+                                  ]
+                                }
+                              },
+                              {
+                                label: '学校编号',
+                                elements: {
+                                  eType: 'input',
+                                  name: 'account'
+                                }
+                              },
+                              {
+                                label: '学校名称',
+                                elements: {
+                                  eType: 'input',
+                                  name: 'name'
+                                }
+                              },
+                              {
+                                label: '大陆省份',
+                                elements: {
+                                  eType: 'input',
+                                  name: 'provinceName'
+                                }
+                              },
+                              // {
+                              //   label: '联系人姓名',
+                              //   elements: {
+                              //     eType: 'input',
+                              //     name: 'contactName'
+                              //   }
+                              // },
+                              // {
+                              //   label: '联系手机',
+                              //   elements: {
+                              //     eType: 'input',
+                              //     name: 'phoneNumber'
+                              //   }
+                              // },
+                            ]
+                          },
+                          table: {
+                            checkboxType: 'radio',
+                            templates: [
+                              {
+                                id: 'tSchoolVerifyIn',
+                                content: '[[ d.school.verify === \'{{ VerifyStatus.ok }}\' ? \'是\' : \'否\' ]]'
+                              },
+                              {
+                                id: 'tProvinceName',
+                                content: '[[ d.county.city.province.name ]]'
+                              },
+                              {
+                                id: 'tAvatar',
+                                content: '[[# if (d.avatar) { ]]<a href="[[ d.avatar ]]" style="cursor: pointer;" target="_blank"><img class="tableImg" src="[[ d.avatar ]]"></a>[[# } ]]'
+                              },
+                              {
+                                id: 'tIsComplemented',
+                                content: '[[# if (d.isComplemented) { ]]是[[# } else { ]]否[[# } ]]'
+                              },
+                            ],
+                            config: {
+                              elem: '#schoolms',
+                              url: '/member/school/table',
+                              cols: [
+                                [
+                                  {field: 'id', title: 'ID', align: 'center', show: false, sort: true, width: 100, fixed: 'left'},
+                                  {field: 'account', title: '学校编号', align: 'center', sort: true, minWidth: 140, fixed: 'left'},
+                                  {field: 'name', title: '学校名称', align: 'center', sort: true, minWidth: 250},
+                                  {field: 'schoolVerifyIn', sort: true, title: '会员学校', width:100, align: 'center', templet: '#tSchoolVerifyIn'},
+                                  {field: 'provinceName', title: '大陆省份', align: 'center', sort: true, minWidth: 150, templet: '#tProvinceName'},
+                                  // {field: 'contactName', title: '联系人姓名', align: 'center', sort: true, minWidth: 140},
+                                  // {field: 'phoneNumber', title: '联系手机', align: 'center', sort: true, width: 120},
+                                  // {field: 'email', title: 'Email', align: 'center', sort: true, minWidth: 100},
+                                  // {field: 'wechat', title: '微信号', align: 'center', show: false, sort: true, minWidth: 100},
+                                  // {field: 'qq', title: 'QQ', align: 'center', show: false, sort: true, minWidth: 100},
+                                  // {field: 'avatar', title: '头像', align: 'center', show: false, sort: true, width: 80, templet: '#tAvatar'},
+                                  // {field: 'isComplemented', title: '完善信息', align: 'center', show: false, sort: true, width: 100, templet: '#tIsComplemented'},
+                                ]
+                              ],
+                            }
+                          }
+                        })
+                      }
+                    }
+                  ]
+                },
+                {
+                  eType: 'input',
+                  name: 'middleSchoolId',
+                  show: false,
+                  layVerify: 'schRqd|required',
+                }
+              ]
+            },
+            {
+              label: '初中入学年份',
+              elements: {
+                eType: 'date',
+                name: 'msYearOfEnrollment',
+                layVerify: 'required',
+                type: 'year'
+              }
+            },
+            {
+              label: '初中班级',
+              elements: {
+                eType: 'input',
+                name: 'msClass',
+                layVerify: 'required'
+              }
+            },
+              {% endif %}
+            {% endif %}
+          ],
+          verify: {
+            select: function (value) {
+              if (value === '' || value === 'null') return '必填项不能为空'
+            },
+            schRqd: function (value) {
+              if (value === '') return '学校不能为空'
+            },
+          }
+        }
+      })
+      {% elif curMember.type == MemberType.teacher %}
+      newForm({
+        parent: '#myForm1',
+        form: {
+          labelWidth: '300',
+          done: function () {
+            $('[lay-filter="myForm1Submit"]').css('marginTop', 30)
+          },
+          submit: {
+            'class': 'layui-btn brownBtn layui-btn-lg lgWidth',
+            event: function (data) {
+              $('[lay-filter="myForm1Submit"]').attr('disabled', true)
+              $('[lay-filter="myForm1Submit"]').addClass('layui-btn-disabled')
+              ajax({
+                method: 'POST',
+                url: '/member-center/info-complement',
+                data: JSON.stringify(data.field),
+                success: function () {
+                  layui.layer.msg('操作成功',{ time: 1000 })
+                  window.setTimeout(function () {
+                    location.href = '/member-center/info'
+                  }, 1100)
+                  // layer.msg('修改成功', {time: 2000, icon:6})
+                  // parent.tableRender()
+                  // window.setTimeout(function () {parent.layer.close(parent.layer.getFrameIndex(window.name))}, 2000)
+                },
+                fail: function () {
+                  $('[lay-filter="myForm1Submit"]').attr('disabled', false)
+                  $('[lay-filter="myForm1Submit"]').removeClass('layui-btn-disabled')
+                },
+                error: function () {
+                  $('[lay-filter="myForm1Submit"]').attr('disabled', false)
+                  $('[lay-filter="myForm1Submit"]').removeClass('layui-btn-disabled')
+                }
+              })
+            }
+          },
+          val: {
+            'gender': '{{ curMember.gender }}',
+            'nation': '{{ curMember.nation }}',
+            'idCard': '{{ curMember.idCard }}',
+            'address': '{{ curMember.teacher.address }}',
+            'intro': decodeURIComponent('{{ curMember.intro }}'),
+            'bankNumber': '{{ curMember.teacher.bankNumber }}',
+            'bank': '{{ curMember.teacher.bank }}',
+            'bankUser': '{{ curMember.teacher.bankUser }}',
+            'avatar': '{{ curMember.avatar }}',
+            'email': '{{ curMember.email }}',
+            'wechat': '{{ curMember.wechat }}',
+            'qq': '{{ curMember.qq }}',
+          },
+          items: [
+            {
+              label: '性别',
+              elements: {
+                eType: 'select',
+                name: 'gender',
+                option: [
+                  {value: 'null', label: '请选择'},
+                  {% for i, j in Gender %}
+                  {value: '{{ j }}', label: '{{ j }}'},
+                  {% endfor %}
+                ],
+              }
+            },
+            {
+              label: '民族',
+              elements: {
+                eType: 'input',
+                name: 'nation',
+              }
+            },
+            {
+              label: '住址',
+              elements: {
+                eType: 'input',
+                name: 'address',
+              }
+            },
+            {
+              label: '身份证号',
+              elements: {
+                eType: 'input',
+                name: 'idCard',
+              }
+            },
+            {
+              label: '银行账号',
+              elements: {
+                eType: 'input',
+                name: 'bankNumber',
+              }
+            },
+            {
+              label: '开户行',
+              elements: {
+                eType: 'input',
+                name: 'bank',
+              }
+            },
+            {
+              label: '开户人',
+              elements: {
+                eType: 'input',
+                name: 'bankUser',
+              }
+            },
+            {
+              label: '简介',
+              elements: {
+                eType: 'textarea',
+                name: 'intro',
+              }
+            },
+            {
+              label: '头像',
+              elements: {
+                eType: 'file',
+                name: 'avatar',
+                btnClass: 'layui-btn greenBtn'
+              }
+            },
+            {
+              label: 'Email',
+              elements: {
+                eType: 'input',
+                name: 'email',
+              }
+            },
+            {
+              label: '微信号',
+              elements: {
+                eType: 'input',
+                name: 'wechat',
+              }
+            },
+            {
+              label: 'QQ',
+              elements: {
+                eType: 'input',
+                name: 'qq',
+              }
+            },
+          ],
+        }
+      })
+      {% elif curMember.type == MemberType.school or curMember.type == MemberType.whGroup %}
+      newForm({
+        parent: '#myForm1',
+        form: {
+          labelWidth: '300',
+          done: function () {
+            $('[lay-filter="myForm1Submit"]').css('marginTop', 30)
+          },
+          submit: {
+            'class': 'layui-btn brownBtn layui-btn-lg lgWidth',
+            event: function (data) {
+              $('[lay-filter="myForm1Submit"]').attr('disabled', true)
+              $('[lay-filter="myForm1Submit"]').addClass('layui-btn-disabled')
+              ajax({
+                method: 'POST',
+                url: '/member-center/info-complement',
+                data: JSON.stringify(data.field),
+                success: function () {
+                  layui.layer.msg('操作成功',{ time: 1000 })
+                  window.setTimeout(function () {
+                    location.href = '/member-center/info'
+                  }, 1100)
+                  // layer.msg('修改成功', {time: 2000, icon:6})
+                  // parent.tableRender()
+                  // window.setTimeout(function () {parent.layer.close(parent.layer.getFrameIndex(window.name))}, 2000)
+                },
+                fail: function () {
+                  $('[lay-filter="myForm1Submit"]').attr('disabled', false)
+                  $('[lay-filter="myForm1Submit"]').removeClass('layui-btn-disabled')
+                },
+                error: function () {
+                  $('[lay-filter="myForm1Submit"]').attr('disabled', false)
+                  $('[lay-filter="myForm1Submit"]').removeClass('layui-btn-disabled')
+                }
+              })
+            }
+          },
+          val: {
+            'wechat': '{{ curMember.wechat }}',
+            'qq': '{{ curMember.qq }}',
+            'avatar': '{{ curMember.avatar }}',
+          },
+          items: [
+            {
+              label: '微信号',
+              elements: {
+                eType: 'input',
+                name: 'wechat',
+              }
+            },
+            {
+              label: 'QQ',
+              elements: {
+                eType: 'input',
+                name: 'qq',
+              }
+            },
+            {
+              label: '头像',
+              elements: {
+                eType: 'file',
+                name: 'avatar',
+                btnClass: 'layui-btn greenBtn'
+              }
+            },
+          ],
+        }
+      })
+      {% elif curMember.type == MemberType.whPerson %}
+      newForm({
+        parent: '#myForm1',
+        form: {
+          labelWidth: '300',
+          done: function () {
+            $('[lay-filter="myForm1Submit"]').css('marginTop', 30)
+          },
+          submit: {
+            'class': 'layui-btn brownBtn layui-btn-lg lgWidth',
+            event: function (data) {
+              $('[lay-filter="myForm1Submit"]').attr('disabled', true)
+              $('[lay-filter="myForm1Submit"]').addClass('layui-btn-disabled')
+              ajax({
+                method: 'POST',
+                url: '/member-center/info-complement',
+                data: JSON.stringify(data.field),
+                success: function () {
+                  layui.layer.msg('操作成功',{ time: 1000 })
+                  window.setTimeout(function () {
+                    location.href = '/member-center/info'
+                  }, 1100)
+                  // layer.msg('修改成功', {time: 2000, icon:6})
+                  // parent.tableRender()
+                  // window.setTimeout(function () {parent.layer.close(parent.layer.getFrameIndex(window.name))}, 2000)
+                },
+                fail: function () {
+                  $('[lay-filter="myForm1Submit"]').attr('disabled', false)
+                  $('[lay-filter="myForm1Submit"]').removeClass('layui-btn-disabled')
+                },
+                error: function () {
+                  $('[lay-filter="myForm1Submit"]').attr('disabled', false)
+                  $('[lay-filter="myForm1Submit"]').removeClass('layui-btn-disabled')
+                }
+              })
+            }
+          },
+          val: {
+            'name': '{{ curMember.name }}',
+            'gender': '{{ curMember.gender }}',
+            'idCard': '{{ curMember.idCard }}',
+            'wechat': '{{ curMember.wechat }}',
+            'qq': '{{ curMember.qq }}',
+            'avatar': '{{ curMember.avatar }}',
+          },
+          items: [
+            {
+              label: '真实姓名',
+              elements: {
+                eType: 'input',
+                name: 'name',
+              }
+            },
+            {
+              label: '性别',
+              elements: {
+                eType: 'select',
+                name: 'gender',
+                option: [
+                  {value: 'null', label: '请选择'},
+                  {% for i, j in Gender %}
+                  {value: '{{ j }}', label: '{{ j }}'},
+                  {% endfor %}
+                ],
+              }
+            },
+            {
+              label: '身份证号',
+              elements: {
+                eType: 'input',
+                name: 'idCard',
+              }
+            },
+            {
+              label: '头像',
+              elements: {
+                eType: 'file',
+                name: 'avatar',
+                btnClass: 'layui-btn greenBtn'
+              }
+            },
+            {
+              label: '微信号',
+              elements: {
+                eType: 'input',
+                name: 'wechat',
+              }
+            },
+            {
+              label: 'QQ',
+              elements: {
+                eType: 'input',
+                name: 'qq',
+              }
+            },
+          ],
+        }
+      })
+      {% elif curMember.type == MemberType.other %}
+      newForm({
+        parent: '#myForm1',
+        form: {
+          labelWidth: '300',
+          done: function () {
+            $('[lay-filter="myForm1Submit"]').css('marginTop', 30)
+          },
+          submit: {
+            'class': 'layui-btn brownBtn layui-btn-lg lgWidth',
+            event: function (data) {
+              $('[lay-filter="myForm1Submit"]').attr('disabled', true)
+              $('[lay-filter="myForm1Submit"]').addClass('layui-btn-disabled')
+              ajax({
+                method: 'POST',
+                url: '/member-center/info-complement',
+                data: JSON.stringify(data.field),
+                success: function () {
+                  layui.layer.msg('操作成功',{ time: 1000 })
+                  window.setTimeout(function () {
+                    location.href = '/member-center/info'
+                  }, 1100)
+                  // layer.msg('修改成功', {time: 2000, icon:6})
+                  // parent.tableRender()
+                  // window.setTimeout(function () {parent.layer.close(parent.layer.getFrameIndex(window.name))}, 2000)
+                },
+                fail: function () {
+                  $('[lay-filter="myForm1Submit"]').attr('disabled', false)
+                  $('[lay-filter="myForm1Submit"]').removeClass('layui-btn-disabled')
+                },
+                error: function () {
+                  $('[lay-filter="myForm1Submit"]').attr('disabled', false)
+                  $('[lay-filter="myForm1Submit"]').removeClass('layui-btn-disabled')
+                }
+              })
+            }
+          },
+          val: {
+            'name': '{{ curMember.name }}',
+            'gender': '{{ curMember.gender }}',
+            'idCard': '{{ curMember.idCard }}',
+            'avatar': '{{ curMember.avatar }}',
+            'wechat': '{{ curMember.wechat }}',
+            'qq': '{{ curMember.qq }}',
+          },
+          items: [
+            {
+              label: '爱心团体',
+              elements: [
+                {
+                  eType: 'char',
+                  name: 'whGroupShow',
+                  element: '<div class="layui-form-label"><button type="button" class="inblk layui-btn layui-btn-primary">修改</button></div><div class="layui-input-block whGroups" style="">请选择爱心团体</div>',
+                  events: [
+                    {
+                      type: 'delegate',
+                      name: 'click',
+                      query: 'button',
+                      callback: function (e) {
+                        var index = layer.open({
+                          type: 1,
+                          title: '选择爱心团体',
+                          offset: ['5px', '5px'],
+                          skin: 'layui-layer-rim',
+                          area: [(document.body.clientWidth - 20) + 'px', (document.body.clientHeight - 20) + 'px'],
+                          content: '<div id="chooseWhp"></div>',
+                          maxmin: true
+                        })
+                        newTable({
+                          parent: '#chooseWhp',
+                          btns: {
+                            items: [
+                              {
+                                layEvent: 'backWhp',
+                                'class': 'layui-btn greenBtn',
+                                label: '确认选择',
+                                event: function (obj, config, render) {
+                                  var data = table.checkStatus(config.id).data
+                                  if (data.length === 0) layer.close(index)
+                                  else if (data.length > 0) {
+                                    $('[name=groupId]').val(data[0].whGroup.id)
+                                    $('.whGroups').html(data[0].name)
+                                    layer.close(index)
+                                  }
+                                }
+                              },
+                              {
+                                layEvent: 'cancelWhp',
+                                label: '取消',
+                                event: function (obj, config, render) {layer.close(index)}
+                              }
+                            ]
+                          },
+                          search: {
+                            'class': 'selects',
+                            labelWidth: '120',
+                            submit: {
+                              'class': 'layui-btn greenBtn'
+                            },
+                            items: [
+                              {
+                                label: '团体账号',
+                                elements: {
+                                  eType: 'input',
+                                  name: 'account'
+                                }
+                              },
+                              {
+                                label: '团体名称',
+                                elements: {
+                                  eType: 'input',
+                                  name: 'name'
+                                }
+                              },
+                              {
+                                label: '联系人姓名',
+                                elements: {
+                                  eType: 'input',
+                                  name: 'contactName'
+                                }
+                              },
+                              {
+                                label: '联系手机',
+                                elements: {
+                                  eType: 'input',
+                                  name: 'phoneNumber'
+                                }
+                              },
+                            ]
+                          },
+                          table: {
+                            checkboxType: 'radio',
+                            templates: [
+                              {
+                                id: 'tProvinceName',
+                                content: '[[ d.county != null ? d.county.city.province.name : \'\' ]]'
+                              },
+                              {
+                                id: 'tAvatar',
+                                content: '[[# if (d.avatar) { ]]<a href="[[ d.avatar ]]" style="cursor: pointer;" target="_blank"><img class="tableImg" src="[[ d.avatar ]]"></a>[[# } ]]'
+                              },
+                              {
+                                id: 'tIsComplemented',
+                                content: '[[# if (d.isComplemented) { ]]是[[# } else { ]]否[[# } ]]'
+                              },
+                            ],
+                            config: {
+                              elem: '#whGroup',
+                              url: '/member/whGroup/table',
+                              cols: [
+                                [
+                                  {field: 'id', title: 'ID', align: 'center', show: false, sort: true, width: 100, fixed: 'left'},
+                                  {field: 'account', title: '团体账号', align: 'center', sort: true, minWidth: 140, fixed: 'left'},
+                                  {field: 'name', title: '团体名称', align: 'center', sort: true, minWidth: 140},
+                                  {field: 'provinceName', title: '大陆省份', align: 'center', sort: true, minWidth: 150, templet: '#tProvinceName'},
+                                  {field: 'contactName', title: '联系人姓名', align: 'center', sort: true, minWidth: 140},
+                                  {field: 'phoneNumber', title: '联系手机', align: 'center', sort: true, width: 120},
+                                  {field: 'email', title: 'Email', align: 'center', sort: true, minWidth: 100},
+                                  {field: 'wechat', title: '微信号', align: 'center', show: false, sort: true, minWidth: 100},
+                                  {field: 'qq', title: 'QQ', align: 'center', show: false, sort: true, minWidth: 100},
+                                  {field: 'avatar', title: '头像', align: 'center', show: false, sort: true, width: 80, templet: '#tAvatar'},
+                                  {field: 'isComplemented', title: '完善信息', align: 'center', show: false, sort: true, width: 100, templet: '#tIsComplemented'},
+                                ]
+                              ],
+                            }
+                          }
+                        })
+                      }
+                    }
+                  ]
+                },
+                {
+                  eType: 'input',
+                  name: 'groupId',
+                  show: false,
+                  layVerify: 'whpRqd|required'
+                }
+              ]
+            },
+            {
+              label: '真实姓名',
+              elements: {
+                eType: 'input',
+                name: 'name',
+              }
+            },
+            {
+              label: '性别',
+              elements: {
+                eType: 'select',
+                name: 'gender',
+                option: [
+                  {value: 'null', label: '请选择'},
+                  {% for i, j in Gender %}
+                  {value: '{{ j }}', label: '{{ j }}'},
+                  {% endfor %}
+                ],
+              }
+            },
+            {
+              label: '身份证号',
+              elements: {
+                eType: 'input',
+                name: 'idCard',
+              }
+            },
+            {
+              label: '头像',
+              elements: {
+                eType: 'file',
+                name: 'avatar',
+                btnClass: 'layui-btn greenBtn'
+              }
+            },
+            {
+              label: '微信号',
+              elements: {
+                eType: 'input',
+                name: 'wechat',
+              }
+            },
+            {
+              label: 'QQ',
+              elements: {
+                eType: 'input',
+                name: 'qq',
+              }
+            },
+          ],
+          verify: {
+            whpRqd: function (value) {
+              if (value === '') return '爱心团体不能为空'
+            },
+          }
+        }
+      })
+      {% endif %}
+
+
+
+
+
+
+
+
+
+
+      {% if curMember.type == MemberType.student%}
+      // 上传照片
+      layui.upload.render({
+        elem: '#btn-photo',
+        url: '/upload/',
+        done: function(res){
+          $('#img-photo')[0].src = res.url
+          $('input[name=photo]').val(res.url)
+        },
+        error: function(){
+        }
+      })
+      {% endif %}
+
+      // 上传头像
+      layui.upload.render({
+        elem: '#btn-avatar',
+        url: '/upload/',
+        done: function(res){
+          $('#img-avatar')[0].src = res.url
+          $('input[name=avatar]').val(res.url)
+        },
+        error: function(){
+        }
+      })
+
+
+      // 入学年份 年选择器
+      {% if curMember.student.period == StudentPeriod.ChuZhong %}
+      layui.laydate.render({
+        elem: '#psYearOfEnrollment',
+        type: 'year',
+        theme: '#1E9FFF'
+      })
+      {% elseif curMember.student.period == StudentPeriod.GaoZhong %}
+      layui.laydate.render({
+        elem: '#psYearOfEnrollment',
+        type: 'year',
+        theme: '#1E9FFF'
+      })
+      layui.laydate.render({
+        elem: '#msYearOfEnrollment',
+        type: 'year',
+        theme: '#1E9FFF'
+      })
+      {% endif %}
+
+
+      $('#info-complement-form').on('submit', function(e) {
+        if (e.target !== this) {
+          return true
+        }
+        e.preventDefault()
+        $('#info-complement-form-submit').attr('disabled', true)
+        ajax({
+          method: 'POST',
+          url: '/member-center/info-complement',
+          data: JSON.stringify(getFormData('#info-complement-form')),
+          success: function () {
+            layui.layer.msg('操作成功',{ time: 1000 })
+            window.setTimeout(function () {
+              location.href = '/member-center/info'
+            }, 1100)
+          },
+          fail: function () {
+            $('#info-complement-form-submit').attr('disabled', false)
+          }
+        })
+      })
+    })
+  </script>
+{% endblock %}

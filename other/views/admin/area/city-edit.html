@@ -1,0 +1,100 @@
+{% extends "../back.html" %}
+
+{% block css %}
+{{ super() }}
+{% endblock %}
+
+{% block body %}
+  <div class="layui-card myCard">
+    <div class="layui-card-header">{{ city.name }}</div>
+    <div class="layui-card-body layui-tab layui-tab-brief">
+      <div id="myForm"></div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+  $(function () {
+    newForm({
+      form: {
+        labelWidth: '100',
+        submit: {
+          event: function (data) {
+            $('[lay-filter="myFormSubmit"]').attr('disabled', true)
+            $('[lay-filter="myFormSubmit"]').addClass('layui-btn-disabled')
+            data.field.intro = encodeURI(data.field.intro)
+            ajax({
+              method: 'POST',
+              url: '/admin/area/city/{{ city.id }}',
+              data: JSON.stringify(data.field),
+              success: function () {
+                layer.msg('修改成功', {time: 2000, icon:6})
+                parent.tableRender()
+                window.setTimeout(function () {parent.layer.close(parent.layer.getFrameIndex(window.name))}, 2000)
+                // window.setTimeout(function () {window.location.href = '/admin/area/city'}, 2000)
+              },
+              fail: function () {
+                $('[lay-filter="myFormSubmit"]').attr('disabled', false)
+                $('[lay-filter="myFormSubmit"]').removeClass('layui-btn-disabled')
+              },
+              error: function () {
+                $('[lay-filter="myFormSubmit"]').attr('disabled', false)
+                $('[lay-filter="myFormSubmit"]').removeClass('layui-btn-disabled')
+              }
+            })
+          }
+        },
+        val: {
+          'name': '{{ city.name }}',
+          'number': '{{ city.number }}',
+          'provinceId': '{{ city.province.id }}'
+        },
+        items: [
+          {
+            label: '城市名',
+            elements: {
+              eType: 'input',
+              name: 'name',
+              layVerify: 'required'
+            }
+          },
+          {
+            label: '城市编号',
+            elements: {
+              eType: 'input',
+              name: 'number',
+              layVerify: 'required|number'
+            }
+          },
+          {
+            label: '大陆省份',
+            elements: {
+              eType: 'input',
+              name: 'provinceName'
+              // eType: 'select',
+              // name: 'provinceId',
+              // layVerify: 'select',
+              // option: [
+              //   {value: 'null', label: '请选择'},
+              //   {% for province in provinces %}
+              //   {value: '{{ province.id }}', label: '{{ province.name }}'},
+              //   {% endfor %}
+              // ]
+            }
+          }
+        ],
+        verify: {
+          number: function (value) {
+            if (!(/^\d+$/.test(value))) return '必须为数字'
+          },
+          select: function (value) {
+            if (value === '' || value === 'null') return '必填项不能为空'
+          }
+        }
+      }
+    })
+  })
+</script>
+{% endblock %}

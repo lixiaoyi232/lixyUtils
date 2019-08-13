@@ -1,0 +1,208 @@
+{% extends "../back.html" %}
+
+{% block css %}
+{{ super() }}
+{% endblock %}
+
+{% block body %}
+  <div class="layui-card myCard">
+    <div class="layui-card-header">{{ aidApply.name }}资助申请单</div>
+    <div class="layui-card-body layui-tab layui-tab-brief">
+      <div id="myForm"></div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+  $(function () {
+    newForm({
+      form: {
+        labelWidth: '120',
+        submit: {
+          show: false
+        },
+        items: [
+          {
+            label: '学生账号',
+            elements: {
+              eType: 'char',
+              name: 'account',
+              element: '<div class="layui-input-block" style="">{{ aidApply.account }}</div>'
+            }
+          },
+          {
+            label: '学生姓名',
+            elements: {
+              eType: 'char',
+              name: 'name',
+              element: '<div class="layui-input-block" style="">{{ aidApply.name }}</div>'
+            }
+          },
+          {
+            label: '照片',
+            elements: {
+              eType: 'char',
+              name: 'photo',
+              element: '<div class="layui-input-block" style=""><img src="{{ aidApply.student.photo }}" style="max-width: 400px; max-height: 600px;"></div>'
+            }
+          },
+          {
+            label: '学校编号',
+            elements: {
+              eType: 'char',
+              name: 'schoolAccount',
+              element: '<div class="layui-input-block" style="">{{ aidApply.schoolAccount }}</div>'
+            }
+          },
+          {
+            label: '学校名称',
+            elements: {
+              eType: 'char',
+              name: 'schoolName',
+              element: '<div class="layui-input-block" style="">{{ aidApply.schoolName }}</div>'
+            }
+          },
+          {
+            label: '申请单号',
+            elements: {
+              eType: 'char',
+              name: 'number',
+              element: '<div class="layui-input-block" style="">{{ aidApply.number }}</div>'
+            }
+          },
+          {
+            label: '状态',
+            elements: {
+              eType: 'char',
+              name: 'status',
+              element: '<div class="layui-input-block" style="">{{ aidApply.status }}</div>'
+            }
+          },
+          {
+            label: '学段',
+            elements: {
+              eType: 'char',
+              name: 'period',
+              element: '<div class="layui-input-block" style="">{{ aidApply.period }}</div>'
+            }
+          },
+          {
+            label: '性别',
+            elements: {
+              eType: 'char',
+              name: 'gender',
+              element: '<div class="layui-input-block" style="">{{ aidApply.gender }}</div>'
+            }
+          },
+          {
+            label: '出生年月',
+            elements: {
+              eType: 'char',
+              name: 'birthday',
+              element: '<div class="layui-input-block" style="">{{ aidApply.birthday }}</div>'
+            }
+          },
+          {
+            label: '申请学期',
+            elements: {
+              eType: 'char',
+              name: 'semester',
+              element: '<div class="layui-input-block" style="">{{ aidApply.semester|semester }}</div>'
+            }
+          },
+          {
+            label: '学生年级',
+            elements: {
+              eType: 'char',
+              name: 'grade',
+              element: '<div class="layui-input-block" style="">{{ aidApply.grade }}</div>'
+            }
+          },
+          {
+            label: '申请金额',
+            elements: {
+              eType: 'char',
+              name: 'money',
+              element: '<div class="layui-input-block" style="">{{ aidApply.money }}</div>'
+            }
+          },
+          {
+            label: '用途',
+            elements: {
+              eType: 'char',
+              name: 'use',
+              element: '<div class="layui-input-block" style="">{{ aidApply.use }}</div>'
+            }
+          },
+          {
+            label: '开户行',
+            elements: {
+              eType: 'char',
+              name: 'bank',
+              element: '<div class="layui-input-block" style="">{{ aidApply.bank }}</div>'
+            }
+          },
+          {
+            label: '开户人',
+            elements: {
+              eType: 'char',
+              name: 'bankUser',
+              element: '<div class="layui-input-block" style="">{{ aidApply.bankUser }}</div>'
+            }
+          },
+          {
+            label: '开户账号',
+            elements: {
+              eType: 'char',
+              name: 'bankNumber',
+              element: '<div class="layui-input-block" style="">{{ aidApply.bankNumber }}</div>'
+            }
+          },
+          {
+            label: '复议理由',
+            elements: {
+              eType: 'char',
+              name: 'reason',
+              element: '<div class="layui-input-block" style="">{{ aidApply.reason }}</div>'
+            }
+          },
+          {
+            label: '提交时间',
+            elements: {
+              eType: 'char',
+              name: 'publishTime',
+              element: '<div class="layui-input-block" style="">{{ aidApply.publishTime | date("YYYY-MM-DD HH:mm:ss") }}</div>'
+            }
+          },
+          {
+            label: '提交人',
+            elements: {
+              eType: 'char',
+              name: 'publishUser',
+              element: '<div class="layui-input-block" style="">{{ aidApply.publishUser }}</div>'
+            }
+          },
+          {
+            label: '家庭情况简述',
+            elements: {
+              eType: 'char',
+              name: 'familyInfo',
+              element: '<div class="layui-input-block" style=""><pre>' + decodeURIComponent('{{ aidApply.familyInfo }}') + '</pre></div>'
+            }
+          },
+          {
+            label: '贫困状态',
+            elements: {
+              eType: 'char',
+              name: 'poverty',
+              element: '<div class="layui-input-block" style="">{{ aidApply.poverty }}</div>'
+            }
+          },
+        ]
+      }
+    })
+  })
+</script>
+{% endblock %}

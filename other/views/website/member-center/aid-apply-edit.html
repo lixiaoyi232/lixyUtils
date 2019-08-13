@@ -1,0 +1,253 @@
+{% extends "../layout/layout-member-center.html" %}
+
+{% block css %}
+{{ super() }}
+{% endblock %}
+
+{% block body %}
+
+  <div class="layui-card myCard">
+    <div class="layui-card-header">资助申请表</div>
+    <div class="layui-card-body layui-tab layui-tab-brief">
+      <div id="myForm"></div>
+      <div class="layui-btn-container buttons">
+        <button class="layui-btn layui-btn-normal" id="ok">提交</button>
+        <button class="layui-btn layui-btn-danger" id="no">存为草稿</button>
+      </div>
+    </div>
+  </div>
+
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+  $(function () {
+    newForm({
+      form: {
+        labelWidth: '120',
+        submit: {
+          show: false,
+          event: function (data) {
+            if ({% for i,j in Poverty %}data.field['{{ j }}'] == null{% if not loop.last %} && {% endif %}{% endfor %}) {
+              layer.msg('贫困状态不能为空', {time: 2000, icon:5, anim: 6})
+              return
+            }
+            $('[lay-filter="myFormSubmit"]').attr('disabled', true)
+            $('[lay-filter="myFormSubmit"]').addClass('layui-btn-disabled')
+            ajax({
+              method: 'PUT',
+              url: '/member-center/aid-apply/{{ aidApply.id }}',
+              data: JSON.stringify(data.field),
+              success: function () {
+                layer.msg('修改成功', {time: 2000, icon:6})
+                parent.tableRender()
+                window.setTimeout(function () {parent.layer.close(parent.layer.getFrameIndex(window.name))}, 2000)
+                // window.setTimeout(function () {window.location.href = '/member-center/aid-apply'}, 2000)
+              },
+              fail: function () {
+                $('[lay-filter="myFormSubmit"]').attr('disabled', false)
+                $('[lay-filter="myFormSubmit"]').removeClass('layui-btn-disabled')
+              },
+              error: function () {
+                $('[lay-filter="myFormSubmit"]').attr('disabled', false)
+                $('[lay-filter="myFormSubmit"]').removeClass('layui-btn-disabled')
+              }
+            })
+          }
+        },
+        val: {
+          'teacherId': '{{ aidApply.teacher.id }}',
+          // 'semester1': '{{ Math.floor(aidApply.semester / 2) }}',
+          // 'semester2': '{{ aidApply.semester % 2 }}',
+          'money': '{{ aidApply.money }}',
+          'grade': '{{ aidApply.grade }}',
+          'photo': '{{ aidApply.photo }}',
+          'use': '{{ aidApply.use }}',
+          'bank': '{{ aidApply.bank }}',
+          'bankUser': '{{ aidApply.bankUser }}',
+          'bankNumber': '{{ aidApply.bankNumber }}',
+          'status': '{{ AidApplyStatus.draft }}',
+          'familyInfo': decodeURIComponent('{{ aidApply.familyInfo }}'),
+          {% for i,j in Poverty %}
+          '{{ j }}': {{ aidApply.poverty.indexOf(j) !== -1 }},
+          {% endfor %}
+        },
+        items: [
+          {
+            label: '学生账号',
+            elements: {
+              eType: 'char',
+              name: 'account',
+              element: '<div class="layui-input-block" style="">{{ aidApply.student.member.account }}</div>'
+            }
+          },
+          {
+            label: '学生姓名',
+            elements: {
+              eType: 'char',
+              name: 'student',
+              element: '<div class="layui-input-block" style="">{{ aidApply.student.member.name }}</div>'
+            }
+          },
+          {
+            label: '年级',
+            elements: {
+              eType: 'select',
+              name: 'grade',
+              layVerify: 'select',
+              option: [
+                {value: 'null', label: '请选择'},
+                {value: '1', label: '1'},
+                {value: '2', label: '2'},
+                {value: '3', label: '3'},
+                {% if aidApply.period == StudentPeriod.XiaoXue %}
+                {value: '4', label: '4'},
+                {value: '5', label: '5'},
+                {value: '6', label: '6'},
+                {% endif %}
+              ]
+            }
+          },
+          {
+            label: '照片',
+            elements: {
+              eType: 'file',
+              name: 'photo',
+            }
+          },
+          {
+            label: '状态',
+            elements: [
+              {
+                eType: 'char',
+                name: 'statusShow',
+                element: '<div class="layui-input-block" style="">{{ aidApply.status }}</div>'
+              },
+              {
+                eType: 'input',
+                show: false,
+                name: 'status',
+              }
+            ]
+          },
+          {
+            label: '申请学期',
+            elements: {
+              eType: 'char',
+              name: 'semester',
+              element: '<div class="layui-input-block" style="">{{ aidApply.semester|semester }}</div>'
+            }
+          },
+          // {
+          //   label: '申请学期',
+          //   elements: [
+          //     {
+          //       eType: 'date',
+          //       name: 'semester1',
+          //       layVerify: 'required',
+          //       type: 'year'
+          //     },
+          //     {
+          //       eType: 'select',
+          //       name: 'semester2',
+          //       layVerify: 'select',
+          //       option: [
+          //         {value: 'null', label: '请选择'},
+          //         {value: '0', label: '3月~7月'},
+          //         {value: '1', label: '9月~下一年1月'},
+          //       ]
+          //     }
+          //   ]
+          // },
+          {
+            label: '申请金额',
+            elements: {
+              eType: 'input',
+              name: 'money',
+              type: 'number',
+              layVerify: 'required'
+            }
+          },
+          {
+            label: '用途',
+            elements: {
+              eType: 'input',
+              name: 'use',
+              display: 'block',
+              layVerify: 'required'
+            }
+          },
+          {
+            label: '开户行',
+            elements: {
+              eType: 'input',
+              name: 'bank',
+              layVerify: 'required'
+            }
+          },
+          {
+            label: '开户人',
+            elements: {
+              eType: 'input',
+              name: 'bankUser',
+              layVerify: 'required'
+            }
+          },
+          {
+            label: '开户账号',
+            elements: {
+              eType: 'input',
+              name: 'bankNumber',
+              layVerify: 'required'
+            }
+          },
+          {
+            label: '家庭情况简述',
+            elements: {
+              eType: 'textarea',
+              display: 'block',
+              name: 'familyInfo',
+              layVerify: 'required'
+            }
+          },
+          {
+            label: '贫困状态',
+            elements: {
+              eType: 'checkbox',
+              name: 'poverty',
+              display: 'block',
+              children: [
+                {% for i,j in Poverty %}
+                {title: '{{ j }}', name: '{{ j }}'}{% if not loop.last %},{% endif %}
+                {% endfor %}
+              ]
+            }
+          },
+          {
+            label: '复议理由',
+            elements: {
+              eType: 'char',
+              name: 'reason',
+              element: '<div class="layui-input-block" style="">{{ aidApply.reason }}</div>'
+            }
+          },
+        ],
+        verify: {
+          select: function (value) {
+            if (value === '' || value === 'null') return '必填项不能为空'
+          },
+        }
+      }
+    })
+    $('#ok').on('click', function () {
+      $('[name=status]').val('{{ AidApplyStatus.wait }}')
+      $('[lay-filter=myFormSubmit]').trigger('click')
+    })
+    $('#no').on('click', function () {
+      $('[name=status]').val('{{ AidApplyStatus.draft }}')
+      $('[lay-filter=myFormSubmit]').trigger('click')
+    })
+  })
+</script>
+{% endblock %}

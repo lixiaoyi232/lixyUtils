@@ -1,0 +1,479 @@
+{% extends "../layout/layout-member-center.html" %}
+
+{% block css %}
+{{ super() }}
+{% endblock %}
+
+{% block member_center_main %}
+
+<div class="layui-card">
+  <div class="layui-card-header">待助申请</div>
+  <div class="layui-card-body">
+    <div id="myTable"></div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+  $(function () {
+    {% if curMember.type == MemberType.school or curMember.type == MemberType.teacher or curMember.type == MemberType.student %}
+    newTable({
+      btns: {
+        items: [
+          {% if curMember.type == MemberType.school %}
+          {
+            layEvent: 'new',
+            'class': 'layui-btn brownBtn'
+          },
+          {% endif %}
+          // 'setCols'
+        ]
+      },
+      {% if curMember.type != MemberType.student %}
+      search: {
+        'class': 'selects',
+        labelWidth: '120',
+        submit: {
+          'class': 'layui-btn greenBtn',
+          event: function (data, config, render) {
+            var queryObj = {semester: ''}
+            if (data.field.semesterDate !== '') {
+              var semesterArr = data.field.semesterDate.split('___')
+              semesterArr[0] = new Date(semesterArr[0] * 1)
+              semesterArr[1] = new Date(semesterArr[1] * 1)
+              queryObj.semester = ((semesterArr[0].getMonth() ? semesterArr[0].getFullYear() : (semesterArr[0].getFullYear() - 1)) * 2 + (semesterArr[0].getMonth() >= 1 && semesterArr[0].getMonth() <= 6 ? 0 : 1)) + '*' + ((semesterArr[1].getMonth() ? semesterArr[1].getFullYear() : (semesterArr[1].getFullYear() - 1)) * 2 + (semesterArr[1].getMonth() >= 1 && semesterArr[1].getMonth() <= 6 ? 0 : 1))
+            }
+            config.url = setQuery(config.url, queryObj)
+            render(config)
+          }
+        },
+        items: [
+          {
+            label: '申请单状态',
+            elements: {
+              eType: 'select',
+              name: 'status',
+              option: [
+                {value: 'all', label: '&nbsp;'},
+                {% for i, j in AidApplyStatus %}
+                {value: '{{ j }}', label: '{{ j }}'},
+                {% endfor %}
+              ]
+            }
+          },
+          {
+            label: '资助单状态',
+            elements: {
+              eType: 'select',
+              name: 'aidsStatus',
+              option: [
+                {value: 'all', label: '&nbsp;'},
+                {% for i, j in AidStatus %}
+                {value: '{{ j }}', label: '{{ j }}'},
+                {% endfor %}
+              ]
+            }
+          },
+          {
+            label: '学生账号',
+            elements: {
+              eType: 'input',
+              name: 'account'
+            }
+          },
+          {
+            label: '学生姓名',
+            elements: {
+              eType: 'input',
+              name: 'name'
+            }
+          },
+          {
+            label: '大陆省份',
+            elements: {
+              eType: 'input',
+              name: 'provinceName'
+            }
+          },
+          {
+            label: '年级',
+            elements: {
+              eType: 'select',
+              name: 'grade',
+              option: [
+                {value: 'all', label: '&nbsp;', selected: true},
+                {value: '1', label: '1'},
+                {value: '2', label: '2'},
+                {value: '3', label: '3'},
+                {value: '4', label: '4'},
+                {value: '5', label: '5'},
+                {value: '6', label: '6'},
+              ]
+            }
+          },
+          {
+            label: '申请学期',
+            elements: {
+              eType: 'date',
+              name: 'semesterDate',
+              type: 'month',
+              range: true
+            }
+          },
+          // {
+          //   label: '学校编号',
+          //   elements: {
+          //     eType: 'input',
+          //     name: 'schoolAccount'
+          //   }
+          // },
+          // {
+          //   label: '学校名称',
+          //   elements: {
+          //     eType: 'input',
+          //     name: 'schoolName'
+          //   }
+          // },
+          {
+            label: '申请单号',
+            elements: {
+              eType: 'input',
+              name: 'number'
+            }
+          },
+          {
+            label: '申请金额',
+            elements: {
+              eType: 'between',
+              name: 'money'
+            }
+          },
+          {
+            label: '用途',
+            elements: {
+              eType: 'input',
+              name: 'use'
+            }
+          },
+          {
+            label: '开户行',
+            elements: {
+              eType: 'input',
+              name: 'bank'
+            }
+          },
+          {
+            label: '开户人',
+            elements: {
+              eType: 'input',
+              name: 'bankUser'
+            }
+          },
+          {
+            label: '开户账号',
+            elements: {
+              eType: 'input',
+              name: 'bankNumber'
+            }
+          },
+          {
+            label: '提交时间',
+            elements: {
+              eType: 'date',
+              name: 'publishTime',
+              range: true
+            }
+          },
+          {
+            label: '提交人',
+            elements: {
+              eType: 'input',
+              name: 'publishUser'
+            }
+          },
+        ]
+      },
+      {% endif %}
+      table: {
+        checkboxType: 'none',
+        tool: {
+          items: [
+            {
+              layEvent: 'detail',
+              label: '明细',
+              'class': 'layui-btn-primary[[# if(d.aids.length === 0 || (d.aids[0].status !== \'{{ AidStatus.ok }}\' && d.aids[0].status !== \'{{ AidStatus.ok2 }}\' && d.aids[0].status !== \'{{ AidStatus.wait2 }}\' && d.aids[0].status !== \'{{ AidStatus.end }}\')){ ]] none[[#  } ]]',
+              event: function (obj, config, render) {
+                // window.location.href = '/aid/aid/' + obj.data.aids[0].id + '/detail'
+                layer.open({
+                  type: 2,
+                  title: '明细',
+                  shade: 0.8,
+                  area: ['90%', '90%'],
+                  content: '/aid/aid/' + obj.data.aids[0].id + '/detail'
+                })
+              }
+            },
+            'info',
+            {% if curMember.type == MemberType.school %}
+            {
+              layEvent: 'confirm',
+              label: '收款',
+              'class': 'layui-btn-primary[[# if(d.aids[0] == null || d.aids[0].status !== \'{{ AidStatus.ok }}\'){ ]] none[[#  } ]]',
+              event: function (obj, config, render) {
+                layer.confirm('真的确认收款行么', function(index){
+                  ajax({
+                    method: 'POST',
+                    url: '/aid/aid/' + obj.data.id + '/toAffirm',
+                    success: function () {
+                      layer.msg('确认收款成功', {time: 2000, icon:6})
+                      render()
+                      layer.close(index)
+                    }
+                  })
+                })
+              }
+            },
+            {% endif %}
+            {% if curMember.type == MemberType.school %}
+            {
+              layEvent: 'edit',
+              'class': 'layui-btn-primary [[# if (d.status !== \'{{ AidApplyStatus.draft }}\' && d.status !== \'{{ AidApplyStatus.revamp }}\') { ]]none[[# } ]]'
+            },
+            {% endif %}
+            {% if curMember.type == MemberType.school %}
+            // {
+            //   layEvent: 'del',
+            //   'class': 'layui-btn-danger [[# if (d.status !== \'{{ AidApplyStatus.draft }}\' && d.status !== \'{{ AidApplyStatus.revamp }}\' && d.status !== \'{{ AidApplyStatus.wait }}\') { ]]none[[# } ]]'
+            // },
+            {% endif %}
+          ]
+        },
+        templates: [
+          {
+            id: 'tStatus',
+            content: '[[ d.status === \'{{ AidApplyStatus.ok }}\' ? d.aids[0].status : d.status ]]'
+          },
+          {
+            id: 'tStudentPhoto',
+            content: '[[# if (d.photo) { ]]<a href="[[ d.photo ]]" style="cursor: pointer;" target="_blank"><img class="tableImg" src="[[ d.photo ]]"></a>[[# } ]]'
+          },
+          {
+            id: 'tSemester',
+            content: '[[ semester(d.semester) ]]'
+          },
+          {
+            id: 'tPublishTime',
+            content: '[[ dateFormat(d.publishTime, \'YYYY-MM-DD HH:mm:ss\') ]]'
+          },
+        ],
+        config: {
+          elem: '#aidApply',
+          url: '/aid/apply/table',
+          cols: [
+            [
+              {field: 'id', title: 'ID', align: 'center', show: false, sort: true, width: 100},
+              {width:120, align: 'center', toolbar: '#operation'},
+              {% if curMember.type != MemberType.student %}
+              {field: 'schoolName', title: '学校名称', align: 'center', sort: true, minWidth: 250},
+              {% endif %}
+              {field: 'name', title: '学生姓名', align: 'center', sort: true, minWidth: 140},
+              {field: 'studentPhoto', title: '照片', align: 'center', sort: true, width: 80, templet: '#tStudentPhoto'},
+              {field: 'status', title: '状态', align: 'center', sort: true, width: 120, templet: '#tStatus'},
+              {field: 'money', title: '申请金额', align: 'center', sort: true, width: 120},
+              {field: 'semester', title: '申请学期', align: 'center', sort: true, width: 180, templet: '#tSemester'},
+              {field: 'grade', title: '年级', align: 'center', sort: true, width: 80},
+              {field: 'period', title: '学段', align: 'center', sort: true, width: 80},
+              {field: 'gender', title: '性别', align: 'center', sort: true, width: 80},
+              // {field: 'account', title: '学生账号', align: 'center', sort: true, minWidth: 140},
+              // {field: 'birthday', title: '出生年月', align: 'center', sort: true, width: 120},
+              // {field: 'familyInfo', title: '家庭情况简述', align: 'center', sort: true, minWidth: 200},
+              // {field: 'poverty', title: '贫困状态', align: 'center', sort: true, minWidth: 160},
+              // {field: 'bank', title: '开户行', align: 'center', sort: true, minWidth: 140},
+              // {field: 'bankUser', title: '开户人', align: 'center', sort: true, minWidth: 140},
+              // {field: 'bankNumber', title: '开户账号', align: 'center', sort: true, minWidth: 160},
+              // {field: 'use', title: '用途', align: 'center', sort: true, minWidth: 200},
+              // {field: 'number', title: '申请单号', align: 'center', sort: true, width: 180},
+              // {field: 'publishTime', title: '提交时间', align: 'center', sort: true, width: 180, templet: '#tPublishTime'},
+              // {field: 'publishUser', title: '提交人', align: 'center', sort: true, minWidth: 140},
+            ]
+          ]
+        }
+      }
+    })
+    {% endif %}
+    {% if curMember.type == MemberType.whGroup or curMember.type == MemberType.whPerson %}
+    newTable({
+      btns: {
+        items: [
+          // 'setCols'
+        ]
+      },
+      search: {
+        'class': 'selects',
+        labelWidth: '100',
+        submit: {
+          'class': 'layui-btn greenBtn'
+        },
+        items: [
+          // {
+          //   label: '学生账号',
+          //   elements: {
+          //     eType: 'input',
+          //     name: 'account'
+          //   }
+          // },
+          {
+            label: '学生姓名',
+            elements: {
+              eType: 'input',
+              name: 'name'
+            }
+          },
+          {
+            label: '大陆省份',
+            elements: {
+              eType: 'input',
+              name: 'provinceName'
+            }
+          },
+          {
+            label: '学段',
+            elements: {
+              eType: 'select',
+              name: 'period',
+              option: [
+                {value: 'all', label: '&nbsp;', selected: true},
+                {% for i, j in StudentPeriod %}
+                {% if i != 'LiXiao' %}{value: '{{ j }}', label: '{{ j }}'},{% endif %}
+                {% endfor %}
+              ]
+            }
+          },
+          {
+            label: '年级',
+            elements: {
+              eType: 'select',
+              name: 'grade',
+              option: [
+                {value: 'all', label: '&nbsp;', selected: true},
+                {value: '1', label: '1'},
+                {value: '2', label: '2'},
+                {value: '3', label: '3'},
+                {value: '4', label: '4'},
+                {value: '5', label: '5'},
+                {value: '6', label: '6'},
+              ]
+            }
+          },
+          // {
+          //   label: '学校编号',
+          //   elements: {
+          //     eType: 'input',
+          //     name: 'schoolAccount'
+          //   }
+          // },
+          {
+            label: '学校名称',
+            elements: {
+              eType: 'input',
+              name: 'schoolName'
+            }
+          },
+          // {
+          //   label: '申请单号',
+          //   elements: {
+          //     eType: 'input',
+          //     name: 'number'
+          //   }
+          // },
+          {
+            label: '申请金额',
+            elements: {
+              eType: 'between',
+              name: 'money'
+            }
+          },
+          {
+            label: '用途',
+            elements: {
+              eType: 'input',
+              name: 'use'
+            }
+          },
+          {
+            label: '家庭简述',
+            elements: {
+              eType: 'input',
+              name: 'familyInfo'
+            }
+          },
+        ]
+      },
+      table: {
+        checkboxType: 'none',
+        tool: {
+          items: [
+            'info',
+            {
+              layEvent: 'aid',
+              'class': 'layui-btn-primary [[# if (d.status !== \'{{ AidApplyStatus.putaway }}\') { ]]none[[# } ]]',
+              label: '关注',
+              event: function (obj, config, render) {
+                layer.confirm('您确认要关注吗？', function(index){
+                  ajax({
+                    method: 'POST',
+                    url: '/aid/aid/toAttent',
+                    data: JSON.stringify({id: obj.data.id}),
+                    success: function () {
+                      layer.msg('关注成功', {time: 2000, icon:6})
+                      render()
+                      layer.close(index)
+                    }
+                  })
+                })
+                render(config)
+              }
+            },
+          ]
+        },
+        templates: [
+          {
+            id: 'tSemester',
+            content: '[[ semester(d.semester) ]]'
+          },
+        ],
+        config: {
+          elem: '#aidApply',
+          url: '/aid/apply/table',
+          cols: [
+            [
+              {field: 'id', title: 'ID', align: 'center', show: false, sort: true, width: 100},
+              {width:120, align: 'center', toolbar: '#operation'},
+              {field: 'name', title: '学生姓名', align: 'center', sort: true, minWidth: 140},
+              {field: 'schoolName', title: '学校名称', align: 'center', sort: true, minWidth: 250},
+              {field: 'period', title: '学段', align: 'center', sort: true, width: 80},
+              {field: 'grade', title: '年级', align: 'center', sort: true, width: 80},
+              {field: 'gender', title: '性别', align: 'center', sort: true, width: 80},
+              {field: 'familyInfo', title: '家庭情况简述', align: 'center', sort: true, minWidth: 200},
+              {field: 'poverty', title: '贫困状态', align: 'center', sort: true, minWidth: 160},
+              {field: 'money', title: '申请金额', align: 'center', sort: true, width: 120},
+              {field: 'use', title: '用途', align: 'center', sort: true, minWidth: 200},
+              {field: 'semester', title: '申请学期', align: 'center', sort: true, width: 180, templet: '#tSemester'},
+              // {field: 'age', title: '年龄', align: 'center', sort: true, width: 80},
+              {field: 'birthday', title: '出生年月', align: 'center', sort: true, width: 120},
+              {field: 'provinceName', title: '大陆省份', align: 'center', sort: true, minWidth: 150},
+              {field: 'number', title: '申请单号', align: 'center', sort: true, show: false, width: 180},
+              {field: 'account', title: '学生账号', align: 'center', sort: true, show: false, minWidth: 140},
+              {field: 'schoolAccount', title: '学校编号', align: 'center', sort: true, show: false, minWidth: 140},
+            ]
+          ]
+        }
+      }
+    })
+    {% endif %}
+  })
+</script>
+{% endblock %}

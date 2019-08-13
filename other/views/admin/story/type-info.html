@@ -1,0 +1,40 @@
+{% extends "../back.html" %}
+
+{% block css %}
+{{ super() }}
+{% endblock %}
+
+{% block body %}
+  <div class="layui-card myCard">
+    <div class="layui-card-header">故事类别详情</div>
+    <div class="layui-card-body layui-tab layui-tab-brief">
+      <div id="myForm"></div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+  $(function () {
+    newForm({
+      form: {
+        labelWidth: '100',
+        submit: {
+          show: false
+        },
+        items: [
+          {
+            label: '名称',
+            elements: {
+              eType: 'char',
+              name: 'title',
+              element: '<div class="layui-input-block" style="">{{ storyType.name }}</div>'
+            }
+          }
+        ]
+      }
+    })
+  })
+</script>
+{% endblock %}

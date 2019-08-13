@@ -1,0 +1,91 @@
+{% extends "./back.html" %}
+
+{% block css %}
+{{ super() }}
+<style>
+  .layui-form-item .layui-input-inline, .layui-form-item .layui-input-block {
+    float: left;
+    margin: 0 0 10px 10px;
+  }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="layui-card myCard">
+  <div class="layui-card-header">绑定</div>
+  <div class="layui-card-body layui-tab layui-tab-brief">
+    <div id="myForm" style="text-align: center;"></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+  $(function () {
+    newForm({
+      form: {
+        labelWidth: '80',
+        submit: {
+          'class': 'layui-btn-warm',
+          event: function (data) {
+            $('[lay-filter="myFormSubmit"]').attr('disabled', true)
+            $('[lay-filter="myFormSubmit"]').addClass('layui-btn-disabled')
+            ajax({
+              method: 'POST',
+              url: '/tobind',
+              data: JSON.stringify(data.field),
+              success: function () {
+                $('#myForm').html('恭喜您绑定成功!')
+                // layer.msg('恭喜您绑定成功', {time: 2000, icon:6})
+                // window.setTimeout(function () {window.location.href = '/admin/area/city'}, 2000)
+              },
+              fail: function () {
+                $('[lay-filter="myFormSubmit"]').attr('disabled', false)
+                $('[lay-filter="myFormSubmit"]').removeClass('layui-btn-disabled')
+              },
+              error: function () {
+                $('[lay-filter="myFormSubmit"]').attr('disabled', false)
+                $('[lay-filter="myFormSubmit"]').removeClass('layui-btn-disabled')
+              }
+            })
+          }
+        },
+        val: {
+          'openid': '{{ openid }}',
+        },
+        items: [
+          {
+            label: '用户',
+            show: false,
+            elements: {
+              eType: 'input',
+              name: 'openid',
+            }
+          },
+          {
+            label: '用户名',
+            elements: {
+              eType: 'input',
+              name: 'account',
+              layVerify: 'required'
+            }
+          },
+          {
+            label: '密码',
+            elements: {
+              eType: 'input',
+              name: 'password',
+              layVerify: 'required|pass',
+              type: 'password'
+            }
+          },
+        ],
+        verify: {
+          pass: [/(.+){6,20}$/, '密码必须6到20位']
+        }
+      }
+    })
+  })
+</script>
+{% endblock %}

@@ -1,0 +1,218 @@
+{% extends "../back.html" %}
+
+{% block css %}
+<link rel="stylesheet" href="/static/css/admin/aid-apply-card.css">
+<style>
+  #card {
+    color: black;
+    border-spacing: 2px;
+  }
+  .tdc {
+    PADDING-RIGHT: 2px;
+    PADDING-LEFT: 2px;
+    PADDING-TOP: 2px;
+    PADDING-BOTTOM: 2px;
+    word-break: break-all;
+    word-wrap: break-word;
+  }
+</style>
+{% endblock %}
+
+{% block body %}
+  <div class="layui-card myCard">
+    <div class="layui-card-header">{{ aidApply.name }}待助卡</div>
+    <div class="layui-card-body layui-tab layui-tab-brief">
+      <div id="card">
+        <div style="text-align: center; font-size: 24px; font-weight: bold;">学生信息</div>
+        <table class="layui-table">
+          <colgroup>
+            <col minWidth="250">
+            <col minWidth="140">
+            <col minWidth="80">
+            <col minWidth="120">
+            <col minWidth="150">
+            <col minWidth="100">
+            <col minWidth="100">
+          </colgroup>
+          <thead>
+            <tr>
+              <th style="text-align: center;">学校</th>
+              <th style="text-align: center;">姓名</th>
+              <th style="text-align: center;">性别</th>
+              <th style="text-align: center;">出生年月</th>
+              <th style="text-align: center;">民族</th>
+              <th style="text-align: center;">学段</th>
+              <th style="text-align: center;">年级</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="text-align: center;">{{ aidApply.schoolName }}</td>
+              <td style="text-align: center;">{{ aidApply.name }}</td>
+              <td style="text-align: center;">{{ aidApply.gender }}</td>
+              <td style="text-align: center;">{{ aidApply.birthday }}</td>
+              <td style="text-align: center;">{{ aidApply.nation }}</td>
+              <td style="text-align: center;">{{ aidApply.period }}</td>
+              <td style="text-align: center;">{{ aidApply.grade }}</td></tr>
+            </tr>
+          </tbody>
+        </table>
+        <div style="text-align: center;">家庭情况</div>
+        <table class="layui-table">
+          <colgroup>
+            <col minWidth="100">
+            <col minWidth="140">
+            <col minWidth="120">
+            <col minWidth="150">
+            <col minWidth="150">
+            <col minWidth="100">
+          </colgroup>
+          <thead>
+            <tr>
+              <th style="text-align: center;">称谓</th>
+              <th style="text-align: center;">姓名</th>
+              <th style="text-align: center;">出生年月</th>
+              <th style="text-align: center;">职业</th>
+              <th style="text-align: center;">健康状况</th>
+              <th style="text-align: center;">年收入</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for i in aidApply.student.families %}
+            <tr>
+              <td style="text-align: center;">{{ i.address }}</td>
+              <td style="text-align: center;">{{ i.name }}</td>
+              <td style="text-align: center;">{{ i.birthyear }}</td>
+              <td style="text-align: center;">{{ i.profession }}</td>
+              <td style="text-align: center;">{{ i.health }}</td>
+              <td style="text-align: center;">{{ i.income }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        <div style="text-align: center;">申请信息</div>
+        <table class="layui-table">
+          <colgroup>
+            <col minWidth="180">
+            <col minWidth="100">
+            <col minWidth="100">
+            <col minWidth="100">
+            <col minWidth="100">
+            <col minWidth="100">
+            <col minWidth="100">
+            <col minWidth="100">
+            <col minWidth="100">
+            <col minWidth="100">
+            <col minWidth="100">
+            <col minWidth="100">
+            <col minWidth="100">
+          </colgroup>
+          <thead>
+            <tr>
+              <th style="text-align: center;">学期</th>
+              <th style="text-align: center;">语文</th>
+              <th style="text-align: center;">数学</th>
+              <th style="text-align: center;">外语</th>
+              <th style="text-align: center;">物理</th>
+              <th style="text-align: center;">化学</th>
+              <th style="text-align: center;">生物</th>
+              <th style="text-align: center;">地理</th>
+              <th style="text-align: center;">历史</th>
+              <th style="text-align: center;">政治</th>
+              <th style="text-align: center;">名次</th>
+              <th style="text-align: center;">总分</th>
+              <th style="text-align: center;">类型</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for i in aidApply.student.scores %}
+            <tr>
+              <td style="text-align: center;">{{ i.semester|semester }}</td>
+              <td style="text-align: center;">{{ i.chinese }}</td>
+              <td style="text-align: center;">{{ i.math }}</td>
+              <td style="text-align: center;">{{ i.english }}</td>
+              <td style="text-align: center;">{{ i.physics }}</td>
+              <td style="text-align: center;">{{ i.chemistry }}</td>
+              <td style="text-align: center;">{{ i.biology }}</td>
+              <td style="text-align: center;">{{ i.geography }}</td>
+              <td style="text-align: center;">{{ i.history }}</td>
+              <td style="text-align: center;">{{ i.politics }}</td>
+              <td style="text-align: center;">{{ i.classRanking }}</td>
+              <td style="text-align: center;">{{ i.total }}</td>
+              <td style="text-align: center;">{{ i.type }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        <div style="text-align: center;">学生自述</div>
+        <table class="layui-table">
+          <colgroup>
+            <col width="50%">
+            <col width="50%">
+          </colgroup>
+          <tbody>
+            <tr>
+              <td style="text-align: center;">
+                <a target="_blank" href="{{ aidApply.photo }}">
+                  <img src="{{ aidApply.photo }}" style="border: 0; max-width: 200px; height: 132px;">
+                </a>
+              </td>
+              <td style="text-align: center;"><pre>{{ aidApply.familyInfo }}</pre></td>
+            </tr>
+          </tbody>
+        </table>
+        <div style="text-align: center;">学生成绩</div>
+        <table class="layui-table">
+          <colgroup>
+            <col minWidth="180">
+            <col minWidth="180">
+            <col minWidth="200">
+          </colgroup>
+          <thead>
+            <tr>
+              <th style="text-align: center;">申请学期</th>
+              <th style="text-align: center;">每学期所需资助金</th>
+              <th style="text-align: center;">资助款用途</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="text-align: center;">{{ aidApply.semester|semester }}</td>
+              <td style="text-align: center;">{{ aidApply.money }}</td>
+              <td style="text-align: center;">{{ aidApply.use }}</td>
+            </tr>
+          </tbody>
+        </table>
+        <div style="text-align: center;">银行信息</div>
+        <table class="layui-table">
+          <colgroup>
+            <col minWidth="200">
+            <col minWidth="120">
+            <col minWidth="200">
+          </colgroup>
+          <thead>
+            <tr>
+              <th style="text-align: center;">开户行</th>
+              <th style="text-align: center;">开户人</th>
+              <th style="text-align: center;">开户帐号</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="text-align: center;">{{ aidApply.bank }}</td>
+              <td style="text-align: center;">{{ aidApply.bankUser }}</td>
+              <td style="text-align: center;">{{ aidApply.bankNumber }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+  $(function () {})
+</script>
+{% endblock %}

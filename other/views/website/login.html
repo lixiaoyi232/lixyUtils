@@ -1,0 +1,88 @@
+{% extends "./layout/layout-website.html" %}
+
+{% block css %}
+<link rel="stylesheet" href="/static/css/website/login.css">
+<style>
+  body {
+    overflow: hidden;
+  }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="img" m-if="big">
+  <div class="alpha">
+    <div class="login">
+      <div class="title">
+        <div class="title-in" style="border-bottom: solid .2px #eee;">
+          <a href="/" class="back-home">
+            回首页
+          </a>
+          <div class="welcome">欢迎登录</div>
+        </div>
+      </div>
+      <form id="login-from" autocomplete="off">
+        <div class="login-input">
+          <input class="layui-input" type="text" name="account" placeholder="用户名">
+        </div>
+        <div class="login-input">
+          <input class="layui-input" type="password" name="password" placeholder="密码">
+        </div>
+        <div class="login-button">
+          <button id="login-from-submit" class="layui-btn layui-btn-fluid" type="submit">提交</button>
+        </div>
+      </form>
+      <div class="feet">
+        <div class="right-foot" style="float: right;">
+          <a href="/signup" class="signup">
+            注册
+          </a>
+          <!-- <a class="forget">
+            忘记密码
+          </a> -->
+        </div>
+        &nbsp;
+      </div>
+    </div>
+    <div class="west_logo">&nbsp;</div>
+  </div>
+</div>
+{% endblock %}
+
+{% block script %}
+  {{ super() }}
+  <script>
+    var big = true
+    var sto
+    $(function () {
+      mIfRender()
+      $('#login-from').on('submit', function(e) {
+        if (e.target !== this) {
+          return true
+        }
+        e.preventDefault()  // 阻止默认行为  对于sumit事件来说，就是阻止form表单的默认提交。
+        $('#login-from-submit').attr('disabled', true)
+        ajax({
+          method: 'POST',
+          url: '/login',
+          data: JSON.stringify(getFormData('#login-from')),
+          success: function () {
+            layui.layer.msg('登录成功',{ time: 1000 })
+            window.setTimeout(function () {
+              location.href = '/member-center'
+            }, 1100)
+          },
+          fail: function () {
+            $('#login-from-submit').attr('disabled', false)
+          }
+        })
+      })
+      // $(window).on('resize', function (e) {
+      //   if (e.target.innerHeight > 550) big = true
+      //   else big = false
+      //   mIfRender()
+      // })
+    })
+  </script>
+{% endblock %}
+

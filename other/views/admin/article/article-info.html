@@ -1,0 +1,79 @@
+{% extends "../back.html" %}
+
+{% block css %}
+{{ super() }}
+{% endblock %}
+
+{% block body %}
+  <div class="layui-card myCard">
+    <div class="layui-card-header">文章详情</div>
+    <div class="layui-card-body layui-tab layui-tab-brief">
+      <div id="myForm"></div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+  $(function () {
+    newForm({
+      form: {
+        labelWidth: '120',
+        submit: {
+          show: false
+        },
+        val: {
+          'title': '{{ article.title }}',
+          'fromLabel': '{{ article.from.label }}',
+          'fromHref': '{{ article.from.href }}',
+          'content': decodeURIComponent('{{ article.content }}'),
+        },
+        items: [
+          {
+            label: '标题',
+            elements: {
+              eType: 'char',
+              name: 'title',
+              element: '<div class="layui-input-block" style="">{{ article.title }}</div>'
+            }
+          },
+          {
+            label: '显示',
+            elements: {
+              eType: 'char',
+              name: 'show',
+              element: '<div class="layui-input-block" style="">{{ article.show ? \'是\' : \'否\' }}</div>'
+            }
+          },
+          {
+            label: '类型',
+            elements: {
+              eType: 'char',
+              name: 'type',
+              element: '<div class="layui-input-block" style="">{{ article.type }}</div>'
+            }
+          },
+          {
+            label: '来源',
+            elements: {
+              eType: 'char',
+              name: 'title',
+              element: '<div class="layui-input-block" style=""><a href="{{ article.from.href }}">{{ article.from.label }}</a></div>'
+            }
+          },
+          {
+            label: '内容',
+            elements: {
+              eType: 'char',
+              name: 'content',
+              display: 'block',
+              element: '<div class="layui-input-block" style="">' + decodeURIComponent('{{ article.content }}') + '</div>'
+            }
+          }
+        ]
+      }
+    })
+  })
+</script>
+{% endblock %}

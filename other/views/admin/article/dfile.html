@@ -1,0 +1,92 @@
+{% extends "../back.html" %}
+
+{% block css %}
+{{ super() }}
+<style>
+  html {
+    overflow: hidden;
+  }
+</style>
+{% endblock %}
+
+{% block main %}
+  <div class="layui-card myCard">
+    <div class="layui-card-header">文件下载</div>
+    <div class="layui-card-body">
+      <div id="myTable"></div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+  $(function () {
+    newTable({
+      btns: {
+        items: [
+          {% if curAdmin.isSuperUser or curAdmin.permissions.atc_atc_a %}
+          'new',
+          {% endif %}
+          {% if curAdmin.isSuperUser or curAdmin.permissions.atc_atc_d %}
+          'dels',
+          {% endif %}
+          'setCols',
+        ]
+      },
+      search: {
+        'class': 'selects',
+        labelWidth: '100',
+        items: [
+          {
+            label: '标题',
+            elements: {
+              eType: 'input',
+              name: 'title'
+            }
+          },
+          {
+            label: '发布时间',
+            elements: {
+              eType: 'date',
+              name: 'createdTime',
+              range: true
+            }
+          },
+        ]
+      },
+      table: {
+        tool: {
+          items: [
+            {% if curAdmin.isSuperUser or curAdmin.permissions.atc_atc_d %}
+            'del',
+            {% endif %}
+          ]
+        },
+        templates: [
+          {
+            id: 'tTitle',
+            content: '<a href="[[ d.link ]]?filename=[[ encodeURIComponent(d.title) ]][[ (d.filename = d.link.split(\'.\')[1], d.filename) != null ? \'.\' + d.filename : \'\' ]]&_=' + (new Date()).getTime() + '" target="_blank">[[ d.title ]]</a>'
+          },
+          {
+            id: 'tCreatedTime',
+            content: '[[ dateFormat(d.createdTime, \'YYYY-MM-DD HH:mm:ss\') ]]'
+          }
+        ],
+        config: {
+          elem: '#dfile',
+          url: '/admin/article/dfile/table',
+          cols: [
+            [
+              {field: 'id', title: 'ID', align: 'center', show: false, sort: true, width: 100, fixed: 'left'},
+              {field: 'title', title: '标题', align: 'center', sort: true, minWidth: 200, templet: '#tTitle'},
+              {field: 'createdTime', title: '发布时间', align: 'center', sort: true, minWidth: 180, templet: '#tCreatedTime'},
+              {align: 'center', width: 150, fixed: 'right', toolbar: '#operation'}
+            ]
+          ]
+        }
+      }
+    })
+  })
+</script>
+{% endblock %}

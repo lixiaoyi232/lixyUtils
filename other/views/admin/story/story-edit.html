@@ -1,0 +1,588 @@
+{% extends "../back.html" %}
+
+{% block css %}
+{{ super() }}
+<link rel="stylesheet" href="/static/css/website/story-write.css">
+{% endblock %}
+
+{% block body %}
+  <div class="layui-card myCard">
+    <div class="layui-card-header">{{ story.title }}</div>
+    <div class="layui-card-body layui-tab layui-tab-brief">
+      <div id="myForm"></div>
+    </div>
+  </div>
+  <!-- <div class="layui-card myCard">
+    <div class="layui-card-header">评论</div>
+    <div class="layui-card-body layui-tab layui-tab-brief">
+      <div id="myTable"></div>
+    </div>
+  </div> -->
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+  $(function () {
+    var serverData = []
+    newForm({
+      form: {
+        labelWidth: '100',
+        submit: {
+          event: function (data) {
+            $('[lay-filter="myFormSubmit"]').attr('disabled', true)
+            $('[lay-filter="myFormSubmit"]').addClass('layui-btn-disabled')
+            ajax({
+              method: 'POST',
+              url: '/admin/story/story/{{ story.id }}',
+              data: JSON.stringify(data.field),
+              success: function () {
+                layer.msg('修改成功', {time: 2000, icon:6})
+                parent.tableRender()
+                window.setTimeout(function () {parent.layer.close(parent.layer.getFrameIndex(window.name))}, 2000)
+                // window.setTimeout(function () {window.location.href = '/admin/story/story'}, 2000)
+              },
+              fail: function () {
+                $('[lay-filter="myFormSubmit"]').attr('disabled', false)
+                $('[lay-filter="myFormSubmit"]').removeClass('layui-btn-disabled')
+              },
+              error: function () {
+                $('[lay-filter="myFormSubmit"]').attr('disabled', false)
+                $('[lay-filter="myFormSubmit"]').removeClass('layui-btn-disabled')
+              }
+            })
+          }
+        },
+        val: {
+          'title': '{{ story.title }}',
+          'type': '{{ story.type.id }}',
+          'logicType': '{{ story.logicType }}',
+          'status': '{{ story.status }}',
+          'author': '{{ story.author.id }}',
+          'pageViews': '{{ story.pageViews }}',
+          'tag': '{{ story.tag }}',
+          'reason': '{{ story.reason }}',
+        },
+        items: [
+          {
+            label: '标题',
+            elements: {
+              eType: 'input',
+              name: 'title',
+              layVerify: 'required'
+            }
+          },
+          {
+            label: '内容',
+            // show: false,
+            elements: [
+              {
+                eType: 'char',
+                name: 'contentShow',
+                element: '<div class="layui-input-block" style="">'
+                  {% for block in story.content %}
+                    + '<div>'
+                    {% if block.type == 'text' %}
+                      + '<pre>' + decodeURIComponent('{{ block.text | safe }}') + '</pre>'
+                    {% elif block.type == 'image'%}
+                      + '<img src="{{block.url}}" class="form-img" alt=""><pre>' + decodeURIComponent('{{ block.desc }}') + '</pre>'
+                    {% endif %}
+                    + '</div>'
+                  {% endfor %}
+                  + '</div>'
+              },
+              {
+                eType: 'char',
+                name: 'content',
+                element: '<button type="button" class="layui-btn layui-btn-primary">修改内容</button>',
+                events: [
+                  {
+                    type: 'delegate',
+                    name: 'click',
+                    query: 'button',
+                    callback: function (event) {
+                      event.preventDefault()
+                      var str = '<form id="edit-story-from" autocomplete="off"><div id="content"></div><div id="last-block" class="story-block"><button type="button" class="block-btn-add-text layui-btn layui-btn-primary">添加文本</button><button id="lastAddImg" type="button" class="block-btn-add-image layui-btn layui-btn-primary">添加图片</button></div><div><button type="submit" id="edit-story-from-submit" class=" layui-btn layui-btn-primary">提交</button></div></form>'
+                      layer.closeAll()
+                      var index = layer.open({
+                        type: 1,
+                        title: '修改内容',
+                        offset: '100px',
+                        skin: 'layui-layer-rim',
+                        area: ['1000px', '800px'],
+                        content: str,
+                        maxmin: true
+                      })
+                      layer.full(index)
+
+
+                      var $content = $('#content')
+
+                      // 增加文本按钮事件（最后一个块的）
+                      $('#last-block .block-btn-add-text').on('click', function() {
+                        layui.layer.prompt({
+                          formType: 2,
+                          value: '',
+                          title: '请输入内容',
+                          // area: ['500px', '350px']
+                          maxlength: 1500,
+                        }, function(value, index, elem){
+                          $content.append(newTextBlock(value))
+                          layer.close(index)
+                        })
+                      })
+
+                      // 增加图片按钮事件（最后一个块的）
+                      layui.upload.render({
+                        elem: $('#last-block .block-btn-add-image')[0],
+                        url: '/upload/',
+                        done: function(data){
+                          if(data.error){
+                            layui.layer.msg('上传失败', { time: 1000 })
+                          } else {
+                            layui.layer.prompt({
+                              formType: 2,
+                              value: '',
+                              title: '请输入图片说明（可以为空）',
+                              // area: ['500px', '350px']
+                              maxlength: 1500,
+                              yes: function(index, $layer){
+                                value = $layer.find('.layui-layer-input').val()
+                                $content.append(newImageBlock(data.url, value))
+                                layer.close(index)
+                              }
+                            })
+                          }
+                        }
+                      })
+
+                      // 新建一个文本块
+                      function newTextBlock(text) {
+                        var str = '<div class="story-block text-block">\n'
+                                + '  <button type="button" class="block-btn-edit-text layui-btn layui-btn-primary">修改</button>\n'
+                                + '  <button type="button" class="block-btn-delete layui-btn layui-btn-primary">删除</button>\n'
+                                + '  <button type="button" class="block-btn-insert layui-btn layui-btn-primary">往上插入</button>\n'
+                                + '  <button type="button" class="block-btn-moveup layui-btn layui-btn-primary">上移</button>\n'
+                                + '  <button type="button" class="block-btn-movedown layui-btn layui-btn-primary">下移</button>\n'
+                                + '  <div class="block-text"><pre>' + text + '</pre></div>\n'
+                                + '</div>'
+
+                        var $block = $(str)
+                        var $text = $block.find('.block-text pre')
+
+                        // 修改按钮事件
+                        $block.find('.block-btn-edit-text').on('click', function() {
+                          layui.layer.prompt({
+                            formType: 2,
+                            value: $text.text(),
+                            title: '请输入内容',
+                            // area: ['500px', '350px'],
+                            maxlength: 1500
+                          }, function(value, index, elem){
+                            $text.text(value)
+                            layer.close(index)
+                          })
+                        })
+
+                        // 其他公共按钮事件
+                        handleCommonEvent($block)
+
+                        return $block
+                      }
+
+                      // 新建一个图片块
+                      function newImageBlock(url, desc) {
+                        var str = '<div class="story-block image-block">\n'
+                                + '  <button type="button" class="block-btn-edit-image layui-btn layui-btn-primary">修改图片</button>\n'
+                                + '  <button type="button" class="block-btn-edit-desc layui-btn layui-btn-primary">修改说明</button>\n'
+                                + '  <button type="button" class="block-btn-delete layui-btn layui-btn-primary">删除</button>\n'
+                                + '  <button type="button" class="block-btn-insert layui-btn layui-btn-primary">往上插入</button>\n'
+                                + '  <button type="button" class="block-btn-moveup layui-btn layui-btn-primary">上移</button>\n'
+                                + '  <button type="button" class="block-btn-movedown layui-btn layui-btn-primary">下移</button>\n'
+                                + '  <div class="block-img"><img src="' + url + '" class="form-img"></div>\n'
+                                + '  <div class="block-desc"><pre>' + desc + '</pre></div>\n'
+                                + '</div>'
+
+                        var $block = $(str)
+                        var $img = $block.find('.block-img img')
+                        var $desc = $block.find('.block-desc pre')
+
+                        // 修改图片按钮事件
+                        layui.upload.render({
+                          elem: $block.find('.block-btn-edit-image')[0],
+                          url: '/upload/',
+                          done: function(data){
+                            if(data.error){
+                              layui.layer.msg('上传失败', { time: 1000 })
+                            } else {
+                              $img.attr('src', data.url)
+                            }
+                          }
+                        })
+
+                        // 修改说明按钮事件
+                        $block.find('.block-btn-edit-desc').on('click', function() {
+                          layui.layer.prompt({
+                            formType: 2,
+                            value: $desc.text(),
+                            title: '请输入内容',
+                            area: ['500px', '150px'],
+                            yes: function(index, $layer){
+                              value = $layer.find('.layui-layer-input').val()
+                              $desc.text(value)
+                              layer.close(index)
+                            }
+                          })
+                        })
+
+                        // 其他公共按钮事件
+                        handleCommonEvent($block)
+
+                        return $block
+                      }
+
+                      // 新建一个空块
+                      function newEmptyBlock(url, desc) {
+                        var str = '<div class="story-block empty-block">\n'
+                                + '  <button type="button" class="block-btn-add-text layui-btn layui-btn-primary">添加文本</button>\n'
+                                + '  <button type="button" class="block-btn-add-image layui-btn layui-btn-primary">添加图片</button>\n'
+                                + '  <button type="button" class="block-btn-delete layui-btn layui-btn-primary">删除</button>\n'
+                                + '  <button type="button" class="block-btn-insert layui-btn layui-btn-primary">往上插入</button>\n'
+                                + '  <button type="button" class="block-btn-moveup layui-btn layui-btn-primary">上移</button>\n'
+                                + '  <button type="button" class="block-btn-movedown layui-btn layui-btn-primary">下移</button>\n'
+                                + '</div>'
+
+                        var $block = $(str)
+
+                        // 增加文本按钮事件
+                        $block.find('.block-btn-add-text').on('click', function() {
+                          layui.layer.prompt({
+                            formType: 2,
+                            value: '',
+                            title: '请输入内容',
+                            // area: ['500px', '350px'],
+                            maxlength: 1500
+                          }, function(value, index, elem){
+                            newTextBlock(value).insertBefore($block)
+                            $block.remove()
+                            layer.close(index)
+                          })
+                        })
+
+                        // 增加图片按钮事件
+                        layui.upload.render({
+                          elem: $block.find('.block-btn-add-image')[0],
+                          url: '/upload/',
+                          done: function(data){
+                            if(data.error){
+                              layui.layer.msg('上传失败', { time: 1000 })
+                            } else {
+                              layui.layer.prompt({
+                                formType: 2,
+                                value: '',
+                                title: '请输入图片说明（可以为空）',
+                                // area: ['500px', '150px'],
+                                maxlength: 1500,
+                                yes: function(index, $layer){
+                                  value = $layer.find('.layui-layer-input').val()
+                                  newImageBlock(data.url, value).insertBefore($block)
+                                  $block.remove()
+                                  layer.close(index)
+                                }
+                              }, function(value, index, elem){
+                                layer.close(index)
+                              })
+                            }
+                          }
+                        })
+
+                        // 其他公共按钮事件
+                        handleCommonEvent($block)
+
+                        return $block
+                      }
+
+
+                      // 处理公共按钮事件
+                      function handleCommonEvent($block) {
+                        // 删除按钮事件
+                        $block.find('.block-btn-delete').on('click', function() {
+                          $block.remove()
+                        })
+
+                        // 向上插入按钮事件
+                        $block.find('.block-btn-insert').on('click', function() {
+                          newEmptyBlock().insertBefore($block)
+                        })
+
+                        // 上移按钮事件
+                        $block.find('.block-btn-moveup').on('click', function() {
+                          $block.insertBefore($block.prev())
+                        })
+
+                        // 下移按钮事件
+                        $block.find('.block-btn-movedown').on('click', function() {
+                          $block.insertAfter($block.next())
+                        })
+                      }
+
+                      var isDraft = false
+                      $('#btn-save-draft').on('click', function() {
+                        isDraft = true
+                      })
+
+                      $('#edit-story-from').on('submit', function(e) {
+                        if (e.target !== this) return true
+                        e.preventDefault()
+                        var data = getFormData('#edit-story-from')
+                        data.content = []
+                        data.isDraft = isDraft
+
+                        var $storyBlocks = $content.find('.story-block').not('.empty-block')
+
+                        for (var i = 0; i < $storyBlocks.length; i++) {
+                          var $block = $($storyBlocks[i])
+                          if ($block.hasClass('text-block')) {
+                            data.content.push({
+                              type: 'text',
+                              text: $block.find('.block-text pre').text()
+                            })
+                          } else if($block.hasClass('image-block')) {
+                            data.content.push({
+                              type: 'image',
+                              url: $block.find('.block-img img').attr('src'),
+                              desc: $block.find('.block-desc pre').text()
+                            })
+                          }
+                        }
+
+                        $('.btn-submit').attr('disabled', true)
+
+                        // $('#edit-story-from-submit').attr('disabled', true)
+                        ajax({
+                          method: 'POST',
+                          url: '/admin/story/story/{{ story.id }}/content',
+                          data: JSON.stringify(data),
+                          success: function (data) {
+                            layui.layer.msg('操作成功',{ time: 2000 })
+                            var str = '<div class="layui-input-block" style="">'
+                            for (var i in data.content) {
+                              if (data.content.hasOwnProperty(i)) {
+
+                                str += '<div>'
+                                if (data.content[i].type === 'text') {
+                                  // data.content[i].text = decodeURIComponent(data.content[i].text)
+                                  str += '<pre>' + data.content[i].text + '</pre>'
+                                }
+                                else if (data.content[i].type === 'image') {
+                                  // data.content[i].desc = decodeURIComponent(data.content[i].desc)
+                                  str += '<img src="' + data.content[i].url + '" class="form-img" alt=""><div>' + data.content[i].desc + '</div>'
+                                }
+                                str += '</div>'
+                              }
+                            }
+                            str += '</div>'
+                            $('[name=contentShow]').html(str)
+                            serverData = data.content
+                            layer.close(index)
+                          },
+                          fail: function () {
+                            $('.btn-submit').attr('disabled', false)
+                            // $('#new-story-from-submit').attr('disabled', false)
+                          }
+                        })
+                      })
+
+
+                      if (serverData.length === 0) {
+                        {% for block in story.content %}
+                          var type = '{{block.type}}'
+                          if (type === 'text') {
+                            serverData.push({
+                              type: type,
+                              text: decodeURIComponent('{{block.text | safe}}')
+                            })
+                          } else if (type === 'image') {
+                            serverData.push({
+                              type: type,
+                              url: '{{block.url}}',
+                              desc: decodeURIComponent('{{block.desc}}')
+                            })
+                          }
+                        {% endfor %}
+                      }
+
+                      for (var i = 0; i < serverData.length; i++) {
+                        var d = serverData[i]
+                        if (d.type === 'text') {
+                          $content.append(newTextBlock(d.text))
+                        } else if (d.type === 'image') {
+                          $content.append(newImageBlock(d.url, d.desc))
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            label: '类别',
+            elements: {
+              eType: 'select',
+              name: 'type',
+              laySearch: true,
+              option: [
+                {value: 'null', label: '请选择'},
+                {% for type in types %}
+                {value: '{{ type.id }}', label: '{{ type.name }}'},
+                {% endfor %}
+              ]
+            }
+          },
+          {
+            label: '逻辑类别',
+            elements: {
+              eType: 'char',
+              name: 'logicType',
+              element: '<div class="layui-input-block" style="">{{ story.logicType }}</div>'
+            }
+          },
+          {
+            label: '状态',
+            elements: {
+              eType: 'select',
+              name: 'status',
+              layVerify: 'select',
+              laySearch: true,
+              option: [
+                {value: 'null', label: '请选择'},
+                {% for i, j in StoryStatus %}
+                {value: '{{ j }}', label: '{{ j }}'},
+                {% endfor %}
+              ]
+            }
+          },
+          {
+            label: '作者',
+            elements: {
+              eType: 'char',
+              name: 'author',
+              element: '<div class="layui-input-block" style="">{{ story.author.account }}</div>'
+            },
+          },
+          {
+            label: '访问量',
+            elements: {
+              eType: 'input',
+              type: 'number',
+              name: 'pageViews',
+              layVerify: 'required'
+            },
+          },
+          {
+            label: '标签',
+            elements: {
+              eType: 'input',
+              name: 'tag',
+            },
+          },
+          {
+            label: '复议理由',
+            elements: {
+              eType: 'input',
+              name: 'reason',
+            },
+          }
+        ],
+        verify: {
+          select: function (value) {
+            if (value === '' || value === 'null') return '必填项不能为空'
+          }
+        }
+      }
+    })
+    // +++++++++++++++++++++++++++++++++++++++++++++
+    // newTable({
+    //   btns: {
+    //     items: [
+    //       'dels',
+    //       'setCols'
+    //     ]
+    //   },
+    //   search: {
+    //     'class': 'selects',
+    //     labelWidth: '100',
+    //     items: [
+    //       {
+    //         label: '内容',
+    //         elements: {
+    //           eType: 'input',
+    //           name: 'text'
+    //         }
+    //       },
+    //       {
+    //         label: '创建时间',
+    //         elements: {
+    //           eType: 'date',
+    //           name: 'createdTime',
+    //           range: true
+    //         }
+    //       }
+    //     ]
+    //   },
+    //   table: {
+    //     tool: {
+    //       items: [
+    //         {
+    //           layEvent: 'edit',
+    //           event: function (obj) {
+    //             window.location.href = '/admin/story/comment/' + obj.data.id
+    //           }
+    //         },
+    //         {
+    //           layEvent: 'del',
+    //           event: function (obj, render) {
+    //             layer.confirm('真的删除行么', function(index){
+    //               ajax({
+    //                 method: 'DELETE',
+    //                 url: '/admin/story/comment/' + obj.data.id,
+    //                 success: function () {
+    //                   layer.msg('删除成功', {time: 2000, icon:6})
+    //                   render()
+    //                   layer.close(index)
+    //                 }
+    //               })
+    //             })
+    //           }
+    //         }
+    //       ]
+    //     },
+    //     templates: [
+    //       {
+    //         id: 'ct',
+    //         content: '[[# var createdTime = dateFormat(new Date(d.createdTime), \'YYYY-MM-DD HH:mm:ss\') ]][[ createdTime ]]'
+    //       },
+    //       {
+    //         id: 'at',
+    //         content: '[[ d.author.account ]]'
+    //       }
+    //     ],
+    //     config: {
+    //       elem: '#storyComment',
+    //       url: '/admin/story/comment/table',
+    //       cols: [
+    //         [
+    //           {field: 'id', sort: true, title: 'ID', width:100, fixed: 'left'},
+    //           {field: 'text', sort: true, title: '内容'},
+    //           {field: 'author', sort: true, title: '评论者', maxWidth: 180, templet: '#at'},
+    //           {field: 'createdTime', sort: true, title: '创建时间', maxWidth: 180, templet: '#ct'},
+    //           {fixed: 'right', width:200, align: 'center', toolbar: '#operation'}
+    //         ]
+    //       ]
+    //     }
+    //   }
+    // })
+  })
+</script>
+{% endblock %}

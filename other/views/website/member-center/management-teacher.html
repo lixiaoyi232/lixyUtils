@@ -1,0 +1,159 @@
+{% extends "../layout/layout-member-center.html" %}
+
+{% block css %}
+{{ super() }}
+<link rel="stylesheet" href="/static/css/website/mytable.css">
+{% endblock %}
+
+{% block member_center_main %}
+<!-- <div id="table-teacher"></div> -->
+<div class="layui-card myCard">
+  <div class="layui-card-header">老师</div>
+  <div class="layui-card-body">
+    <div id="myTable"></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script src="/static/js/mytable.js"></script>
+<script>
+  // $(function () {
+  //   var table = new MyTable({
+  //     el: '#table-teacher',
+  //     url: '/member-center/management/teacher/table',
+  //     limit: 10,
+  //     cols: [
+  //       {
+  //         title: 'id',
+  //         html: function(member) {
+  //           return member.id
+  //         }
+  //       },
+  //       {
+  //         title: '昵称',
+  //         html: function(member) {
+  //           return '<a href="/member/' + member.id + '">' + member.nickName + '</a>'
+  //         }
+  //       }
+  //     ]
+  //   })
+
+  //   table.fetch()
+
+
+  // })
+  $(function () {
+    newTable({
+      btns: {
+        items: [
+          // 'setCols'
+        ]
+      },
+      search: {
+        'class': 'selects',
+        labelWidth: '100',
+        submit: {
+          'class': 'layui-btn greenBtn'
+        },
+        items: [
+          // {
+          //   label: '老师账号',
+          //   elements: {
+          //     eType: 'input',
+          //     name: 'account'
+          //   }
+          // },
+          {
+            label: '老师姓名',
+            elements: {
+              eType: 'input',
+              name: 'name'
+            }
+          },
+          {
+            label: '老师昵称',
+            elements: {
+              eType: 'input',
+              name: 'nickName'
+            }
+          },
+          // {
+          //   label: '身份证号',
+          //   elements: {
+          //     eType: 'input',
+          //     name: 'idCard'
+          //   }
+          // },
+          {
+            label: '联系手机',
+            elements: {
+              eType: 'input',
+              name: 'phoneNumber'
+            }
+          },
+        ]
+      },
+      table: {
+        checkboxType: 'none',
+        // tool: {
+        //   items: [
+        //   ]
+        // },
+        templates: [
+          {
+            id: 'tNickName',
+            content: '<a href="/member/[[ d.id ]]" target="_blank">[[ d.nickName ]]</a>'
+          },
+          {
+            id: 'tProvinceName',
+            content: '[[ d.county.city.province.name ]]'
+          },
+          {
+            id: 'tAvatar',
+            content: '[[# if (d.avatar) { ]]<a href="[[ d.avatar ]]" style="cursor: pointer;" target="_blank"><img class="tableImg" src="[[ d.avatar ]]"></a>[[# } ]]'
+          },
+          {
+            id: 'tIsComplemented',
+            content: '[[# if (d.isComplemented) { ]]是[[# } else { ]]否[[# } ]]'
+          },
+          {
+            id: 'tTeacherAddress',
+            content: '[[ d.teacher.address != null ? d.teacher.address : \'\' ]]'
+          },
+          {
+            id: 'tCreatedTime',
+            content: '[[ dateFormat(d.createdTime, \'YYYY-MM-DD HH:mm:ss\') ]]'
+          },
+        ],
+        config: {
+          elem: '#teacher',
+          url: '/member-center/management/teacher/table',
+          cols: [
+            [
+              {field: 'id', title: 'ID', align: 'center', show: false, sort: true, width: 100},
+              {field: 'name', title: '老师姓名', align: 'center', sort: true, minWidth: 140},
+              // {field: 'account', title: '老师账号', align: 'center', sort: true, minWidth: 140},
+              {field: 'nickName', title: '老师昵称', align: 'center', sort: true, minWidth: 140, templet: '#tNickName'},
+              {field: 'phoneNumber', title: '联系手机', align: 'center', sort: true, width: 140},
+              {field: 'createdTime', title: '注册时间', align: 'center', sort: true, width: 180, templet: '#tCreatedTime'},
+              {field: 'email', title: 'Email', align: 'center', sort: true, minWidth: 180},
+              // {field: 'qq', title: 'QQ', align: 'center', sort: true, minWidth: 140},
+              {field: 'wechat', title: '微信号', align: 'center', sort: true, minWidth: 140},
+              {field: 'gender', title: '性别', align: 'center', sort: true, width: 80},
+              // {field: 'provinceName', title: '大陆省份', align: 'center', sort: true, minWidth: 150, templet: '#tProvinceName'},
+              // {field: 'nation', title: '民族', align: 'center', sort: true, width: 80},
+              {field: 'avatar', title: '头像', align: 'center', sort: true, width: 80, templet: '#tAvatar'},
+              // {field: 'teacherAddress', title: '地址', align: 'center', sort: true, minWidth: 120, templet: '#tTeacherAddress'},
+              // {field: 'idCard', title: '身份证号', align: 'center', show: false, sort: true, width: 180},
+              // {field: 'isComplemented', title: '完善信息', align: 'center', show: false, sort: true, width: 100, templet: '#tIsComplemented'},
+              // {align: 'center', width: 150, toolbar: '#operation'}
+            ]
+          ]
+        }
+      }
+    })
+  })
+</script>
+{% endblock %}

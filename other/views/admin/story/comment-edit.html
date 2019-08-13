@@ -1,0 +1,84 @@
+{% extends "../back.html" %}
+
+{% block css %}
+{{ super() }}
+{% endblock %}
+
+{% block body %}
+  <div class="layui-card myCard">
+    <div class="layui-card-header">{{ storyComment.author.nickname }}对{{ storyComment.story.title }}的评论</div>
+    <div class="layui-card-body layui-tab layui-tab-brief">
+      <div id="myForm"></div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+  $(function () {
+    newForm({
+      form: {
+        labelWidth: '100',
+        submit: {
+          event: function (data) {
+            $('[lay-filter="myFormSubmit"]').attr('disabled', true)
+            $('[lay-filter="myFormSubmit"]').addClass('layui-btn-disabled')
+            ajax({
+              method: 'POST',
+              url: '/admin/story/comment/{{ storyComment.id }}',
+              data: JSON.stringify(data.field),
+              success: function () {
+                layer.msg('修改成功', {time: 2000, icon:6})
+                parent.tableRender()
+                window.setTimeout(function () {parent.layer.close(parent.layer.getFrameIndex(window.name))}, 2000)
+                // window.setTimeout(function () {window.location.href = '/admin/story/comment/{{ storyComment.story.id }}'}, 2000)
+              },
+              fail: function () {
+                $('[lay-filter="myFormSubmit"]').attr('disabled', false)
+                $('[lay-filter="myFormSubmit"]').removeClass('layui-btn-disabled')
+              },
+              error: function () {
+                $('[lay-filter="myFormSubmit"]').attr('disabled', false)
+                $('[lay-filter="myFormSubmit"]').removeClass('layui-btn-disabled')
+              }
+            })
+          }
+        },
+        val: {
+          'text': '{{ storyComment.text }}'
+        },
+        items: [
+          {
+            label: '评论者',
+            elements: {
+              eType: 'char',
+              name: 'author',
+              element: '<div class="layui-input-block" style="">{{ storyComment.author.nickname }}</div>'
+            },
+          },
+          {
+            label: '标题',
+            elements: {
+              eType: 'char',
+              name: 'story',
+              element: '<div class="layui-input-block" style="">{{ storyComment.story.title }}</div>'
+            },
+          },
+          {
+            label: '内容',
+            elements: {
+              eType: 'textarea',
+              name: 'text',
+              rows: '20',
+              layVerify: 'required'
+            }
+          }
+        ],
+        verify: {
+        }
+      }
+    })
+  })
+</script>
+{% endblock %}

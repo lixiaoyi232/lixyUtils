@@ -1,0 +1,88 @@
+{% extends "../back.html" %}
+
+{% block css %}
+{{ super() }}
+{% endblock %}
+
+{% block main %}
+  <div class="layui-card myCard">
+    <div class="layui-card-header">大陆省份管理</div>
+    <div class="layui-card-body layui-tab layui-tab-brief">
+      <div id="myTable"></div>
+  </div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+  $(function () {
+    newTable({
+      btns: {
+        items: [
+          {% if curAdmin.isSuperUser %}
+          'new',
+          {% endif %}
+          {% if curAdmin.isSuperUser %}
+          'dels',
+          {% endif %}
+          'setCols'
+        ]
+      },
+      search: {
+        'class': 'selects',
+        labelWidth: '100',
+        items: [
+          {
+            label: '大陆省份名',
+            elements: {
+              eType: 'input',
+              name: 'name'
+            }
+          },
+          {
+            label: '大陆省份编号',
+            elements: {
+              eType: 'input',
+              name: 'number'
+            }
+          },
+          // {
+          //   label: 'ID',
+          //   elements: {
+          //     eType: 'between',
+          //     name: 'id'
+          //   }
+          // }
+        ]
+      },
+      table: {
+        tool: {
+          items: [
+            {% if curAdmin.isSuperUser or true %}
+            // 'info',
+            {% endif %}
+            {% if curAdmin.isSuperUser %}
+            'edit',
+            {% endif %}
+            {% if curAdmin.isSuperUser %}
+            'del'
+            {% endif %}
+          ]
+        },
+        config: {
+          elem: '#province',
+          url: '/admin/area/province/table',
+          cols: [
+            [
+              {field: 'id', title: 'ID', align: 'center', show: false, sort: true, width: 100, fixed: 'left'},
+              {field: 'name', title: '大陆省份名', align: 'center', sort: true, minWidth: 150},
+              {field: 'number', title: '大陆省份编号', sort: true, align: 'center', minWidth: 100},
+              {align: 'center', width:150, fixed: 'right', toolbar: '#operation'}
+            ]
+          ]
+        }
+      }
+    })
+  })
+</script>
+{% endblock %}

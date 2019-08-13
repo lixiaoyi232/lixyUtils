@@ -1,0 +1,42 @@
+
+.layui-nav-tree .layui-this, .layui-nav-tree .layui-this>a, .layui-nav-tree .layui-nav-child dd.layui-this, .layui-nav-tree .layui-nav-child dd.layui-this a, .layui-form-select .layui-this, .layui-laypage-curr .layui-laypage-em {
+  background-color: #7DC434!important;
+}
+.layui-laypage a:hover, .layui-btn-group .layui-btn-primary:hover {
+  color: #7DC434!important;
+}
+.layui-laypage input:focus, .layui-laypage select:focus, .layui-input:hover, .layui-textarea:hover, .layui-btn-primary:hover {
+  border-color: #7DC434!important;
+}
+
+/* 个人信息页 */
+.memberInfo {
+  margin-left: 250px;
+  margin-top: 20px;
+}
+.infoItem {
+  line-height: 35px;
+  letter-spacing: 2px;
+}
+.infoItemValue {
+  color: #999999;
+}
+.infoItemImg {
+  max-width: 300px;
+  max-height: 300px;
+}
+.infoItem input, .infoItem select {
+  border: solid 1px #eee;
+  padding: 3px 7px;;
+}
+.notice {
+  color: #fe0032;
+}
+
+.layui-input-inline .layui-input, .layui-input-inline .layui-textarea, .layui-input-inline .layui-select, .layui-input-block .layui-input, .layui-input-block .layui-textarea, .layui-input-block .layui-select {
+  color: #999999;
+}
+
+.layui-form-item>.layui-input-block {
+  margin-right: 250px;
+}

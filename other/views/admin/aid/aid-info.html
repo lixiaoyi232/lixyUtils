@@ -1,0 +1,56 @@
+{% extends "../back.html" %}
+
+{% block css %}
+{{ super() }}
+{% endblock %}
+
+{% block body %}
+  <div class="layui-card myCard">
+    <div class="layui-card-header">订单详情</div>
+    <div class="layui-card-body layui-tab layui-tab-brief">
+      <div id="myForm"></div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+  $(function () {
+    newForm({
+      form: {
+        labelWidth: '120',
+        submit: {
+          show: false
+        },
+        items: [
+          {
+            label: '资助申请单',
+            elements: {
+              eType: 'char',
+              name: 'member',
+              element: '<div class="layui-input-block" style="">{{ aid.aidApply.id }}</div>'
+            }
+          },
+          {
+            label: '爱心团体/人士',
+            elements: {
+              eType: 'char',
+              name: 'member',
+              element: '<div class="layui-input-block" style="">{{ aid.member.name }}</div>'
+            }
+          },
+          {
+            label: '状态',
+            elements: {
+              eType: 'char',
+              name: 'status',
+              element: '<div class="layui-input-block" style="">{{ aid.status }}</div>'
+            }
+          },
+        ]
+      }
+    })
+  })
+</script>
+{% endblock %}

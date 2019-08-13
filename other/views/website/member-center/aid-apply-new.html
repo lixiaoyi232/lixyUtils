@@ -1,0 +1,302 @@
+{% extends "../layout/layout-member-center.html" %}
+
+{% block css %}
+{{ super() }}
+{% endblock %}
+
+{% block body %}
+
+  <div class="layui-card myCard">
+    <div class="layui-card-header">资助申请</div>
+    <div class="layui-card-body layui-tab layui-tab-brief">
+      <div id="myForm"></div>
+    </div>
+  </div>
+
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+  $(function () {
+    newForm({
+      form: {
+        labelWidth: '120',
+        submit: {
+          label: '存为草稿',
+          event: function (data) {
+            $('[lay-filter="myFormSubmit"]').attr('disabled', true)
+            $('[lay-filter="myFormSubmit"]').addClass('layui-btn-disabled')
+            ajax({
+              method: 'POST',
+              url: '/member-center/aid-apply',
+              data: JSON.stringify(data.field),
+              success: function () {
+                layer.msg('申请成功', {time: 2000, icon:6})
+                parent.tableRender()
+                window.setTimeout(function () {parent.layer.close(parent.layer.getFrameIndex(window.name))}, 2000)
+                // window.setTimeout(function () {window.location.href = '/member-center/aid-apply'}, 2000)
+              },
+              fail: function () {
+                $('[lay-filter="myFormSubmit"]').attr('disabled', false)
+                $('[lay-filter="myFormSubmit"]').removeClass('layui-btn-disabled')
+              },
+              error: function () {
+                $('[lay-filter="myFormSubmit"]').attr('disabled', false)
+                $('[lay-filter="myFormSubmit"]').removeClass('layui-btn-disabled')
+              }
+            })
+          }
+        },
+        items: [
+          {
+            label: '学生',
+            elements: [
+              {
+                eType: 'char',
+                name: 'studentShow',
+                element: '<div class="layui-form-label"><button type="button" class="inblk layui-btn layui-btn-primary">添加学生</button></div><div class="layui-input-block students" style="">请选择学生</div>',
+                events: [
+                  {
+                    type: 'delegate',
+                    name: 'click',
+                    query: '.layui-icon-close',
+                    callback: function () {
+                      $(this).parent().remove()
+                      var val = $('[name=studentId]').val().split(',')
+                      val.splice(val.indexOf($(this).attr('stuid')), 1)
+                      $('[name=studentId]').val(val.join(','))
+                      if (val.length === 0) $('.students').html('请选择学生')
+                    }
+                  },
+                  {
+                    type: 'delegate',
+                    name: 'click',
+                    query: 'button',
+                    callback: function (e) {
+                      var index = layer.open({
+                        type: 1,
+                        title: '选择学生（没有完善信息和照片，或者没有家庭成员或成绩的学生，不在此列出）',
+                        offset: ['5px', '5px'],
+                        skin: 'layui-layer-rim',
+                        area: [(document.body.clientWidth - 20) + 'px', (document.body.clientHeight - 20) + 'px'],
+                        content: '<div id="chooseStu"></div>',
+                        maxmin: true
+                      })
+                      newTable({
+                        parent: '#chooseStu',
+                        btns: {
+                          items: [
+                            {
+                              layEvent: 'backStu',
+                              'class': 'layui-btn-normal',
+                              label: '确认选择',
+                              event: function (obj, config, render) {
+                                var data = table.checkStatus(config.id).data
+                                var val = $('[name=studentId]').val().split(',')
+                                if (val[0] === '') val.splice(0, 1)
+                                var html = $('.students').html().split(' ')
+                                if (html[0] === '请选择学生') html.splice(0, 1)
+                                for (var i in data) {
+                                  if (data.hasOwnProperty(i)) {
+                                    val.push(data[i].student.id)
+                                    html.push('<span class="layui-badge layui-bg-blue" style="margin-right: 10px;">ID:' + data[i].student.id + '-' + data[i].name + '<i class="layui-icon layui-icon-close" style="font-size: 12px;" stuid="' + data[i].student.id + '"></i></span>')
+                                  }
+                                }
+                                $('[name=studentId]').val(val.join(','))
+                                $('.students').html(html.join(' '))
+                                layer.close(index)
+                              }
+                            },
+                            {
+                              layEvent: 'cancelStu',
+                              label: '取消',
+                              event: function (obj, config, render) {layer.close(index)}
+                            }
+                          ]
+                        },
+                        search: {
+                          'class': 'selects',
+                          labelWidth: '100',
+                          submit: {
+                            'class': 'layui-btn greenBtn'
+                          },
+                          items: [
+                            {
+                              label: '学生账号',
+                              elements: {
+                                eType: 'input',
+                                name: 'account'
+                              }
+                            },
+                            {
+                              label: '学生姓名',
+                              elements: {
+                                eType: 'input',
+                                name: 'name'
+                              }
+                            },
+                            {
+                              label: '身份证号',
+                              elements: {
+                                eType: 'input',
+                                name: 'idCard'
+                              }
+                            },
+                            {
+                              label: '联系手机',
+                              elements: {
+                                eType: 'input',
+                                name: 'phoneNumber'
+                              }
+                            },
+                            {
+                              label: '学段',
+                              elements: {
+                                eType: 'select',
+                                name: 'studentPeriod',
+                                option: [
+                                  {value: 'all', label: '&nbsp;', selected: true},
+                                  {% for i, j in StudentPeriod %}
+                                  {% if i != 'LiXiao' %}{value: '{{ j }}', label: '{{ j }}'},{% endif %}
+                                  {% endfor %}
+                                ]
+                              }
+                            },
+                            {
+                              label: '大陆省份',
+                              elements: {
+                                eType: 'input',
+                                name: 'provinceName'
+                              }
+                            },
+                          ]
+                        },
+                        table: {
+                          templates: [
+                            {
+                              id: 'tProvinceName',
+                              content: '[[ d.county.city.province.name ]]'
+                            },
+                            {
+                              id: 'tStudentPeriod',
+                              content: '[[#  if(d.student.period === \'{{ StudentPeriod.XiaoXue }}\'){ ]]<span class="layui-badge layui-bg-orange">小</span>[[# } else if(d.student.period === \'{{ StudentPeriod.ChuZhong }}\'){ ]]<span class="layui-badge layui-bg-blue">初</span>[[#  } else if(d.student.period === \'{{ StudentPeriod.GaoZhong }}\'){ ]]<span class="layui-badge layui-bg-red">高</span>[[#  } else { ]]<span class="layui-badge layui-bg-gray">离</span>[[#  } ]]'
+                            },
+                            {
+                              id: 'tAvatar',
+                              content: '[[# if (d.avatar) { ]]<a href="[[ d.avatar ]]" style="cursor: pointer;" target="_blank"><img class="tableImg" src="[[ d.avatar ]]"></a>[[# } ]]'
+                            },
+                            {
+                              id: 'tIsComplemented',
+                              content: '[[# if (d.isComplemented) { ]]是[[# } else { ]]否[[# } ]]'
+                            },
+                            {
+                              id: 'tStudentYear',
+                              content: '[[ d.student.yearOfEnrollment ]]'
+                            },
+                            {
+                              id: 'tStudentClass',
+                              content: '[[ d.student.class ]]'
+                            },
+                            {
+                              id: 'tStudentGrade',
+                              content: '[[ d.student.grade ]]'
+                            },
+                            {
+                              id: 'tStudentPhoto',
+                              content: '[[# if (d.student.photo) { ]]<a href="[[ d.student.photo ]]" style="cursor: pointer;" target="_blank"><img class="tableImg" src="[[ d.student.photo ]]"></a>[[# } ]]'
+                            },
+                            {
+                              id: 'tStudentAddress',
+                              content: '[[ d.student.address != null ? d.student.address : \'\' ]]'
+                            },
+                            {
+                              id: 'tStudentBirthday',
+                              content: '[[ d.student.birthday != null ? d.student.birthday : \'\' ]]'
+                            },
+                            {
+                              id: 'tStudentFamilyInfo',
+                              content: '[[ d.student.familyInfo != null ? d.student.familyInfo : \'\' ]]'
+                            },
+                            {
+                              id: 'tStudentPoverty',
+                              content: '[[ d.student.poverty != null ? d.student.poverty : \'\' ]]'
+                            },
+                          ],
+                          config: {
+                            elem: '#student',
+                            url: '/member/student/table?isComplemented=true&dftNotIdA=true&haveFamilies=true&haveScores=true&studentPhoto=true&semester={{ semester }}&notId=' + ($('[name=studentId]').val() !== '' ? $('[name=studentId]').val() : 'null'),
+                            cols: [
+                              [
+                                {field: 'id', title: 'ID', align: 'center', show: false, sort: true, width: 100},
+                                {field: 'account', title: '学生账号', align: 'center', sort: true, minWidth: 100},
+                                {field: 'name', title: '学生姓名', align: 'center', sort: true, minWidth: 140},
+                                {field: 'nickName', title: '学生昵称', align: 'center', show: false, sort: true, minWidth: 140},
+                                {field: 'provinceName', title: '大陆省份', align: 'center', sort: true, minWidth: 150, templet: '#tProvinceName'},
+                                {field: 'phoneNumber', title: '联系手机', align: 'center', sort: true, width: 140},
+                                {field: 'studentPeriod', title: '学段', align: 'center', sort: true, width: 80, templet: '#tStudentPeriod'},
+                                {field: 'idCard', title: '身份证号', align: 'center', sort: true, width: 180},
+                                {field: 'gender', title: '性别', align: 'center', show: false, sort: true, width: 80},
+                                {field: 'nation', title: '民族', align: 'center', show: false, sort: true, width: 80},
+                                {field: 'email', title: 'Email', align: 'center', show: false, sort: true, minWidth: 180},
+                                {field: 'wechat', title: '微信号', align: 'center', show: false, sort: true, minWidth: 140},
+                                {field: 'qq', title: 'QQ', align: 'center', show: false, sort: true, minWidth: 140},
+                                {field: 'avatar', title: '头像', align: 'center', show: false, sort: true, width: 80, templet: '#tAvatar'},
+                                {field: 'isComplemented', title: '完善信息', align: 'center', show: false, sort: true, width: 100, templet: '#tIsComplemented'},
+                                {field: 'studentYear', title: '入学年份', align: 'center', show: false, sort: true, minWidth: 100, templet: '#tStudentYear'},
+                                {field: 'studentClass', title: '班级', align: 'center', show: false, sort: true, width: 80, templet: '#tStudentClass'},
+                                {field: 'studentGrade', title: '年级', align: 'center', show: false, sort: true, width: 80, templet: '#tStudentGrade'},
+                                {field: 'studentPhoto', title: '照片', align: 'center', show: true, sort: true, width: 80, templet: '#tStudentPhoto'},
+                                {field: 'studentAddress', title: '地址', align: 'center', show: false, sort: true, minWidth: 120, templet: '#tStudentAddress'},
+                                {field: 'studentFamilyInfo', title: '家庭情况简述', align: 'center', show: false, sort: true, minWidth: 200, templet: '#tStudentFamilyInfo'},
+                                {field: 'studentPoverty', title: '贫困状态', align: 'center', show: false, sort: true, minWidth: 160, templet: '#tStudentPoverty'},
+                                {field: 'studentBirthday', title: '出生日期', align: 'center', show: false, sort: true, minWidth: 100, templet: '#tStudentBirthday'},
+                              ]
+                            ],
+                          }
+                        }
+                      })
+                    }
+                  }
+                ]
+              },
+              {
+                eType: 'input',
+                name: 'studentId',
+                show: false,
+                layVerify: 'stuRqd'
+              }
+            ]
+          },
+          {
+            label: '申请金额',
+            elements: {
+              eType: 'input',
+              name: 'money',
+              type: 'number',
+              layVerify: 'required'
+            }
+          },
+          {
+            label: '用途',
+            elements: {
+              eType: 'input',
+              name: 'use',
+              display: 'block',
+              layVerify: 'required'
+            }
+          }
+        ],
+        verify: {
+          select: function (value) {
+            if (value === '' || value === 'null') return '必填项不能为空'
+          },
+          stuRqd: function (value) {
+            if (value === '') return '学生不能为空'
+          },
+        }
+      }
+    })
+  })
+</script>
+{% endblock %}

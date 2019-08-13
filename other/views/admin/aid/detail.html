@@ -1,0 +1,415 @@
+{% extends "../back.html" %}
+
+{% block css %}
+{{ super() }}
+<style>
+  html {
+    overflow: hidden;
+  }
+</style>
+{% endblock %}
+
+{% block main %}
+  <div class="layui-card myCard">
+    <div class="layui-card-header">资助明细</div>
+    <div class="layui-card-body">
+      <div id="myTable"></div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+  $(function () {
+    newTable({
+      btns: {
+        items: [
+          {
+            layEvent: 'export',
+            'class': 'layui-btn-normal',
+            label: '导出',
+            event: function (obj, config, render) {
+              layer.confirm('确认导出吗？', function(index){
+                window.location = '/admin/aid/detail/export' + (config.url.split('?')[1] != null ? '?' + config.url.split('?')[1] : '')
+                layer.close(index)
+              })
+            }
+          },
+          {% if curAdmin.isSuperUser or curAdmin.permissions.aid_dtl_d %}
+          'dels',
+          {% endif %}
+          'setCols',
+        ]
+      },
+      search: {
+        'class': 'selects',
+        labelWidth: '100',
+        submit: {
+          event: function (data, config, render) {
+            var queryObj = {semester: ''}
+            if (data.field.semesterDate !== '') {
+              var semesterArr = data.field.semesterDate.split('___')
+              semesterArr[0] = new Date(semesterArr[0] * 1)
+              semesterArr[1] = new Date(semesterArr[1] * 1)
+              queryObj.semester = ((semesterArr[0].getMonth() ? semesterArr[0].getFullYear() : (semesterArr[0].getFullYear() - 1)) * 2 + (semesterArr[0].getMonth() >= 1 && semesterArr[0].getMonth() <= 6 ? 0 : 1)) + '*' + ((semesterArr[1].getMonth() ? semesterArr[1].getFullYear() : (semesterArr[1].getFullYear() - 1)) * 2 + (semesterArr[1].getMonth() >= 1 && semesterArr[1].getMonth() <= 6 ? 0 : 1))
+            }
+            config.url = setQuery(config.url, queryObj)
+            render(config)
+          }
+        },
+        items: [
+          {
+            label: '资助学期',
+            elements: {
+              eType: 'date',
+              name: 'semesterDate',
+              type: 'month',
+              range: true,
+            }
+          },
+          {
+            label: '资助单号',
+            elements: {
+              eType: 'input',
+              name: 'aidNumber'
+            }
+          },
+          {
+            label: '资助人账号',
+            elements: {
+              eType: 'input',
+              name: 'memberAccount'
+            }
+          },
+          {
+            label: '资助人姓名',
+            elements: {
+              eType: 'input',
+              name: 'memberName'
+            }
+          },
+          {
+            label: '受助人账号',
+            elements: {
+              eType: 'input',
+              name: 'aidApplyBankNumber'
+            }
+          },
+          {
+            label: '受助人账号',
+            elements: {
+              eType: 'input',
+              name: 'aidApplyAccount'
+            }
+          },
+          {
+            label: '受助人姓名',
+            elements: {
+              eType: 'input',
+              name: 'aidApplyName'
+            }
+          },
+          {
+            label: '学校编号',
+            elements: {
+              eType: 'input',
+              name: 'aidApplySchoolAccount'
+            }
+          },
+          {
+            label: '学校名称',
+            elements: {
+              eType: 'input',
+              name: 'aidApplySchoolName'
+            }
+          },
+          {
+            label: '资助金额',
+            elements: {
+              eType: 'between',
+              name: 'money'
+            }
+          },
+          {
+            label: '寄款时间',
+            elements: {
+              eType: 'date',
+              name: 'payDate',
+              range: true
+            }
+          },
+          {
+            label: '提交时间',
+            elements: {
+              eType: 'date',
+              name: 'createdTime',
+              range: true
+            }
+          },
+          {
+            label: '是否留言',
+            elements: {
+              eType: 'select',
+              name: 'haveMessage',
+              option: [
+                {value: 'all', label: '&nbsp;'},
+                {value: 'true', label: '是'},
+                {value: 'false', label: '否'},
+              ]
+            }
+          },
+          {
+            label: '回执确认',
+            elements: {
+              eType: 'select',
+              name: 'backOK',
+              option: [
+                {value: 'all', label: '&nbsp;'},
+                {value: 'true', label: '是'},
+                {value: 'false', label: '否'},
+              ]
+            }
+          },
+          {
+            label: '感谢信确认',
+            elements: {
+              eType: 'select',
+              name: 'thankOK',
+              option: [
+                {value: 'all', label: '&nbsp;'},
+                {value: 'true', label: '是'},
+                {value: 'false', label: '否'},
+              ]
+            }
+          },
+          {
+            label: '全部确认',
+            elements: {
+              eType: 'select',
+              name: 'allOK',
+              option: [
+                {value: 'all', label: '&nbsp;'},
+                {value: 'true', label: '是'},
+                {value: 'false', label: '否'},
+              ]
+            }
+          },
+        ]
+      },
+      table: {
+        tool: {
+          items: [
+            {% if curAdmin.isSuperUser or curAdmin.permissions.aid_dtl_u %}
+            {
+              layEvent: 'addBackOK',
+              label: '回执',
+              'class': 'layui-btn-primary [[# if(d.backOK){ ]] none[[#  } ]]',
+              event: function (obj, config, render) {
+                ajax({
+                  method: 'POST',
+                  url: '/admin/aid/detail/backOK',
+                  data: JSON.stringify({backOK: true, data: [obj.data.id]}),
+                  success: function () {
+                    layer.msg('回执确认成功', {time: 2000, icon:6})
+                    render()
+                  },
+                })
+              }
+            },
+            {
+              layEvent: 'removeBackOK',
+              label: '去回',
+              'class': 'layui-btn-primary [[# if(!d.backOK){ ]] none[[#  } ]]',
+              event: function (obj, config, render) {
+                ajax({
+                  method: 'POST',
+                  url: '/admin/aid/detail/backOK',
+                  data: JSON.stringify({backOK: false, data: [obj.data.id]}),
+                  success: function () {
+                    layer.msg('取消回执确认成功', {time: 2000, icon:6})
+                    render()
+                  },
+                })
+              }
+            },
+            {
+              layEvent: 'addThankOK',
+              label: '感谢',
+              'class': 'layui-btn-primary [[# if(d.thankOK){ ]] none[[#  } ]]',
+              event: function (obj, config, render) {
+                ajax({
+                  method: 'POST',
+                  url: '/admin/aid/detail/thankOK',
+                  data: JSON.stringify({thankOK: true, data: [obj.data.id]}),
+                  success: function () {
+                    layer.msg('感谢信确认成功', {time: 2000, icon:6})
+                    render()
+                  },
+                })
+              }
+            },
+            {
+              layEvent: 'removeThankOK',
+              label: '去感',
+              'class': 'layui-btn-primary [[# if(!d.thankOK){ ]] none[[#  } ]]',
+              event: function (obj, config, render) {
+                ajax({
+                  method: 'POST',
+                  url: '/admin/aid/detail/thankOK',
+                  data: JSON.stringify({thankOK: false, data: [obj.data.id]}),
+                  success: function () {
+                    layer.msg('取消感谢信确认成功', {time: 2000, icon:6})
+                    render()
+                  },
+                })
+              }
+            },
+            {% endif %}
+            {% if curAdmin.isSuperUser or curAdmin.permissions.aid_msg_g %}
+            {
+              layEvent: 'message',
+              label: '留言',
+              event: function (obj, config, render) {
+                layer.open({
+                  type: 2,
+                  title: '留言',
+                  shade: 0.8,
+                  area: ['90%', '90%'],
+                  content: '/admin/aid/detail/' + obj.data.id + '/message'
+                })
+              }
+            },
+            {% endif %}
+            {% if curAdmin.isSuperUser or curAdmin.permissions.aid_dtl_g %}
+            'info',
+            {% endif %}
+            {% if curAdmin.isSuperUser or curAdmin.permissions.aid_dtl_u %}
+            'edit',
+            {% endif %}
+            {% if curAdmin.isSuperUser or curAdmin.permissions.aid_dtl_d %}
+            'del',
+            {% endif %}
+          ]
+        },
+        templates: [
+          {
+            id: 'tBackOK',
+            content: '[[ d.backOK ? \'是\' : \'否\' ]]'
+          },
+          {
+            id: 'tThankOK',
+            content: '[[ d.thankOK ? \'是\' : \'否\' ]]'
+          },
+          {
+            id: 'tAidApplyProvinceName',
+            content: '[[ d.aid.aidApply.provinceName ]]'
+          },
+          {
+            id: 'tSemester',
+            content: '[[ semester(d.semester) ]]'
+          },
+          {
+            id: 'tAidNumber',
+            content: '[[ d.aid.number ]]'
+          },
+          {
+            id: 'tMemberAccount',
+            content: '[[ d.aid.member.account ]]'
+          },
+          {
+            id: 'tAidApplyGrade',
+            content: '[[ d.aid.aidApply.grade ]]'
+          },
+          {
+            id: 'tAidApplyGender',
+            content: '[[ d.aid.aidApply.gender ]]'
+          },
+          {
+            id: 'tAidApplyFamilyInfo',
+            content: '[[ d.aid.aidApply.familyInfo ]]'
+          },
+          {
+            id: 'tAidGroup',
+            content: '[[ d.aid.group ]]'
+          },
+          {
+            id: 'tMemberName',
+            content: '[[ d.aid.member.name ]]'
+          },
+          {
+            id: 'tAidApplyBankUser',
+            content: '[[ d.aid.aidApply.bankUser ]]'
+          },
+          {
+            id: 'tAidApplyBank',
+            content: '[[ d.aid.aidApply.bank ]]'
+          },
+          {
+            id: 'tAidApplyBankNumber',
+            content: '[[ d.aid.aidApply.bankNumber ]]'
+          },
+          {
+            id: 'tAidApplyAccount',
+            content: '[[ d.aid.aidApply.account ]]'
+          },
+          {
+            id: 'tAidApplyName',
+            content: '[[ d.aid.aidApply.name ]]'
+          },
+          {
+            id: 'tAidApplySchoolAccount',
+            content: '[[ d.aid.aidApply.schoolAccount ]]'
+          },
+          {
+            id: 'tAidApplySchoolName',
+            content: '[[ d.aid.aidApply.schoolName ]]'
+          },
+          {
+            id: 'tPayDate',
+            content: '[[ dateFormat(d.payDate, \'YYYY-MM-DD\') ]]'
+          },
+          {
+            id: 'tCreatedTime',
+            content: '[[ dateFormat(d.createdTime, \'YYYY-MM-DD HH:mm:ss\') ]]'
+          },
+        ],
+        config: {
+          elem: '#aidDetail',
+          url: '/admin/aid/detail/table',
+          cols: [
+            [
+              {field: 'id', title: 'ID', align: 'center', show: false, sort: true, width: 100, fixed: 'left'},
+              {field: 'backOK', title: '回执确认', align: 'center', sort: true, minWidth: 80, templet: '#tBackOK'},
+              {field: 'thankOK', title: '感谢确认', align: 'center', sort: true, minWidth: 80, templet: '#tThankOK'},
+              {field: 'thank', title: '感谢', align: 'center', minWidth: 80},
+              {field: 'back', title: '回执', align: 'center', minWidth: 80},
+              {field: 'normal', title: '回复', align: 'center', minWidth: 80},
+              {field: 'aidApplySchoolName', title: '学校名称', align: 'center', sort: true, minWidth: 200, templet: '#tAidApplySchoolName'},
+              {field: 'aidApplyName', title: '学生', align: 'center', sort: true, minWidth: 140, templet: '#tAidApplyName'},
+              {field: 'memberName', title: '资助人', align: 'center', sort: true, minWidth: 140, templet: '#tMemberName'},
+              {field: 'semester', title: '资助学期', align: 'center', sort: true, minWidth: 180, templet: '#tSemester'},
+              {field: 'aidApplyProvinceName', title: '大陆省份', align: 'center', sort: true, minWidth: 120, templet: '#tAidApplyProvinceName'},
+              {field: 'aidApplySchoolAccount', title: '学校编号', align: 'center', sort: true, minWidth: 140, templet: '#tAidApplySchoolAccount'},
+              {field: 'aidApplyAccount', title: '受助人账号', align: 'center', sort: true, minWidth: 140, templet: '#tAidApplyAccount'},
+              {field: 'memberAccount', title: '资助人账号', align: 'center', sort: true, minWidth: 140, templet: '#tMemberAccount'},
+              {field: 'aidApplyGrade', title: '年级', align: 'center', sort: true, minWidth: 100, templet: '#tAidApplyGrade'},
+              {field: 'aidApplyGender', title: '性别', align: 'center', sort: true, minWidth: 100, templet: '#tAidApplyGender'},
+              {field: 'aidApplyFamilyInfo', title: '家庭情况', align: 'center', sort: true, minWidth: 140, templet: '#tAidApplyFamilyInfo'},
+              {field: 'aidGroup', title: '资助团体', align: 'center', sort: true, minWidth: 140, templet: '#tAidGroup'},
+              {field: 'money', title: '汇款金额', align: 'center', sort: true, minWidth: 100},
+              {field: 'payDate', title: '汇款时间', align: 'center', sort: true, minWidth: 120, templet: '#tPayDate'},
+              {field: 'aidNumber', title: '资助单号', align: 'center', sort: true, minWidth: 160, templet: '#tAidNumber'},
+              {field: 'aidApplyBankUser', title: '开户人', align: 'center', show: false, sort: true, minWidth: 100, templet: '#tAidApplyBankUser'},
+              {field: 'aidApplyBank', title: '开户行', align: 'center', show: false, sort: true, minWidth: 150, templet: '#tAidApplyBank'},
+              {field: 'aidApplyBankNumber', title: '开户账号', align: 'center', show: false, sort: true, minWidth: 160, templet: '#tAidApplyBankNumber'},
+              {field: 'createdTime', title: '提交时间', align: 'center', show: false, sort: true, minWidth: 180, templet: '#tCreatedTime'},
+              {align: 'center', width: 250, fixed: 'right', toolbar: '#operation'}
+            ]
+          ]
+        }
+      }
+    })
+  })
+</script>
+{% endblock %}

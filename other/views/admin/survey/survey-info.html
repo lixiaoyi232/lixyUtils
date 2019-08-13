@@ -1,0 +1,91 @@
+{% extends "../back.html" %}
+
+{% block css %}
+{{ super() }}
+{% endblock %}
+
+{% block body %}
+  <div class="layui-card myCard">
+    <div class="layui-card-header">{{ survey.title }}</div>
+    <div class="layui-card-body layui-tab layui-tab-brief">
+      <div id="myForm"></div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+  $(function () {
+    newForm({
+      form: {
+        labelWidth: '100',
+        submit: {
+          show: false
+        },
+        items: [
+          {
+            label: '调查范围',
+            elements: {
+              eType: 'char',
+              name: 'memberTypes',
+              element: '<div class="layui-input-block" style="">{{ survey.memberTypes }} （{{ count }}）</div>'
+            }
+          },
+          {% for i in survey.content %}
+          {% set lastIndex = 0 %}
+          {
+            label: '{{ loop.index }}、',
+            elements: [
+              {
+                eType: 'char',
+                name: 'ctt{{ loop.index }}q',
+                element: '<div class="layui-input-block" style="">{{ i.question }}</div>'
+              },
+              {% if i.type == 'radio' or i.type == 'checkbox' %}
+              {
+                eType: 'char',
+                name: 'ctt{{ loop.index }}o',
+                element: '<div style="word-spacing: 30px;">'
+                  {% set outIndex = loop.index %}
+                  {% for j in i.options %}
+                  + '{{ loop.index|getLetter }}、{{ j }} '
+                  {% endfor %}
+                  + '</div>'
+              }
+              {% elif i.type == 'radio2' or i.type == 'checkbox2' %}
+              {
+                eType: 'char',
+                name: 'ctt{{ loop.index }}o',
+                element: '<div style="word-spacing: 30px;">'
+                  {% set outIndex = loop.index %}
+                  {% for j in i.options %}
+                  + '{{ loop.index|getLetter }}、{{ j }} '
+                  {% set lastIndex = loop.index + 1 %}
+                  {% endfor %}
+                  + '{{ lastIndex|getLetter }}、{{ i.fillOptLab }}<input type="text" class="layui-input inblk" style="width: auto;" lay-verify=""></div>'
+              }
+              {% elif i.type == 'short' %}
+              {
+                eType: 'char',
+                name: 'ctt{{ loop.index }}o',
+                element: '<div style="height: 60px;"> </div>'
+              }
+              {% endif %}
+            ]
+          },
+          {% endfor %}
+          {
+            label: '状态',
+            elements: {
+              eType: 'char',
+              name: 'status',
+              element: '<div class="layui-input-block" style="">{{ survey.status }}</div>'
+            }
+          }
+        ]
+      }
+    })
+  })
+</script>
+{% endblock %}

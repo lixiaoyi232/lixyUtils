@@ -1,0 +1,203 @@
+{% extends "../back.html" %}
+
+{% block css %}
+{{ super() }}
+<style>
+  html {
+    overflow: hidden;
+  }
+</style>
+{% endblock %}
+
+{% block body %}
+  <div class="layui-card myCard">
+    <div class="layui-card-header">家庭表</div>
+    <div class="layui-card-body">
+      <div id="myTable"></div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+  $(function () {
+    newTable({
+      btns: {
+        items: [
+          {% if curAdmin.isSuperUser or curAdmin.permissions.mem_std_fml_a %}
+          {
+            layEvent: 'new',
+            event: function (obj, config, render) {
+              var path = config.url.split('?')[0]
+              path = (path[path.length - 1] === '/' ? path.slice(0, path.length - 6) : (path.slice(0, path.length - 5)))
+              // window.location.href = path + 'new'
+              window.tableRender = render
+              layer.open({
+                type: 2,
+                title: '新建',
+                shade: 0.8,
+                area: ['90%', '90%'],
+                content: path + 'new?studentId={{ studentId }}'
+              })
+            }
+          },
+          {% endif %}
+          {% if curAdmin.isSuperUser or curAdmin.permissions.mem_std_fml_d %}
+          'dels',
+          {% endif %}
+          'setCols'
+        ]
+      },
+      // search: {
+      //   'class': 'selects',
+      //   labelWidth: '100',
+      //   items: [
+      //     {
+      //       label: '大陆省份',
+      //       elements: {
+      //         eType: 'input',
+      //         name: 'provinceName'
+      //       }
+      //     },
+      //     {
+      //       label: '学校编号',
+      //       elements: {
+      //         eType: 'input',
+      //         name: 'schoolAccount'
+      //       }
+      //     },
+      //     {
+      //       label: '学校名称',
+      //       elements: {
+      //         eType: 'input',
+      //         name: 'schoolName'
+      //       }
+      //     },
+      //     {
+      //       label: '学生账号',
+      //       elements: {
+      //         eType: 'input',
+      //         name: 'studentAccount'
+      //       }
+      //     },
+      //     {
+      //       label: '学生姓名',
+      //       elements: {
+      //         eType: 'input',
+      //         name: 'studentName'
+      //       }
+      //     },
+      //     {
+      //       label: '称呼',
+      //       elements: {
+      //         eType: 'input',
+      //         name: 'address'
+      //       }
+      //     },
+      //     {
+      //       label: '姓名',
+      //       elements: {
+      //         eType: 'input',
+      //         name: 'name'
+      //       }
+      //     },
+      //     {
+      //       label: '出生年份',
+      //       elements: {
+      //         eType: 'date',
+      //         name: 'birthyear',
+      //         type: 'year',
+      //         range: true
+      //       }
+      //     },
+      //     {
+      //       label: '职业',
+      //       elements: {
+      //         eType: 'input',
+      //         name: 'profession'
+      //       }
+      //     },
+      //     {
+      //       label: '健康状况',
+      //       elements: {
+      //         eType: 'input',
+      //         name: 'health'
+      //       }
+      //     },
+      //     {
+      //       label: '年收入',
+      //       elements: {
+      //         eType: 'between',
+      //         name: 'income'
+      //       }
+      //     },
+      //     // {
+      //     //   label: '提交人',
+      //     //   elements: {
+      //     //     eType: 'input',
+      //     //     name: 'publishUser'
+      //     //   }
+      //     // },
+      //   ]
+      // },
+      table: {
+        tool: {
+          items: [
+            {% if curAdmin.isSuperUser or curAdmin.permissions.mem_std_fml_u %}
+            'edit',
+            {% endif %}
+            {% if curAdmin.isSuperUser or curAdmin.permissions.mem_std_fml_d %}
+            'del',
+            {% endif %}
+          ]
+        },
+        templates: [
+          {
+            id: 'tProvinceName',
+            content: '[[ d.student.school.member.county.city.province.name ]]'
+          },
+          {
+            id: 'tSchoolAccount',
+            content: '[[ d.student.school.member.account ]]'
+          },
+          {
+            id: 'tSchoolName',
+            content: '[[ d.student.school.member.name ]]'
+          },
+          {
+            id: 'tStudentAccount',
+            content: '[[ d.student.member.account ]]'
+          },
+          {
+            id: 'tStudentName',
+            content: '[[ d.student.member.name ]]'
+          },
+        ],
+        config: {
+          elem: '#family',
+          url: '/admin/member/family/table?studentId={{ studentId }}',
+          cols: [
+            [
+              {field: 'id', title: 'ID', align: 'center', show: false, sort: true, width: 100, fixed: 'left'},
+              {field: 'provinceName', title: '大陆省份', align: 'center', sort: true, minWidth: 150, templet: '#tProvinceName'},
+              {field: 'schoolAccount', title: '学校编号', align: 'center', sort: true, minWidth: 140, templet: '#tSchoolAccount'},
+              {field: 'schoolName', title: '学校名称', align: 'center', sort: true, minWidth: 250, templet: '#tSchoolName'},
+              {field: 'studentAccount', title: '学生账号', align: 'center', sort: true, minWidth: 140, templet: '#tStudentAccount'},
+              {field: 'studentName', title: '学生姓名', align: 'center', sort: true, minWidth: 140, templet: '#tStudentName'},
+              {field: 'address', title: '称呼', align: 'center', sort: true, width: 100},
+              {field: 'name', title: '姓名', align: 'center', sort: true, width: 100},
+              {field: 'birthyear', title: '出生年份', align: 'center', sort: true, width: 100},
+              {field: 'profession', title: '职业', align: 'center', sort: true, minWidth: 150},
+              {field: 'health', title: '健康状况', align: 'center', sort: true, minWidth: 100},
+              {field: 'income', title: '年收入', align: 'center', sort: true, minWidth: 100},
+              // {field: 'publishUser', title: '提交人', align: 'center', sort: true, minWidth: 140},
+              {align: 'center', width: 120, fixed: 'right', toolbar: '#operation'}
+            ]
+          ]
+        }
+      }
+    })
+  })
+</script>
+{% endblock %}

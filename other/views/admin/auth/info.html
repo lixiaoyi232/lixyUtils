@@ -1,0 +1,65 @@
+{% extends "../back.html" %}
+
+{% block css %}
+{{ super() }}
+{% endblock %}
+
+{% block body %}
+  <div class="layui-card myCard">
+    <div class="layui-card-header">个人信息</div>
+    <div class="layui-card-body layui-tab layui-tab-brief">
+      <div id="myForm"></div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+  $(function () {
+    newForm({
+      form: {
+        labelWidth: '120',
+        submit: {
+          show: false
+        },
+        done: function () {
+          ajax({
+            method: 'GET',
+            url: '/admin/admin/admin/{{ curAdmin.id }}/json',
+            success: function (data) {
+              authtree.render('#pmsnTree', data.data.trees, {inputname: 'authids[]', layfilter: 'lay-check-auth', openall: true})
+            }
+          })
+        },
+        items: [
+          {
+            label: '用户名',
+            elements: {
+              eType: 'char',
+              name: 'account',
+              element: '<div class="layui-input-block" style="">{{ curAdmin.account }}</div>'
+            }
+          },
+          {
+            label: '超级用户',
+            elements: {
+              eType: 'char',
+              name: 'account',
+              element: '<div class="layui-input-block" style="">{% if curAdmin.isSuperUser %}是{% else %}否{% endif %}</div>'
+            }
+          },
+          {
+            label: '权限',
+            elements: {
+              eType: 'char',
+              name: 'permissions" id="pmsnTree',
+              element: ''
+            }
+          }
+        ]
+      }
+    })
+  })
+</script>
+{% endblock %}

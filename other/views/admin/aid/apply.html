@@ -1,0 +1,427 @@
+{% extends "../back.html" %}
+
+{% block css %}
+{{ super() }}
+<style>
+  html {
+    overflow: hidden;
+  }
+</style>
+{% endblock %}
+
+{% block main %}
+  <div class="layui-card myCard">
+    <div class="layui-card-header">资助申请审核</div>
+    <div class="layui-card-body">
+      <div id="myTable"></div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+  $(function () {
+    newTable({
+      btns: {
+        items: [
+          {% if curAdmin.isSuperUser or curAdmin.permissions.aid_apl_a %}
+          'new',
+          {% endif %}
+          {% if curAdmin.isSuperUser or curAdmin.permissions.aid_apl_d %}
+          'dels',
+          {% endif %}
+          'setCols',
+          {% if curAdmin.isSuperUser or curAdmin.permissions.aid_apl_v %}
+          {
+            layEvent: 'putaway',
+            'class': 'layui-btn-normal',
+            label: '上架',
+            event: function (obj, config, render) {
+              var data = table.checkStatus(config.id).data
+              var items = []
+              for (var i in data) if (data.hasOwnProperty(i)) items.push(data[i].id)
+              ajax({
+                method: 'POST',
+                url: '/admin/aid/apply/status',
+                data: JSON.stringify({statusRadio: '{{ AidApplyStatus.putaway }}', data: items}),
+                success: function () {
+                  layer.msg('状态改变成功', {time: 2000, icon:6})
+                  render()
+                },
+              })
+            }
+          },
+          {
+            layEvent: 'own',
+            'class': 'layui-btn-normal',
+            label: '自分配',
+            event: function (obj, config, render) {
+              var data = table.checkStatus(config.id).data
+              var items = []
+              for (var i in data) if (data.hasOwnProperty(i)) items.push(data[i].id)
+              ajax({
+                method: 'POST',
+                url: '/admin/aid/apply/status',
+                data: JSON.stringify({statusRadio: '{{ AidApplyStatus.own }}', data: items}),
+                success: function () {
+                  layer.msg('状态改变成功', {time: 2000, icon:6})
+                  render()
+                },
+              })
+            }
+          },
+          {
+            layEvent: 'revamp',
+            'class': 'layui-btn-normal',
+            label: '复议',
+            event: function (obj, config, render) {
+              if ($('[name=revampBtn]').val() === '') {
+                layer.msg('复议理由不能为空', {time: 2000, icon:5, anim: 6})
+                return true
+              }
+              var data = table.checkStatus(config.id).data
+              var items = []
+              for (var i in data) if (data.hasOwnProperty(i)) items.push(data[i].id)
+              ajax({
+                method: 'POST',
+                url: '/admin/aid/apply/status',
+                data: JSON.stringify({statusRadio: '{{ AidApplyStatus.revamp }}', data: items, reason: $('[name=revampBtn]').val()}),
+                success: function () {
+                  layer.msg('状态改变成功', {time: 2000, icon:6})
+                  render()
+                },
+              })
+            }
+          },
+          {% endif %}
+        ]
+      },
+      search: {
+        'class': 'selects',
+        labelWidth: '120',
+        submit: {
+          event: function (data, config, render) {
+            var queryObj = {semester: ''}
+            if (data.field.semesterDate !== '') {
+              var semesterArr = data.field.semesterDate.split('___')
+              semesterArr[0] = new Date(semesterArr[0] * 1)
+              semesterArr[1] = new Date(semesterArr[1] * 1)
+              queryObj.semester = ((semesterArr[0].getMonth() ? semesterArr[0].getFullYear() : (semesterArr[0].getFullYear() - 1)) * 2 + (semesterArr[0].getMonth() >= 1 && semesterArr[0].getMonth() <= 6 ? 0 : 1)) + '*' + ((semesterArr[1].getMonth() ? semesterArr[1].getFullYear() : (semesterArr[1].getFullYear() - 1)) * 2 + (semesterArr[1].getMonth() >= 1 && semesterArr[1].getMonth() <= 6 ? 0 : 1))
+            }
+            config.url = setQuery(config.url, queryObj)
+            render(config)
+          }
+        },
+        items: [
+          {
+            label: '状态',
+            elements: {
+              eType: 'select',
+              name: 'status',
+              option: [
+                {value: 'all', label: '&nbsp;'},
+                {% for i, j in AidApplyStatus %}
+                {value: '{{ j }}', label: '{{ j }}'},
+                {% endfor %}
+              ]
+            }
+          },
+          {
+            label: '学生账号',
+            elements: {
+              eType: 'input',
+              name: 'account'
+            }
+          },
+          {
+            label: '学生姓名',
+            elements: {
+              eType: 'input',
+              name: 'name'
+            }
+          },
+          {
+            label: '大陆省份',
+            elements: {
+              eType: 'input',
+              name: 'provinceName'
+            }
+          },
+          {
+            label: '年级',
+            elements: {
+              eType: 'between',
+              name: 'grade'
+            }
+          },
+          {
+            label: '申请学期',
+            elements: {
+              eType: 'date',
+              name: 'semesterDate',
+              type: 'month',
+              range: true
+            }
+          },
+          {
+            label: '学校编号',
+            elements: {
+              eType: 'input',
+              name: 'schoolAccount'
+            }
+          },
+          {
+            label: '学校名称',
+            elements: {
+              eType: 'input',
+              name: 'schoolName'
+            }
+          },
+          // {
+          //   label: '指导教师账号',
+          //   elements: {
+          //     eType: 'input',
+          //     name: 'teacherAccount'
+          //   }
+          // },
+          // {
+          //   label: '指导教师姓名',
+          //   elements: {
+          //     eType: 'input',
+          //     name: 'teacherName'
+          //   }
+          // },
+          {
+            label: '申请单号',
+            elements: {
+              eType: 'input',
+              name: 'number'
+            }
+          },
+          {
+            label: '申请金额',
+            elements: {
+              eType: 'between',
+              name: 'money'
+            }
+          },
+          {
+            label: '用途',
+            elements: {
+              eType: 'input',
+              name: 'use'
+            }
+          },
+          {
+            label: '开户行',
+            elements: {
+              eType: 'input',
+              name: 'bank'
+            }
+          },
+          {
+            label: '开户人',
+            elements: {
+              eType: 'input',
+              name: 'bankUser'
+            }
+          },
+          {
+            label: '开户账号',
+            elements: {
+              eType: 'input',
+              name: 'bankNumber'
+            }
+          },
+          {
+            label: '提交时间',
+            elements: {
+              eType: 'date',
+              name: 'publishTime',
+              range: true
+            }
+          },
+          {
+            label: '提交人',
+            elements: {
+              eType: 'input',
+              name: 'publishUser'
+            }
+          },
+          {
+            label: '贫困状态',
+            elements: {
+              eType: 'input',
+              name: 'poverty'
+            }
+          },
+        ]
+      },
+      table: {
+        tool: {
+          items: [
+            {% if curAdmin.isSuperUser or curAdmin.permissions.aid_apl_g %}
+            {
+              layEvent: 'card',
+              label: '待助卡',
+              event: function (obj, config, render) {
+                var path = config.url.split('?')[0]
+                path = (path[path.length - 1] === '/' ? path.slice(0, path.length - 6) : (path.slice(0, path.length - 5)))
+                // openWindow(path + obj.data.id + '/info')
+                layer.open({
+                  type: 2,
+                  title: '待助卡',
+                  shade: 0.8,
+                  area: ['90%', '90%'],
+                  content: path + obj.data.id + '/card'
+                })
+              }
+            },
+            {% endif %}
+            {% if curAdmin.isSuperUser or curAdmin.permissions.aid_apl_g %}
+            'info',
+            {% endif %}
+            {% if curAdmin.isSuperUser or curAdmin.permissions.aid_apl_u %}
+            'edit',
+            {% endif %}
+            {% if curAdmin.isSuperUser or curAdmin.permissions.aid_apl_d %}
+            'del',
+            {% endif %}
+            {% if curAdmin.isSuperUser or curAdmin.permissions.aid_apl_v %}
+            {
+              layEvent: 'status',
+              label: '状态',
+              'class': 'layui-btn-primary [[# if(d.status !== \'{{ AidApplyStatus.wait }}\' && d.status !== \'{{ AidApplyStatus.putaway }}\' && d.status !== \'{{ AidApplyStatus.own }}\'){ ]] none[[#  } ]]',
+              event: function (obj, config, render) {
+                var path = config.url.split('?')[0]
+                path = (path[path.length - 1] === '/' ? path.slice(0, path.length - 6) : (path.slice(0, path.length - 5)))
+                var index = layer.open({
+                  type: 1,
+                  title: '状态',
+                  offset: '100px',
+                  skin: 'layui-layer-rim',
+                  area: ['550px', '200px'],
+                  content: '<div id="changeStatus"></div>'
+                })
+                newForm({
+                  parent: '#changeStatus',
+                  form: {
+                    submit: {
+                      event: function (data) {
+                        $('[lay-filter="myFormSubmit"]').attr('disabled', true)
+                        $('[lay-filter="myFormSubmit"]').addClass('layui-btn-disabled')
+                        ajax({
+                          method: 'POST',
+                          url: '/admin/aid/apply/status',
+                          data: JSON.stringify({statusRadio: data.field.statusRadio, data: [obj.data.id], reason: data.field.reason}),
+                          success: function () {
+                            $('[lay-filter="myFormSubmit"]').attr('disabled', false)
+                            $('[lay-filter="myFormSubmit"]').removeClass('layui-btn-disabled')
+                            layer.msg('状态改变成功', {time: 2000, icon:6})
+                            render()
+                            layer.close(index)
+                          },
+                          fail: function () {
+                            $('[lay-filter="myFormSubmit"]').attr('disabled', false)
+                            $('[lay-filter="myFormSubmit"]').removeClass('layui-btn-disabled')
+                          },
+                          error: function () {
+                            $('[lay-filter="myFormSubmit"]').attr('disabled', false)
+                            $('[lay-filter="myFormSubmit"]').removeClass('layui-btn-disabled')
+                          }
+                        })
+                      }
+                    },
+                    val: {
+                      statusRadio: '{{ AidApplyStatus.putaway }}'
+                    },
+                    items: [
+                      {
+                        label: '状态',
+                        elements: {
+                          eType: 'radio',
+                          name: 'statusRadio',
+                          children: [
+                            {title: '{{ AidApplyStatus.putaway }}', value: '{{ AidApplyStatus.putaway }}'},
+                            {title: '{{ AidApplyStatus.own }}', value: '{{ AidApplyStatus.own }}'},
+                            {title: '{{ AidApplyStatus.revamp }}', value: '{{ AidApplyStatus.revamp }}'},
+                          ]
+                        }
+                      },
+                      {
+                        label: '复议理由',
+                        elements: {
+                          eType: 'input',
+                          name: 'reason',
+                          layVerify: 'rs',
+                        }
+                      },
+                    ],
+                    verify: {
+                      rs: function (value) {
+                        if (getFormData('[lay-filter=changeStatus]').statusRadio === '{{ AidApplyStatus.revamp }}' && value === '') return '复议理由不能为空'
+                      },
+                    }
+                  }
+                })
+              }
+            }
+            {% endif %}
+          ]
+        },
+        templates: [
+          {
+            id: 'tSemester',
+            content: '[[ semester(d.semester) ]]'
+          },
+          {
+            id: 'tPhoto',
+            content: '[[# if (d.photo) { ]]<a href="[[ d.photo ]]" style="cursor: pointer;" target="_blank"><img class="tableImg" src="[[ d.photo ]]"></a>[[# } ]]'
+          },
+          {
+            id: 'tPublishTime',
+            content: '[[ dateFormat(d.publishTime, \'YYYY-MM-DD HH:mm:ss\') ]]'
+          },
+        ],
+        config: {
+          elem: '#aidApply',
+          url: '/admin/aid/apply/table',
+          done: function () {
+            if ($('[name=revampBtn]')[0] == null) $('[lay-event=revamp]').after('<input type="text" name="revampBtn" style="display: inline-block; width: 190px; height: 38px; font-size: 14px; padding: 0 10px; border: solid 1px #e6e6e6; margin-bottom: 10px;" placeholder="复议理由">')
+          },
+          cols: [
+            [
+              {field: 'id', title: 'ID', align: 'center', show: false, sort: true, width: 100, fixed: 'left'},
+              {field: 'name', title: '学生姓名', align: 'center', sort: true, minWidth: 140, fixed: 'left'},
+              {field: 'account', title: '学生账号', align: 'center', sort: true, minWidth: 140},
+              {field: 'schoolName', title: '学校名称', align: 'center', sort: true, minWidth: 250},
+              {field: 'status', title: '状态', align: 'center', sort: true, width: 100},
+              {field: 'semester', title: '申请学期', align: 'center', sort: true, width: 180, templet: '#tSemester'},
+              {field: 'period', title: '学段', align: 'center', sort: true, width: 80},
+              {field: 'grade', title: '年级', align: 'center', sort: true, width: 80},
+              {field: 'photo', title: '照片', align: 'center', width: 80, templet: '#tPhoto'},
+              {field: 'gender', title: '性别', align: 'center', sort: true, width: 80},
+              {field: 'birthday', title: '出生年月', align: 'center', sort: true, width: 120},
+              {field: 'familyInfo', title: '情况简述', align: 'center', sort: true, minWidth: 200},
+              {field: 'poverty', title: '贫困状态', align: 'center', sort: true, minWidth: 160},
+              {field: 'use', title: '用途', align: 'center', sort: true, minWidth: 200},
+              {field: 'bankNumber', title: '开户账号', align: 'center', sort: true, minWidth: 160},
+              {field: 'bankUser', title: '开户人', align: 'center', sort: true, minWidth: 140},
+              {field: 'bank', title: '开户行', align: 'center', sort: true, minWidth: 140},
+              {field: 'money', title: '申请金额', align: 'center', sort: true, width: 100},
+              {field: 'provinceName', title: '大陆省份', align: 'center', sort: true, minWidth: 150},
+              {field: 'schoolAccount', title: '学校编号', align: 'center', sort: true, minWidth: 140},
+              {field: 'number', title: '申请单号', align: 'center', sort: true, width: 180},
+              {field: 'publishTime', title: '提交时间', align: 'center', sort: true, width: 180, templet: '#tPublishTime'},
+              {field: 'publishUser', title: '提交人', align: 'center', sort: true, minWidth: 140},
+              {field: 'nation', title: '民族', align: 'center', show: false, sort: true, width: 80},
+              {align: 'center', width: 220, fixed: 'right', toolbar: '#operation'}
+            ]
+          ]
+        }
+      }
+    })
+  })
+</script>
+{% endblock %}

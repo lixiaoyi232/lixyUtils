@@ -1,0 +1,166 @@
+{% extends "../back.html" %}
+
+{% block css %}
+{{ super() }}
+{% endblock %}
+
+{% block body %}
+  <div class="layui-card myCard">
+    <div class="layui-card-header">{{ admin.name }}</div>
+    <div class="layui-card-body layui-tab layui-tab-brief">
+      <div id="myForm"></div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+  $(function () {
+    newForm({
+      form: {
+        labelWidth: '100',
+        done: function () {
+          ajax({
+            method: 'GET',
+            url: '/admin/admin/admin/{{ admin.id }}/json',
+            success: function (data) {
+              authtree.render('#pmsnTree', data.data.trees, {inputname: 'authids[]', layfilter: 'lay-check-auth', openall: true})
+            }
+          })
+        },
+        submit: {
+          event: function (data) {
+            $('[lay-filter="myFormSubmit"]').attr('disabled', true)
+            $('[lay-filter="myFormSubmit"]').addClass('layui-btn-disabled')
+            data.field.permissions = authtree.getChecked('#pmsnTree')
+            ajax({
+              method: 'POST',
+              url: '/admin/admin/admin/{{ admin.id }}',
+              data: JSON.stringify(data.field),
+              success: function () {
+                layer.msg('修改成功', {time: 2000, icon:6})
+                parent.tableRender()
+                window.setTimeout(function () {parent.layer.close(parent.layer.getFrameIndex(window.name))}, 2000)
+                // window.setTimeout(function () {window.location.href = '/admin/admin/admin'}, 2000)
+              },
+              fail: function () {
+                $('[lay-filter="myFormSubmit"]').attr('disabled', false)
+                $('[lay-filter="myFormSubmit"]').removeClass('layui-btn-disabled')
+              },
+              error: function () {
+                $('[lay-filter="myFormSubmit"]').attr('disabled', false)
+                $('[lay-filter="myFormSubmit"]').removeClass('layui-btn-disabled')
+              }
+            })
+          }
+        },
+        val: {
+          'account': '{{ admin.account }}',
+        },
+        items: [
+          {
+            label: '用户名',
+            elements: {
+              eType: 'input',
+              name: 'account',
+              layVerify: 'required'
+            }
+          },
+          {
+            label: '密码',
+            elements: {
+              eType: 'char',
+              name: 'password',
+              element: '<button type="button" class="layui-btn layui-btn-primary">修改密码</button>',
+              events: [
+                {
+                  type: 'delegate',
+                  name: 'click',
+                  query: 'button',
+                  callback: function (e) {
+                    var index = layer.open({
+                      type: 1,
+                      title: '修改密码',
+                      offset: '100px',
+                      skin: 'layui-layer-rim',
+                      area: ['360px', '240px'],
+                      content: '<div id="changepw"></div>'
+                    })
+                    newForm({
+                      parent: '#changepw',
+                      form: {
+                        submit: {
+                          event: function (data) {
+                            $('[lay-filter="myFormSubmit"]').attr('disabled', true)
+                            $('[lay-filter="myFormSubmit"]').addClass('layui-btn-disabled')
+                            ajax({
+                              method: 'POST',
+                              url: '/admin/admin/admin/{{ admin.id }}/cp',
+                              data: JSON.stringify(data.field),
+                              success: function () {
+                                $('[lay-filter="myFormSubmit"]').attr('disabled', false)
+                                $('[lay-filter="myFormSubmit"]').removeClass('layui-btn-disabled')
+                                layer.msg('修改密码成功', {time: 2000, icon:6})
+                                layer.close(index)
+                              },
+                              fail: function () {
+                                $('[lay-filter="myFormSubmit"]').attr('disabled', false)
+                                $('[lay-filter="myFormSubmit"]').removeClass('layui-btn-disabled')
+                              },
+                              error: function () {
+                                $('[lay-filter="myFormSubmit"]').attr('disabled', false)
+                                $('[lay-filter="myFormSubmit"]').removeClass('layui-btn-disabled')
+                              }
+                            })
+                          }
+                        },
+                        items: [
+                          {
+                            label: '密码',
+                            elements: {
+                              eType: 'input',
+                              name: 'pw',
+                              layVerify: 'pass'
+                            }
+                          },
+                          {
+                            label: '确认密码',
+                            elements: {
+                              eType: 'input',
+                              name: 'cfpw',
+                              layVerify: 'same'
+                            }
+                          },
+                        ],
+                        verify: {
+                          pass: [/(.+){6,20}$/, '密码必须6到20位'],
+                          same: function (value) {
+                            if (value !== $('[name=pw]').val()) return '确认密码必须和密码一致'
+                          }
+                        }
+                      }
+                    })
+                  }
+                },
+              ]
+            }
+          },
+          {
+            label: '权限',
+            elements: {
+              eType: 'char',
+              name: 'permissions" id="pmsnTree',
+              element: ''
+            }
+          }
+        ],
+        verify: {
+        }
+      }
+    })
+  })
+
+
+</script>
+{% endblock %}

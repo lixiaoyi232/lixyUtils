@@ -1,0 +1,183 @@
+{% extends "../back.html" %}
+
+{% block css %}
+{{ super() }}
+{% endblock %}
+
+{% block main %}
+  <div class="layui-card myCard">
+    <div class="layui-card-header">分配区域</div>
+    <div class="layui-card-body">
+      <div id="adminForm"></div>
+      <div id="myTable"></div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+  $(function () {
+    newTable({
+      btns: {
+        items: [
+          {
+            layEvent: 'allot',
+            'class': 'layui-btn-primary none',
+            label: '分配',
+            event: function (obj, config, render) {
+              var datas = table.checkStatus(config.id).data
+              var data = []
+              for (var i in datas) {
+                if (datas.hasOwnProperty(i)) {
+                  data.push(datas[i].school.id)
+                }
+              }
+              ajax({
+                method: 'POST',
+                url: '/admin/admin/allot',
+                data: JSON.stringify({admin: $('[name=admin]').val(), data: data}),
+                success: function (data) {
+                  layui.layer.msg('成功',{ time: 2000 })
+                  render()
+                },
+                fail: function (data) {
+                  layui.layer.msg('失败',{ time: 2000 })
+                }
+              })
+            }
+          }
+        ]
+      },
+      search: {
+        'class': 'selects',
+        labelWidth: '100',
+        items: [
+          {
+            label: '名称',
+            elements: {
+              eType: 'input',
+              name: 'name'
+            }
+          },
+          {
+            label: '编号',
+            elements: {
+              eType: 'input',
+              name: 'account'
+            }
+          },
+          {
+            label: '管理员',
+            elements: {
+              eType: 'select',
+              name: 'adminId',
+              option: [
+                {value: 'all', label: '&nbsp;'},
+                {% for i in admins %}
+                {value: '{{ i.id }}', label: '{{ i.account }}'},
+                {% endfor %}
+              ]
+            }
+          },
+          {
+            label: '大陆省份',
+            elements: {
+              eType: 'input',
+              name: 'provinceName',
+            },
+          },
+          {
+            label: '分配状态',
+            elements: {
+              eType: 'select',
+              name: 'allotStatus',
+              option: [
+                {value: 'all', label: '&nbsp;'},
+                {value: 'true', label: '已分配'},
+                {value: 'false', label: '未分配', selected: true}
+              ]
+            }
+          }
+        ]
+      },
+      table: {
+        templates: [
+          {
+            id: 'ct',
+            content: '[[# var createdTime = dateFormat(new Date(d.createdTime), \'YYYY-MM-DD HH:mm:ss\') ]][[ createdTime ]]'
+          },
+          {
+            id: 'ctn',
+            content: '[[ d.country.name ]]'
+          },
+          {
+            id: 'pv',
+            content: '[[ d.county.city.province.name ]]'
+          },
+          {
+            id: 'ad',
+            content: '[[#  if(d.school.admin != null){ ]][[ d.school.admin.account ]][[#  } ]]'
+          }
+        ],
+        config: {
+          elem: '#allot',
+          url: '/admin/admin/allot/table',
+          cols: [
+            [
+              {field: 'id', sort: true, title: 'ID', width:100, fixed: 'left', show: false},
+              {field: 'name', minWidth: 250, sort: true, title: '学校名称'},
+              {field: 'account', minWidth: 140, sort: true, title: '学校编号'},
+              {field: 'countryName', sort: true, title: '国家及地区', minWidth: 190, templet: '#ctn'},
+              {field: 'provinceName', sort: true, title: '大陆省份', minWidth: 150, templet: '#pv'},
+              {field: 'adminAccount', sort: true, title: '后台管理员', templet: '#ad'}
+            ]
+          ]
+        }
+      }
+    })
+    newForm({
+      parent: '#adminForm',
+      form: {
+        submit: {
+          show: false
+        },
+        items: [
+          {
+            label: '管理员',
+            elements: [
+              {
+                eType: 'select',
+                name: 'admin',
+                laySearch: true,
+                option: [
+                  {value: 'null', label: '回收', selected: true},
+                  {% for a in admins %}
+                  {value: '{{ a.id }}', label: '{{ a.account }}'},
+                  {% endfor %}
+                ],
+              },
+              {
+                eType: 'char',
+                name: 'btn',
+                display: 'inline',
+                element: '<div><button type="button" class="layui-btn layui-btn-primary" style="min-width: 100px;">分配</button></div>',
+                events: [
+                  {
+                    type: 'delegate',
+                    name: 'click',
+                    query: 'button',
+                    callback: function (e) {
+                      $('[lay-event=\'allot\']').click()
+                    }
+                  }
+                ]
+              },
+            ]
+          },
+        ]
+      }
+    })
+  })
+</script>
+{% endblock %}

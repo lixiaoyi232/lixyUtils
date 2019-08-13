@@ -1,0 +1,117 @@
+{% extends "../back.html" %}
+
+{% block css %}
+{{ super() }}
+{% endblock %}
+
+{% block body %}
+  <div class="layui-card myCard">
+    <div class="layui-card-header">新建学生家庭成员</div>
+    <div class="layui-card-body layui-tab layui-tab-brief">
+      <div id="myForm"></div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+  $(function () {
+    newForm({
+      form: {
+        labelWidth: '100',
+        submit: {
+          event: function (data) {
+            $('[lay-filter="myFormSubmit"]').attr('disabled', true)
+            $('[lay-filter="myFormSubmit"]').addClass('layui-btn-disabled')
+            ajax({
+              method: 'POST',
+              url: '/admin/member/family/new',
+              data: JSON.stringify(data.field),
+              success: function () {
+                layer.msg('新建成功', {time: 2000, icon:6})
+                parent.tableRender()
+                window.setTimeout(function () {parent.layer.close(parent.layer.getFrameIndex(window.name))}, 2000)
+                // window.setTimeout(function () {window.location.href = '/admin/member/student'}, 2000)
+              },
+              fail: function () {
+                $('[lay-filter="myFormSubmit"]').attr('disabled', false)
+                $('[lay-filter="myFormSubmit"]').removeClass('layui-btn-disabled')
+              },
+              error: function () {
+                $('[lay-filter="myFormSubmit"]').attr('disabled', false)
+                $('[lay-filter="myFormSubmit"]').removeClass('layui-btn-disabled')
+              }
+            })
+          }
+        },
+        val: {
+          studentId: '{{ studentId }}',
+        },
+        items: [
+          {
+            label: '学生',
+            show: false,
+            elements: {
+              eType: 'input',
+              name: 'studentId',
+              layVerify: 'required'
+            }
+          },
+          {
+            label: '称呼',
+            elements: {
+              eType: 'input',
+              name: 'address',
+              layVerify: 'required'
+            }
+          },
+          {
+            label: '姓名',
+            elements: {
+              eType: 'input',
+              name: 'name',
+              layVerify: 'required'
+            }
+          },
+          {
+            label: '出生年份',
+            elements: {
+              eType: 'input',
+              name: 'birthyear',
+              layVerify: 'required'
+            }
+          },
+          {
+            label: '职业',
+            elements: {
+              eType: 'input',
+              name: 'profession',
+              layVerify: 'required'
+            }
+          },
+          {
+            label: '健康状况',
+            elements: {
+              eType: 'input',
+              name: 'health',
+              layVerify: 'required'
+            }
+          },
+          {
+            label: '年收入',
+            elements: {
+              eType: 'input',
+              name: 'income',
+              type: 'number',
+              layVerify: 'required'
+            }
+          },
+        ],
+        verify: {
+        }
+      }
+    })
+  })
+</script>
+{% endblock %}

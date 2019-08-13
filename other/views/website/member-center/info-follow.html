@@ -1,0 +1,147 @@
+{% extends "../layout/layout-member-center.html" %}
+
+{% block css %}
+{{ super() }}
+<link rel="stylesheet" href="/static/css/website/mytable.css">
+{% endblock %}
+
+{% block member_center_main %}
+<!-- <div id="table-follow"></div> -->
+<div class="layui-card">
+  <div class="layui-card-header">我的关注</div>
+  <div class="layui-card-body">
+    <div id="myTable"></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script src="/static/js/mytable.js"></script>
+<script>
+  // $(function() {
+  //   var table = new MyTable({
+  //     el: '#table-follow',
+  //     url: '/member-center/info-follow/table',
+  //     limit: 10,
+  //     cols: [
+  //       {
+  //         title: '用户昵称',
+  //         html: function(rowdata) {
+  //           return '<a href="/member/' + rowdata.id + '">' + rowdata.nickName + '</a>'
+  //         }
+  //       },
+  //       {
+  //         title: '操作',
+  //         html: function(rowdata) {
+  //           return '<a href="javascript:;" class="btn-cancel">取消关注</a>'
+  //         }
+  //       }
+  //     ],
+  //     onFetch: bindHandlers
+  //   })
+
+  //   table.fetch()
+
+  //   function bindHandlers(rowDatas) {
+  //     $('.btn-cancel').on('click', function() {
+  //       var $btn = $(this)
+  //       $btn.attr('disabled', true)
+  //       var id = $btn.parents('tr').data('id')
+  //       var url = '/member/' + id + '/'
+  //       if (rowDatas[id]._hasCanceled) {
+  //         url += 'follow'
+  //       } else {
+  //         url += 'unfollow'
+  //       }
+  //       ajax({
+  //         method: 'POST',
+  //         url: url,
+  //         success: function () {
+  //           $btn.attr('disabled', false)
+  //           layui.layer.msg('操作成功',{ time: 1000 })
+  //           if (rowDatas[id]._hasCanceled) {
+  //             $btn.text('取消关注')
+  //             rowDatas[id]._hasCanceled = false
+  //           } else {
+  //             $btn.text('关注')
+  //             rowDatas[id]._hasCanceled = true
+  //           }
+  //         },
+  //         fail: function () {
+  //           $btn.attr('disabled', false)
+  //         }
+  //       })
+  //     })
+  //   }
+
+  // })
+  $(function () {
+    newTable({
+      btns: {
+        items: [
+          // 'setCols'
+        ]
+      },
+      search: {
+        'class': 'selects',
+        labelWidth: '100',
+        submit: {
+          'class': 'layui-btn greenBtn'
+        },
+        items: [
+          {
+            label: '用户昵称',
+            elements: {
+              eType: 'input',
+              name: 'nickName'
+            }
+          },
+        ]
+      },
+      table: {
+        checkboxType: 'none',
+        tool: {
+          items: [
+            {
+              layEvent: 'cancel',
+              label: '取消关注',
+              event: function (obj, config, render) {
+                layer.confirm('您确认要取消关注吗？', function(index){
+                  ajax({
+                    method: 'POST',
+                    url: '/member/' + obj.data.id + '/unfollow',
+                    success: function () {
+                      layer.msg('取消关注成功', {time: 2000, icon:6})
+                      render()
+                      layer.close(index)
+                    }
+                  })
+                })
+                render(config)
+              }
+            },
+          ]
+        },
+        templates: [
+          {
+            id: 'tNickName',
+            content: '<a href="/member/[[ d.id ]]" target="_blank" style="cursor: pointer;">[[ d.nickName ]]</a>'
+          },
+        ],
+        config: {
+          elem: '#follow',
+          url: '/member-center/info-follow/table',
+          cols: [
+            [
+              {field: 'id', title: 'ID', align: 'center', show: false, sort: true, width: 100},
+              {width:140, align: 'center', toolbar: '#operation'},
+              {field: 'nickName', title: '用户昵称', align: 'center', sort: true, minWidth: 140, templet: '#tNickName'},
+            ]
+          ]
+        }
+      }
+    })
+  })
+</script>
+{% endblock %}

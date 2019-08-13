@@ -1,0 +1,430 @@
+{% extends "./layout/layout-website.html" %}
+
+{% block css %}
+<link rel="stylesheet" href="/static/css/website/signup.css">
+<style>
+  /* body {
+    overflow: hidden;
+  } */
+  .layui-laydate-header {
+    background-color: #7DC434!important;
+  }
+  #layui-laydate1 .layui-laydate-list>.layui-this {
+    background-color: #7DC434 !important;
+  }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="bd signup-body">
+  <div class="signup-block">
+    <div class="signup-title" style="border-bottom: solid .2px #eee;">
+      <a href="/" class="back-home">回首页</a>
+      <div class="signup-name">注册会员</div>
+      <a href="/login" class="back-login">去登录</a>
+    </div>
+    <form id="signup-from" class="layui-form" autocomplete="off">
+      <div class="form-item">
+        <select id="type" name="type" lay-filter="type" lay-verify="typeRqd">
+          <option disabled selected>类型</option>
+          <option value="{{MemberType.student}}">{{MemberType.student}}</option>
+          <option value="{{MemberType.teacher}}">{{MemberType.teacher}}</option>
+          <option value="{{MemberType.school}}">{{MemberType.school}}</option>
+          <option value="{{MemberType.whPerson}}">{{MemberType.whPerson}}</option>
+          <option value="{{MemberType.whGroup}}">{{MemberType.whGroup}}</option>
+          <option value="{{MemberType.other}}">{{MemberType.other}}</option>
+        </select>
+      </div>
+
+
+      <div style="display: none;" m-if="type==='{{MemberType.student}}'">
+        <div class="form-item"><input type="text" name="account" disabled m:disabled="type!=='{{MemberType.student}}'" class="layui-input" placeholder="用户名" m:lay-verify="type!=='{{MemberType.student}}' ? '' : 'required'"></div>
+        <div class="form-item"><input type="password" id="password1" name="password" disabled m:disabled="type!=='{{MemberType.student}}'" class="layui-input" placeholder="密码" m:lay-verify="type!=='{{MemberType.student}}' ? '' : 'required|pass'"></div>
+        <div class="form-item"><input type="password" name="confirmPassword" disabled m:disabled="type!=='{{MemberType.student}}'" class="layui-input" placeholder="重复密码" m:lay-verify="type!=='{{MemberType.student}}' ? '' : 'same1'"></div>
+        <div class="form-item">
+          <select name="schoolId" m:disabled="type!=='{{MemberType.student}}'" m:lay-verify="type!=='{{MemberType.student}}' ? '' : 'schRqd'" lay-search>
+            <option disabled>若列表中没有，请电话联系我们</option>
+            {% for school in schools %}
+            <option value="{{school.id}}">{{school.member.name}}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-item"><input type="text" name="name" disabled m:disabled="type!=='{{MemberType.student}}'" class="layui-input" placeholder="真实姓名" m:lay-verify="type!=='{{MemberType.student}}' ? '' : 'required'"></div>
+        <div class="form-item"><input type="text" name="idCard" disabled m:disabled="type!=='{{MemberType.student}}'" class="layui-input" placeholder="身份证号" m:lay-verify="type!=='{{MemberType.student}}' ? '' : 'required'"></div>
+        <div class="form-item"><input type="text" name="phoneNumber" disabled m:disabled="type!=='{{MemberType.student}}'" class="layui-input" placeholder="联系手机" m:lay-verify="type!=='{{MemberType.student}}' ? '' : 'required|phone'"></div>
+        <div class="form-item"><input type="text" id="yearOfEnrollment" name="yearOfEnrollment" disabled m:disabled="type!=='{{MemberType.student}}'" class="layui-input" placeholder="入学年份" m:lay-verify="type!=='{{MemberType.student}}' ? '' : 'required'"></div>
+        <div class="form-item">
+          <select name="period" m:disabled="type!=='{{MemberType.student}}'" m:lay-verify="type!=='{{MemberType.student}}' ? '' : 'prdRqd'">
+            <option disabled selected>学段</option>
+            <option value="{{StudentPeriod.XiaoXue}}">{{StudentPeriod.XiaoXue}}</option>
+            <option value="{{StudentPeriod.ChuZhong}}">{{StudentPeriod.ChuZhong}}</option>
+            <option value="{{StudentPeriod.GaoZhong}}">{{StudentPeriod.GaoZhong}}</option>
+          </select>
+        </div>
+      </div>
+
+
+      <div style="display: none;" m-if="type==='{{MemberType.teacher}}'">
+        <div class="form-item"><input type="text" name="account" disabled m:disabled="type!=='{{MemberType.teacher}}'" class="layui-input" placeholder="用户名" m:lay-verify="type!=='{{MemberType.teacher}}' ? '' : 'required'"></div>
+        <div class="form-item"><input type="password" id="password2" name="password" disabled m:disabled="type!=='{{MemberType.teacher}}'" class="layui-input" placeholder="密码" m:lay-verify="type!=='{{MemberType.teacher}}' ? '' : 'required|pass'"></div>
+        <div class="form-item"><input type="password" name="confirmPassword" disabled m:disabled="type!=='{{MemberType.teacher}}'" class="layui-input" placeholder="重复密码" m:lay-verify="type!=='{{MemberType.teacher}}' ? '' : 'same2'"></div>
+        <div class="form-item">
+          <select name="schoolId" m:disabled="type!=='{{MemberType.teacher}}'" m:lay-verify="type!=='{{MemberType.teacher}}' ? '' : 'schRqd'" lay-search>
+            <option disabled>若列表中没有，请电话联系我们</option>
+            {% for school in schools %}
+            <option value="{{school.id}}">{{school.member.name}}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-item"><input type="text" name="name" disabled m:disabled="type!=='{{MemberType.teacher}}'" class="layui-input" placeholder="真实姓名" m:lay-verify="type!=='{{MemberType.teacher}}' ? '' : 'required'"></div>
+        <div class="form-item"><input type="text" name="nickName" disabled m:disabled="type!=='{{MemberType.teacher}}'" class="layui-input" placeholder="昵称" m:lay-verify="type!=='{{MemberType.teacher}}' ? '' : 'required'"></div>
+        <div class="form-item"><input type="text" name="phoneNumber" disabled m:disabled="type!=='{{MemberType.teacher}}'" class="layui-input" placeholder="联系手机" m:lay-verify="type!=='{{MemberType.teacher}}' ? '' : 'required|phone'"></div>
+      </div>
+
+
+      <div style="display: none;" m-if="type==='{{MemberType.school}}'">
+        <div class="form-item">注意：该类型用户需后台创建，本提交只是提供信息和联系方式，供后台管理员使用。后台人员操作完成后，会联系您。</div>
+        <div class="form-item"><input type="text" name="name" disabled m:disabled="type!=='{{MemberType.school}}'" class="layui-input" placeholder="{{MemberType.school}}名称" m:lay-verify="type!=='{{MemberType.school}}' ? '' : 'required'"></div>
+        <div class="form-item"><input type="text" name="contactName" disabled m:disabled="type!=='{{MemberType.school}}'" class="layui-input" placeholder="联系人姓名" m:lay-verify="type!=='{{MemberType.school}}' ? '' : 'required'"></div>
+        <div class="form-item"><input type="text" name="contactPhoneNumber" disabled m:disabled="type!=='{{MemberType.school}}'" class="layui-input" placeholder="联系手机" m:lay-verify="type!=='{{MemberType.school}}' ? '' : 'required|phone'"></div>
+        <div class="form-item"><input type="text" name="contactEmail" disabled m:disabled="type!=='{{MemberType.school}}'" class="layui-input" placeholder="Email" m:lay-verify="type!=='{{MemberType.school}}' ? '' : 'required|email'"></div>
+      </div>
+
+
+      <div style="display: none;" m-if="type==='{{MemberType.whPerson}}'">
+        <div class="form-item"><input type="text" name="account" disabled m:disabled="type!=='{{MemberType.whPerson}}'" class="layui-input" placeholder="用户名" m:lay-verify="type!=='{{MemberType.whPerson}}' ? '' : 'required'"></div>
+        <div class="form-item"><input type="password" id="password3" name="password" disabled m:disabled="type!=='{{MemberType.whPerson}}'" class="layui-input" placeholder="密码" m:lay-verify="type!=='{{MemberType.whPerson}}' ? '' : 'required|pass'"></div>
+        <div class="form-item"><input type="password" name="confirmPassword" disabled m:disabled="type!=='{{MemberType.whPerson}}'" class="layui-input" placeholder="重复密码" m:lay-verify="type!=='{{MemberType.whPerson}}' ? '' : 'same3'"></div>
+        <div class="form-item">
+          <select name="groupId" m:disabled="type!=='{{MemberType.whPerson}}'" m:lay-verify="type!=='{{MemberType.whPerson}}' ? '' : 'grpRqd'" lay-search>
+            <option disabled>若列表中没有，请电话联系我们</option>
+            {% for group in groups %}
+            <option value="{{group.id}}">{{group.member.name}}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-item"><input type="text" name="nickName" disabled m:disabled="type!=='{{MemberType.whPerson}}'" class="layui-input" placeholder="昵称" m:lay-verify="type!=='{{MemberType.whPerson}}' ? '' : 'required'"></div>
+        <div class="form-item"><input type="text" name="phoneNumber" disabled m:disabled="type!=='{{MemberType.whPerson}}'" class="layui-input" placeholder="联系手机" m:lay-verify="type!=='{{MemberType.whPerson}}' ? '' : 'required|phone'"></div>
+        <div class="form-item"><input type="text" name="email" disabled m:disabled="type!=='{{MemberType.whPerson}}'" class="layui-input" placeholder="Email" m:lay-verify="type!=='{{MemberType.whPerson}}' ? '' : 'required|email'"></div>
+      </div>
+
+
+      <div style="display: none;" m-if="type==='{{MemberType.whGroup}}'">
+        <div class="form-item">注意：该类型用户需后台创建，本提交只是提供信息和联系方式，供后台管理员使用。后台人员操作完成后，会联系您。</div>
+        <div class="form-item"><input type="text" name="name" disabled m:disabled="type!=='{{MemberType.whGroup}}'" class="layui-input" placeholder="团体名称" m:lay-verify="type!=='{{MemberType.whGroup}}' ? '' : 'required'"></div>
+        <div class="form-item"><input type="text" name="contactName" disabled m:disabled="type!=='{{MemberType.whGroup}}'" class="layui-input" placeholder="联系人姓名" m:lay-verify="type!=='{{MemberType.whGroup}}' ? '' : 'required'"></div>
+        <div class="form-item"><input type="text" name="contactPhoneNumber" disabled m:disabled="type!=='{{MemberType.whGroup}}'" class="layui-input" placeholder="联系手机" m:lay-verify="type!=='{{MemberType.whGroup}}' ? '' : 'required|phone'"></div>
+        <div class="form-item"><input type="text" name="contactEmail" disabled m:disabled="type!=='{{MemberType.whGroup}}'" class="layui-input" placeholder="Email" m:lay-verify="type!=='{{MemberType.whGroup}}' ? '' : 'required|email'"></div>
+      </div>
+
+
+      <div style="display: none;" m-if="type==='{{MemberType.other}}'">
+        <div class="form-item"><input type="text" name="account" disabled m:disabled="type!=='{{MemberType.other}}'" class="layui-input" placeholder="用户名" m:lay-verify="type!=='{{MemberType.other}}' ? '' : 'required'"></div>
+        <div class="form-item"><input type="password" id="password4" name="password" disabled m:disabled="type!=='{{MemberType.other}}'" class="layui-input" placeholder="密码" m:lay-verify="type!=='{{MemberType.other}}' ? '' : 'required|pass'"></div>
+        <div class="form-item"><input type="password" name="confirmPassword" disabled m:disabled="type!=='{{MemberType.other}}'" class="layui-input" placeholder="重复密码" m:lay-verify="type!=='{{MemberType.other}}' ? '' : 'same4'"></div>
+        <div class="form-item"><input type="text" name="nickName" disabled m:disabled="type!=='{{MemberType.other}}'" class="layui-input" placeholder="昵称" m:lay-verify="type!=='{{MemberType.other}}' ? '' : 'required'"></div>
+        <div class="form-item"><input type="text" name="phoneNumber" disabled m:disabled="type!=='{{MemberType.other}}'" class="layui-input" placeholder="联系手机" m:lay-verify="type!=='{{MemberType.other}}' ? '' : 'required|phone'"></div>
+        <div class="form-item"><input type="text" name="email" disabled m:disabled="type!=='{{MemberType.other}}'" class="layui-input" placeholder="Email" m:lay-verify="type!=='{{MemberType.other}}' ? '' : 'required|email'"></div>
+      </div>
+
+      <div style="display: none;" m-if="type !== '{{MemberType.student}}' && type !== '{{MemberType.teacher}}'" class="form-item">
+
+        <select id="country" name="countryNumber" lay-filter="country" m:disabled="type === '{{MemberType.student}}' || type === '{{MemberType.teacher}}'" m:lay-verify="type === '{{MemberType.student}}' || type === '{{MemberType.teacher}}' ? '' : 'ctrRqd'">
+          <option disabled>国家及地区</option>
+          {% for country in countries %}
+          {% if country.number === 1 %}
+          <option value="{{country.number}}" selected>{{country.name}}</option>
+          {% else %}
+          <option value="{{country.number}}">{{country.name}}</option>
+          {% endif %}
+          {% endfor %}
+        </select>
+      </div>
+
+      <div style="display: none;" m-if="isChina && type !== '{{MemberType.student}}' && type !== '{{MemberType.teacher}}'" class="form-item">
+
+        <select id="province" lay-filter="province" name="provinceId">
+          <option disabled selected>大陆省份</option>
+          {% for province in provinces %}
+          <option value="{{province.id}}">{{province.name}}</option>
+          {% endfor %}
+        </select>
+        </div>
+        <div style="display: none;" m-if="isChina && type !== '{{MemberType.student}}' && type !== '{{MemberType.teacher}}'" class="form-item">
+        <select id="city" lay-filter="city" name="cityId">
+          <option disabled selected>城市</option>
+        </select>
+        </div>
+        <div style="display: none;" m-if="isChina && type !== '{{MemberType.student}}' && type !== '{{MemberType.teacher}}'" class="form-item">
+        <select id="county" name="countyId" lay-filter="countyId" m:disabled="!isChina || type === '{{MemberType.student}}' || type === '{{MemberType.teacher}}'" m:lay-verify="type === '{{MemberType.student}}' || type === '{{MemberType.teacher}}' ? '' : 'place'">
+          <option disabled selected>区县</option>
+        </select>
+      </div>
+
+      <div style="display: none;" m-if="!isChina && type !== '{{MemberType.student}}' && type !== '{{MemberType.teacher}}'" class="form-item">
+        <input type="text" name="areaDetail" disabled m:disabled="isChina || type === '{{MemberType.student}}' || type === '{{MemberType.teacher}}'" class="layui-input" placeholder="地区" m:lay-verify="type === '{{MemberType.student}}' || type === '{{MemberType.teacher}}' ? '' : 'areaDetail'">
+      </div>
+
+      <div class="signup-form-button">
+        <button id="signup-from-submit" class="layui-btn layui-btn-fluid" lay-submit lay-filter="signup-from-submit">提交</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block script %}
+  {{ super() }}
+  <script>
+    var type = ''
+    var isChina = true
+    $(function () {
+      // 类型 下拉列表
+      // $('#type').on('change', function() {
+      //   type = this.value
+      //   mIfRender()
+      //   mBindRender()
+      // })
+
+      form.on('select(type)', function (data) {
+        type = data.value
+        mIfRender()
+        mBindRender()
+      })
+
+      // // 国家及地区 下拉列表
+      // $('#country').on('change', function(e) {
+      //   if (e.target.value === '1') {
+      //     isChina = true
+      //   } else {
+      //     isChina = false
+      //   }
+      //   mIfRender()
+      //   mBindRender()
+      // })
+
+      form.on('select(country)', function (data) {
+        if (data.value === '1') {
+          isChina = true
+        } else {
+          isChina = false
+        }
+        mIfRender()
+        mBindRender()
+      })
+
+      var allCities = {}
+      var allCounties = {}
+
+      // 换市下拉列表
+      function changeCities(cities) {
+        var htmlStr = '<option disabled selected>请选择</option>'
+        for (var key in cities) {
+          if (cities.hasOwnProperty(key)) {
+            var city = cities[key]
+            htmlStr += '<option value="' + city.id + '">' + city.name + '</option>'
+          }
+        }
+        $('#city').html(htmlStr)
+      }
+
+      // 换区县下拉列表
+      function changeCounties(counties) {
+        var htmlStr = '<option disabled selected>请选择</option>'
+        for (var key in counties) {
+          if (counties.hasOwnProperty(key)) {
+            var county = counties[key]
+            htmlStr += '<option value="' + county.id + '">' + county.name + '</option>'
+          }
+        }
+        $('#county').html(htmlStr)
+      }
+
+      // // 省 下拉列表
+      // $('#province').on('change', function(e) {
+      //   var provinceId = e.target.value
+      //   if (allCities[provinceId]) {
+      //     changeCities(allCities[provinceId])
+      //     changeCounties([])
+      //   } else {
+      //     ajax({
+      //       method: 'GET',
+      //       url: '/shared/city/json?provinceId=' + provinceId,
+      //       success: function (data) {
+      //         allCities[provinceId] = data
+      //         changeCities(allCities[provinceId])
+      //         changeCounties([])
+      //       }
+      //     })
+      //   }
+      // })
+
+      form.on('select(province)', function (data) {
+        if (data.value !== '' && data.value !== 'null') ajax({
+          method: 'GET',
+          url: '/shared/city/json?provinceId=' + data.value,
+          success: function (res) {
+            var opts = ' <option disabled selected>城市</option>'
+            for (var i in res) if (res.hasOwnProperty(i)) opts += '<option value="' + res[i].id + '">' + res[i].name + '</option>'
+            $('[name=cityId]').html(opts)
+            $('[name=countyId]').html('<option disabled selected>区县</option>')
+            form.render('select')
+          }
+        })
+      })
+
+      form.on('select(city)', function (data) {
+        if (data.value !== '' && data.value !== 'null') ajax({
+          method: 'GET',
+          url: '/shared/county/json?cityId=' + data.value,
+          success: function (res) {
+            var opts = '<option disabled selected>区县</option>'
+            for (var i in res) if (res.hasOwnProperty(i)) opts += '<option value="' + res[i].id + '">' + res[i].name + '</option>'
+            $('[name=countyId]').html(opts)
+            form.render('select')
+          }
+        })
+      })
+
+      // // 市 下拉列表
+      // $('#city').on('change', function(e) {
+      //   var cityId = e.target.value
+      //   if (allCounties[cityId]) {
+      //     changeCounties(allCounties[cityId])
+      //   } else {
+      //     ajax({
+      //       method: 'GET',
+      //       url: '/shared/county/json?cityId=' + cityId,
+      //       success: function (data) {
+      //         allCounties[cityId] = data
+      //         changeCounties(allCounties[cityId])
+      //       }
+      //     })
+      //   }
+      // })
+
+      // form.on('select(city)', function (data) {
+      //   var cityId = data.value
+      //   if (allCounties[cityId]) {
+      //     changeCounties(allCounties[cityId])
+      //   } else {
+      //     ajax({
+      //       method: 'GET',
+      //       url: '/shared/county/json?cityId=' + cityId,
+      //       success: function (data) {
+      //         allCounties[cityId] = data
+      //         changeCounties(allCounties[cityId])
+      //       }
+      //     })
+      //   }
+      // })
+
+      // 入学年份 年选择器
+      layui.laydate.render({
+        elem: '#yearOfEnrollment',
+        type: 'year',
+      })
+
+      // 表单提交
+      // $('#signup-from').on('submit', function(e) {
+      //   if (e.target !== this) {
+      //     return true
+      //   }
+      //   e.preventDefault()  // 阻止默认行为  对于sumit事件来说，就是阻止form表单的默认提交。
+      //   $('#signup-from-submit').attr('disabled', true)
+      //   ajax({
+      //     method: 'POST',
+      //     url: '/signup',
+      //     data: JSON.stringify(getFormData('#signup-from')),
+      //     success: function () {
+      //       layui.layer.msg('注册成功',{ time: 1000 })
+      //       window.setTimeout(function () {
+      //         // location.reload()
+      //         location.href = '/member-center'
+      //       }, 1100)
+      //     },
+      //     fail: function () {
+      //       $('#signup-from-submit').attr('disabled', false)
+      //     }
+      //   })
+      // })
+      form.verify({
+        typeRqd: function (value) {
+          if (value === '' || value == null) return '类型不能为空'
+        },
+        pass: [/(.+){6,20}$/, '密码必须6到20位'],
+        same1: function (value) {
+          if (value !== $('#password1').val()) return '确认密码必须和密码一致'
+        },
+        same2: function (value) {
+          if (value !== $('#password2').val()) return '确认密码必须和密码一致'
+        },
+        same3: function (value) {
+          if (value !== $('#password3').val()) return '确认密码必须和密码一致'
+        },
+        same4: function (value) {
+          if (value !== $('#password4').val()) return '确认密码必须和密码一致'
+        },
+        prdRqd: function (value) {
+          if (value === '' || value == null) return '学段不能为空'
+        },
+        schRqd: function (value) {
+          if (value === '' || value == null) return '学校不能为空'
+        },
+        grpRqd: function (value) {
+          if (value === '' || value == null) return '爱心团体不能为空'
+        },
+        ctrRqd: function (value) {
+          if (value === '' || value == null) return '国家及地区不能为空'
+        },
+        place: function (value) {
+          if ($('[name=countryNumber]').val() === '1' && (value === '' || value === 'null' || value == null)) return '地址不能为空'
+        },
+        areaDetail: function (value) {
+          if ($('[name=countryNumber]').val() !== '1' && value === '') return '地区不能为空'
+        }
+      })
+      $('[lay-filter=signup-from-submit]').submit(function (e) {
+        if (e.target !== this) return true
+        // e.preventDefault()放在if (e.target !== this) return true上面的话，内部的提交事件也会被阻止，ie8会出问题，如上传图片，外层的submit需要阻止，上传图片的submit不应该阻止
+        e.preventDefault()
+        $('[lay-filter=signup-from-submit]').trigger('click')
+      })
+      form.on('submit(signup-from-submit)', function(data){
+        $('[lay-filter="signup-from-submit"]').attr('disabled', true)
+        $('[lay-filter="signup-from-submit"]').addClass('layui-btn-disabled')
+        ajax({
+          method: 'POST',
+          url: '/signup',
+          data: JSON.stringify(getFormData('#signup-from')),
+          success: function () {
+            if (getFormData('#signup-from').type === '学校' || getFormData('#signup-from').type === '爱心团体') {
+              layui.layer.msg('申请注册成功，请等待管理员审核',{ time: 4000 })
+              window.setTimeout(function () {
+                location.reload()
+                // location.href = '/member-center'
+              }, 4100)
+            } else {
+              layui.layer.msg('注册成功',{ time: 1000 })
+              window.setTimeout(function () {
+                // location.reload()
+                location.href = '/member-center'
+              }, 1100)
+            }
+          },
+          fail: function () {
+            $('[lay-filter="signup-from-submit"]').attr('disabled', false)
+            $('[lay-filter="signup-from-submit"]').removeClass('layui-btn-disabled')
+          },
+          error: function () {
+            $('[lay-filter="signup-from-submit"]').attr('disabled', false)
+            $('[lay-filter="signup-from-submit"]').removeClass('layui-btn-disabled')
+          }
+        })
+        return false
+      })
+    })
+  </script>
+{% endblock %}
+
+

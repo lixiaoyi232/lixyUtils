@@ -1,0 +1,136 @@
+{% extends "../back.html" %}
+
+{% block css %}
+{{ super() }}
+<style>
+  html {
+    overflow: hidden;
+  }
+</style>
+{% endblock %}
+
+{% block main %}
+  <div class="layui-card myCard">
+    <div class="layui-card-header">文章</div>
+    <div class="layui-card-body">
+      <div id="myTable"></div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+  $(function () {
+    newTable({
+      btns: {
+        items: [
+          {% if curAdmin.isSuperUser or curAdmin.permissions.atc_atc_a %}
+          'new',
+          {% endif %}
+          {% if curAdmin.isSuperUser or curAdmin.permissions.atc_atc_d %}
+          'dels',
+          {% endif %}
+          'setCols',
+        ]
+      },
+      search: {
+        'class': 'selects',
+        labelWidth: '100',
+        items: [
+          {
+            label: '标题',
+            elements: {
+              eType: 'input',
+              name: 'title'
+            }
+          },
+          {
+            label: '显示',
+            elements: {
+              eType: 'select',
+              name: 'show',
+              option: [
+                {value: 'all', label: '&nbsp;', selected: true},
+                {value: 'true', label: '是'},
+                {value: 'false', label: '否'},
+              ]
+            }
+          },
+          {
+            label: '类型',
+            elements: {
+              eType: 'select',
+              name: 'type',
+              option: [
+                {value: 'all', label: '&nbsp;', selected: true},
+                {% for i, j in ArticleType %}
+                {value: '{{ j }}', label: '{{ j }}'},
+                {% endfor %}
+              ]
+            }
+          },
+          {
+            label: '创建时间',
+            elements: {
+              eType: 'date',
+              name: 'createdTime',
+              range: true
+            }
+          },
+        ]
+      },
+      table: {
+        tool: {
+          items: [
+            {% if curAdmin.isSuperUser or curAdmin.permissions.atc_atc_g %}
+            // 'info',
+            {
+              layEvent: 'info',
+              'class': 'layui-btn-primary',
+              label: '详情',
+              event: function (obj, config, render) {window.open('/article/' + obj.data.id)}
+            },
+            {% endif %}
+            {% if curAdmin.isSuperUser or curAdmin.permissions.atc_atc_u %}
+            'edit',
+            {% endif %}
+            {% if curAdmin.isSuperUser or curAdmin.permissions.atc_atc_d %}
+            'del',
+            {% endif %}
+          ]
+        },
+        templates: [
+          {
+            id: 'tFrom',
+            content: '<a href="[[ d.from.href ]]">[[ d.from.label ]]</a>'
+          },
+          {
+            id: 'tShow',
+            content: '[[ d.show ? \'是\' : \'否\' ]]'
+          },
+          {
+            id: 'tCreatedTime',
+            content: '[[ dateFormat(d.createdTime, \'YYYY-MM-DD HH:mm:ss\') ]]'
+          }
+        ],
+        config: {
+          elem: '#article',
+          url: '/admin/article/article/table',
+          cols: [
+            [
+              {field: 'id', title: 'ID', align: 'center', show: false, sort: true, width: 100, fixed: 'left'},
+              {field: 'title', title: '标题', align: 'center', sort: true, minWidth: 200, fixed: 'left'},
+              {field: 'show', title: '显示', align: 'center', sort: true, width: 80, templet: '#tShow'},
+              {field: 'type', title: '类型', align: 'center', sort: true, width: 100},
+              // {field: 'from', title: '来源', align: 'center', width: 200, templet: '#tFrom'},
+              {field: 'createdTime', title: '创建时间', align: 'center', sort: true, width: 180, templet: '#tCreatedTime'},
+              {align: 'center', width: 150, fixed: 'right', toolbar: '#operation'}
+            ]
+          ]
+        }
+      }
+    })
+  })
+</script>
+{% endblock %}

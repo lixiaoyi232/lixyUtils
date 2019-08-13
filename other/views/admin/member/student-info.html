@@ -1,0 +1,242 @@
+{% extends "../back.html" %}
+
+{% block css %}
+{{ super() }}
+{% endblock %}
+
+{% block body %}
+  <div class="layui-card myCard">
+    <div class="layui-card-header">{{ member.name }}</div>
+    <div class="layui-card-body layui-tab layui-tab-brief">
+      <div id="myForm"></div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+  $(function () {
+    newForm({
+      form: {
+        labelWidth: '100',
+        submit: {
+          show:false
+        },
+        items: [
+          {
+            label: '用户名',
+            elements: {
+              eType: 'char',
+              name: 'account',
+              element: '<div class="layui-input-block" style="">{{ member.account }}</div>'
+            }
+          },
+          {
+            label: '用户类型',
+            elements: {
+              eType: 'char',
+              name: 'type',
+              element: '<div class="layui-input-block" style="">{{ member.type }}</div>'
+            }
+          },
+          {
+            label: '真实姓名',
+            elements: {
+              eType: 'char',
+              name: 'name',
+              element: '<div class="layui-input-block" style="">{{ member.name }}</div>'
+            }
+          },
+          // {
+          //   label: '昵称',
+          //   elements: {
+          //     eType: 'char',
+          //     name: 'nickName',
+          //     element: '<div class="layui-input-block" style="">{{ member.nickName }}</div>'
+          //   }
+          // },
+          {
+            label: '性别',
+            elements: {
+              eType: 'char',
+              name: 'gender',
+              element: '<div class="layui-input-block" style="">{{ member.gender }}</div>'
+            }
+          },
+          {
+            label: '民族',
+            elements: {
+              eType: 'char',
+              name: 'nation',
+              element: '<div class="layui-input-block" style="">{{ member.nation }}</div>'
+            }
+          },
+          {
+            label: '简介',
+            elements: {
+              eType: 'char',
+              name: 'intro',
+              element: '<div class="layui-input-block" style=""><pre>' + decodeURIComponent('{{ member.intro }}') + '</pre></div>'
+            }
+          },
+          {
+            label: '联系手机',
+            elements: {
+              eType: 'char',
+              name: 'phoneNumber',
+              element: '<div class="layui-input-block" style="">{{ member.phoneNumber }}</div>'
+            }
+          },
+          {
+            label: 'Email',
+            elements: {
+              eType: 'char',
+              name: 'email',
+              element: '<div class="layui-input-block" style="">{{ member.email }}</div>'
+            }
+          },
+          {
+            label: '微信号',
+            elements: {
+              eType: 'char',
+              name: 'wechat',
+              element: '<div class="layui-input-block" style="">{{ member.wechat }}</div>'
+            }
+          },
+          {
+            label: 'QQ',
+            elements: {
+              eType: 'char',
+              name: 'qq',
+              element: '<div class="layui-input-block" style="">{{ member.qq }}</div>'
+            }
+          },
+          {
+            label: '头像',
+            elements: {
+              eType: 'char',
+              name: 'avatar',
+              element: '<div class="layui-input-block" style=""><img src="{{ member.avatar }}" style="max-width: 300px; max-height: 300px;"></div>'
+            }
+          },
+          {
+            label: '国家及地区',
+            elements: {
+              eType: 'char',
+              name: 'country',
+              element: '<div class="layui-input-block" style="">{{ member.country.name }}</div>'
+            }
+          },
+          {
+            label: '地址',
+            show: '{{ member.country.number }}' === '1' ? true : false,
+            elements: {
+              eType: 'char',
+              name: 'county',
+              element: '<div class="layui-input-block" style="">{{ member.county.city.province.name }} {{ member.county.city.name }} {{ member.county.name }}</div>'
+            }
+          },
+          {
+            label: '地区',
+            show: '{{ member.country.number }}' !== '1' ? true : false,
+            elements: {
+              eType: 'char',
+              name: 'areaDetail',
+              element: '<div class="layui-input-block" style="">{{ member.areaDetail }}</div>'
+            }
+          },
+          {
+            label: '身份证号',
+            elements: {
+              eType: 'char',
+              name: 'idCard',
+              element: '<div class="layui-input-block" style="">{{ member.idCard }}</div>'
+            }
+          },
+          {
+            label: '学校',
+            elements: {
+              eType: 'char',
+              name: 'schoolId',
+              element: '<div class="layui-input-block" style="">{{ member.student.school.member.name }}</div>'
+            }
+          },
+          {
+            label: '入学年份',
+            elements: {
+              eType: 'char',
+              name: 'yearOfEnrollment',
+              element: '<div class="layui-input-block" style="">{{ member.student.yearOfEnrollment }}</div>'
+            }
+          },
+          {
+            label: '学段',
+            elements: {
+              eType: 'char',
+              name: 'period',
+              element: '<div class="layui-input-block" style="">{{ member.student.period }}</div>'
+            }
+          },
+          {
+            label: '班级',
+            elements: {
+              eType: 'char',
+              name: 'class',
+              element: '<div class="layui-input-block" style="">{{ member.student.class }}</div>'
+            }
+          },
+          {
+            label: '年级',
+            elements: {
+              eType: 'char',
+              name: 'grade',
+              element: '<div class="layui-input-block" style="">{{ member.student.grade }}</div>'
+            }
+          },
+          {
+            label: '照片',
+            elements: {
+              eType: 'char',
+              name: 'photo',
+              element: '<div class="layui-input-block" style=""><img src="{{ member.student.photo }}" style="max-width: 300px; max-height: 300px;"></div>'
+            }
+          },
+          {
+            label: '住址',
+            elements: {
+              eType: 'char',
+              name: 'address',
+              element: '<div class="layui-input-block" style="">{{ member.student.address }}</div>'
+            }
+          },
+          {
+            label: '家庭情况简述',
+            elements: {
+              eType: 'char',
+              name: 'familyInfo',
+              element: '<div class="layui-input-block" style=""><pre>' + decodeURIComponent('{{ member.student.familyInfo }}') + '</pre></div>'
+            }
+          },
+          {
+            label: '贫困状态',
+            elements: {
+              eType: 'char',
+              name: 'poverty',
+              element: '<div class="layui-input-block" style="">{{ member.student.poverty }}</div>'
+            }
+          },
+          {
+            label: '出生日期',
+            elements: {
+              eType: 'char',
+              name: 'birthday',
+              element: '<div class="layui-input-block" style="">{{ member.student.birthday }}</div>'
+            }
+          },
+        ]
+      }
+    })
+  })
+</script>
+{% endblock %}

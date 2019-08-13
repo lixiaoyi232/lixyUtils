@@ -1,0 +1,161 @@
+{% extends "../back.html" %}
+
+{% block css %}
+{{ super() }}
+{% endblock %}
+
+{% block main %}
+  <div class="layui-card myCard">
+    <div class="layui-card-header">颁奖</div>
+    <div class="layui-card-body">
+      <div id="adminForm"></div>
+      <div id="myTable"></div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+  $(function () {
+    newTable({
+      btns: {
+        items: [
+          {
+            layEvent: 'awards',
+            'class': 'layui-btn-primary none',
+            label: '颁奖',
+            event: function (obj, config, render) {
+              var datas = table.checkStatus(config.id).data
+              var data = []
+              for (var i in datas) {
+                if (datas.hasOwnProperty(i)) {
+                  data.push(datas[i].storyMatch.id)
+                }
+              }
+              ajax({
+                method: 'POST',
+                url: '/admin/match/awards/{{ match.id }}',
+                data: JSON.stringify({award: $('[name=award]').val(), data: data}),
+                success: function (data) {
+                  layui.layer.msg('成功',{ time: 2000 })
+                  render()
+                },
+                fail: function (data) {
+                  layui.layer.msg('失败',{ time: 2000 })
+                }
+              })
+            }
+          }
+        ]
+      },
+      search: {
+        'class': 'selects',
+        labelWidth: '100',
+        items: [
+          {
+            label: '标题',
+            elements: {
+              eType: 'input',
+              name: 'title'
+            }
+          },
+          {
+            label: '颁奖状态',
+            elements: {
+              eType: 'select',
+              name: 'awardStatus',
+              option: [
+                {value: 'all', label: '&nbsp;', selected: true},
+                {value: 'true', label: '已颁奖'},
+                {value: 'false', label: '未颁奖'},
+              ],
+            },
+          },
+          {
+            label: '学段',
+            elements: {
+              eType: 'select',
+              name: 'period',
+              option: [
+                {value: 'all', label: '&nbsp;'},
+                {% for i, j in StudentPeriod %}
+                {% if i != 'LiXiao' %}{value: '{{ j }}', label: '{{ j }}'},{% endif %}
+                {% endfor %}
+              ]
+            }
+          }
+        ]
+      },
+      table: {
+        templates: [
+          {
+            id: 'aw',
+            content: '[[# if (d.storyMatch.award != null) { ]][[ d.storyMatch.award.name ]][[# } ]]'
+          },
+          {
+            id: 'pr',
+            content: '[[ d.storyMatch.matchApply.period ]]'
+          }
+        ],
+        config: {
+          elem: '#awards',
+          url: '/admin/match/awards/{{ match.id }}/table',
+          page: false,
+          cols: [
+            [
+              {field: 'id', sort: true, title: 'ID', width:100, fixed: 'left', show: false},
+              {field: 'title', sort: true, title: '标题'},
+              {field: 'award', sort: true, title: '获奖情况', templet: '#aw'},
+              {field: 'period', sort: true, title: '学段', templet: '#pr'},
+              {field: 'status', sort: true, title: '状态'}
+            ]
+          ]
+        }
+      }
+    })
+    newForm({
+      parent: '#adminForm',
+      form: {
+        submit: {
+          show: false
+        },
+        items: [
+          {
+            label: '奖项',
+            inline: true,
+            elements: {
+              eType: 'select',
+              name: 'award',
+              layVerify: 'select',
+              laySearch: true,
+              option: [
+                {value: 'null', label: '回收', selected: true},
+                {% for a in match.awards %}
+                {value: '{{ a.id }}', label: '{{ a.name }}'},
+                {% endfor %}
+              ],
+            }
+          },
+          {
+            inline: true,
+            elements: {
+              eType: 'char',
+              name: 'btn',
+              element: '<button type="button" class="layui-btn layui-btn-primary" style="min-width: 100px;">颁奖</button>',
+              events: [
+                {
+                  name: 'click',
+                  callback: function (e) {
+                    $('[lay-event=\'awards\']').click()
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    })
+  })
+</script>
+{% endblock %}

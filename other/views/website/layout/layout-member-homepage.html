@@ -1,0 +1,200 @@
+{% extends "./layout-headerfooter.html" %}
+
+
+{% block css %}
+{{super()}}
+{% if member.type === MemberType.student or member.type === MemberType.teacher or member.type === MemberType.school %}
+<style>
+  .banner {
+    background-image: url('{{ webConfig.memberBanner1Img }}')
+  }
+</style>
+{% else %}
+<style>
+  .banner {
+    background-image: url('{{ webConfig.memberBanner2Img }}')
+  }
+</style>
+{% endif %}
+<style>
+  .banner {
+    position: relative;
+    height: 438px;
+    background-size: cover;
+    background-position: center center;
+    background-attachment: scroll;
+  }
+  @media only screen and (max-width: 767px) {
+    .banner {
+      height: 300px;
+    }
+  }
+
+  .mc-info {
+    position: relative;
+    padding-top: 110px;
+    background-color: white;
+    text-align: center;
+  }
+  .photo-background {
+    background-color: white;
+    position: absolute;
+    top: -110px;
+    left: 0;
+    right: 0;
+    margin: 0 auto;
+    width: 220px;
+    height: 220px;
+    border-radius: 110px;
+  }
+  .photo-background img {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    width: 200px;
+    height: 200px;
+    border-radius: 100px;
+  }
+  .mc-info .name {
+    font-size: 32px;
+  }
+  .mc-info .info a {
+    color: #CFCFCF
+  }
+  .mc-info .info a:hover {
+    color: #b0d562
+  }
+  .mc-info .button {
+    margin-top: 30px;
+  }
+  .mc-info .intro {
+    max-width: 600px;
+    margin: 20px auto 0;
+    color: #CFCFCF;
+  }
+
+</style>
+{% endblock %}
+
+{% block main %}
+  <div class="banner">
+  </div>
+  <div class="mc-info">
+    <div class="photo-background">
+      <img src="{% if member.avatar %}{{member.avatar}}{% else %}
+      {% if member.type === MemberType.student %}
+      /static/images/website/face1.jpg
+      {% elseif member.type === MemberType.teacher %}
+      /static/images/website/face2.jpg
+      {% elseif member.type === MemberType.school %}
+      /static/images/website/face3.jpg
+      {% elseif member.type === MemberType.whPerson or member.type === MemberType.whGroup %}
+      /static/images/website/face4.jpg
+      {% else %}
+      /static/images/website/face.jpg
+      {% endif %}
+      {% endif %}">
+    </div>
+    <div class="name">{{member.nickName}}</div>
+    <div class="info"><a href="/member/{{member.group.id}}">{{member.group.nickName}}</a></div>
+    {% if curMember and curMember.id != member.id %}
+    <div class="button">
+      <button type="button" id="btn-follow" class="layui-btn brownBtn">{% if hasFollowed %}取消关注{% else %}关注{% endif %}</button>
+      <button type="button" id="btn-message" class="layui-btn layui-btn-primary">私信</button>
+    </div>
+    {% endif %}
+    <div class="intro"><pre>{{member.intro}}</pre></div>
+  </div>
+
+  <div class="member_homepage_main">
+  {% block member_homepage_main %}
+  {% endblock %}
+  </div>
+
+{% endblock %}
+
+{% block dialog %}
+{{super()}}
+<form id="form-send-message" style="display: none; padding: 20px;">
+  <div>
+    内容：<br><textarea name="message" cols="63" rows="10"></textarea>
+  </div>
+  <span><button id="form-send-message-submit" type="submit">发送</button></span>
+</form>
+{% endblock %}
+
+
+{% block script %}
+{{ super() }}
+<script>
+  $(function() {
+    var hasFollowed = {{hasFollowed}}
+    // 关注
+    $('#btn-follow').on('click', function() {
+      $btn = $(this)
+      $btn.attr('disabled', true)
+      var url = '/member/{{member.id}}/'
+      if (hasFollowed) {
+        url += 'unfollow'
+      } else {
+        url += 'follow'
+      }
+      ajax({
+        method: 'POST',
+        url: url,
+        success: function () {
+          $btn.attr('disabled', false)
+          layui.layer.msg('操作成功',{ time: 1000 })
+          if (hasFollowed) {
+            $btn.text('关注')
+            hasFollowed = false
+          } else {
+            $btn.text('取消关注')
+            hasFollowed = true
+          }
+        },
+        fail: function () {
+          $btn.attr('disabled', false)
+        }
+      })
+    })
+    // 私信 呼出私信窗口
+    $('#btn-message').on('click', function() {
+      $(this).attr('disabled', true)
+      layui.layer.open({
+        type: 1,
+        title: '私信',
+        area: ['500px', '300px'],
+        content: $('#form-send-message'),
+        cancel: function() {
+          $('#btn-message').attr('disabled', false)
+        }
+      })
+    })
+    // 私信窗口提交
+    $('#form-send-message').on('submit', function(e) {
+      if (e.target !== this) {
+        return true
+      }
+      e.preventDefault()
+      $('#form-send-message-submit').attr('disabled', true)
+      var self = this
+      ajax({
+        method: 'POST',
+        url: '/member/{{member.id}}/send-message',
+        data: JSON.stringify(getFormData('#form-send-message')),
+        success: function () {
+          $('#form-send-message-submit').attr('disabled', false)
+          $('#btn-message').attr('disabled', false)
+          layui.layer.closeAll()
+          self.reset()
+          layui.layer.msg('操作成功',{ time: 1000 })
+        },
+        fail: function () {
+          $('#form-send-message-submit').attr('disabled', false)
+        }
+      })
+    })
+  })
+</script>
+{% endblock%}

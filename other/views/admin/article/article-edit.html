@@ -1,0 +1,236 @@
+{% extends "../back.html" %}
+
+{% block css %}
+{{ super() }}
+{% endblock %}
+
+{% block body %}
+  <div class="layui-card myCard">
+    <div class="layui-card-header">修改文章</div>
+    <div class="layui-card-body layui-tab layui-tab-brief">
+      <div id="myForm"></div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script src="/static/third-party/tinymce/tinymce.min.js"></script>
+<script>
+  $(function () {
+    newForm({
+      form: {
+        labelWidth: '120',
+        submit: {
+          event: function (data) {
+            $('[lay-filter="myFormSubmit"]').attr('disabled', true)
+            $('[lay-filter="myFormSubmit"]').addClass('layui-btn-disabled')
+            data.field.content = encodeURIComponent(data.field.content)
+            ajax({
+              method: 'POST',
+              url: '/admin/article/article/{{ article.id }}',
+              data: JSON.stringify(data.field),
+              success: function () {
+                layer.msg('修改成功', {time: 2000, icon:6})
+                parent.tableRender()
+                window.setTimeout(function () {parent.layer.close(parent.layer.getFrameIndex(window.name))}, 2000)
+                // window.setTimeout(function () {window.location.href = '/admin/article/article'}, 2000)
+              },
+              fail: function () {
+                $('[lay-filter="myFormSubmit"]').attr('disabled', false)
+                $('[lay-filter="myFormSubmit"]').removeClass('layui-btn-disabled')
+              },
+              error: function () {
+                $('[lay-filter="myFormSubmit"]').attr('disabled', false)
+                $('[lay-filter="myFormSubmit"]').removeClass('layui-btn-disabled')
+              }
+            })
+          }
+        },
+        done: function () {
+          tinymce.init({
+            selector:'[name=content]',
+            language: 'zh_CN',
+            height: 400,
+            branding: false,
+            elementpath: false,
+            relative_urls: false,
+            menubar: 'edit insert view format table',
+            font_formats: `Andale Mono=andale mono,times;Arial=arial,helvetica,sans-serif;Arial Black=arial black,avant garde;Book Antiqua=book antiqua,palatino;Comic Sans MS=comic sans ms,sans-serif;Courier New=courier new,courier;Georgia=georgia,palatino;Helvetica=helvetica;Impact=impact,chicago;Symbol=symbol;Tahoma=tahoma,arial,helvetica,sans-serif;Terminal=terminal,monaco;Times New Roman=times new roman,times;Trebuchet MS=trebuchet ms,geneva;Verdana=verdana,geneva;Webdings=webdings;Wingdings=wingdings,zapf dingbats;微软雅黑='微软雅黑';宋体='宋体';黑体='黑体';仿宋='仿宋';楷体='楷体';隶书='隶书';幼圆='幼圆';Arial='Arial';`,
+            lineheight_formats: "8pt 10pt 12pt 14pt 16pt 18pt 20pt 22pt 24pt 26pt 36pt",
+            // 插件（是否具有该功能）
+            plugins: [
+              'advlist autolink lists image charmap print preview hr anchor pagebreak',
+              'searchreplace visualblocks visualchars code fullpage',
+              'insertdatetime nonbreaking save table contextmenu directionality',
+              'emoticons paste textcolor colorpicker textpattern codesample',
+              'code lineheight',
+              'link'
+            ],
+            // 工具栏（是否显示该功能）
+            toolbar1: ' newdocument print preview | undo redo | insert | styleselect | forecolor backcolor bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | image emoticons codesample | code | fontselect | lineheightselect | link',
+            // paste_data_images: true,
+            automatic_uploads: true,
+            // 图片高级功能开关
+            image_advtab: true,
+            // 图片title（鼠标指向图片时显示的）开关
+            image_title: true,
+            // // 图片标题（图片下方）
+            // image_caption: true,
+            // // 默认图片列表
+            // image_list: [
+            //   {title: 'Dog', value: '/uploads/temp/dog.jpg'},
+            //   {title: 'Cat', value: '/uploads/temp/cat.jpg'}
+            // ],
+            // // 图片描述(图片加载失败时显示的文字)开关
+            // image_description: false
+            // // 图片尺寸开关
+            // image_dimensions: false
+
+            // 选择图片按钮的点击事件
+            file_picker_callback: function(callback, value, meta) {
+              if (meta.filetype === 'image') {
+                $('#upload').on('change', function() {
+                  callback($('#upload').val(), {alt: ''})
+                  $('#upload').off('change')
+                })
+              }
+            },
+            setup: function (editor) {
+              editor.on('input change undo redo', function () {
+                $('[name=content]').val(editor.getContent())
+              })
+            },
+            init_instance_callback : function(editor) {
+              $('[aria-label="Insert/edit image"]').on('click', function () {
+                var $choose
+                function getChoose() {
+                  $choose = $('.mce-reset .mce-container-body.mce-window-body.mce-abs-layout .mce-container-body.mce-abs-layout .mce-btn.mce-open')
+                  if ($choose.length === 0) {
+                    setTimeout(getChoose, 100)
+                  } else {
+                    $choose.trigger('click')
+                    $choose.after('<button type="button" id="udtBtn" style="position: relative;left: -34px;top: 0px;width: 34px;height: 30px;padding: 0;"></button>')
+                    upload.render({
+                      elem: '#udtBtn' //绑定元素
+                      ,url: '/upload' //上传接口
+                      ,done: function(data){
+                        $('#upload').val(data.url)
+                        $('#upload').trigger('change')
+                      }
+                      ,error: function(){
+                        console.log('上传出错')
+                      }
+                    })
+                  }
+                }
+                getChoose()
+              })
+            },
+            images_upload_handler: function (blobInfo, success, failure) {
+              if (blobInfo.blob().size > 2 * 1024 * 1014) {
+                failure('文件大小不能超过2m')
+              } else {
+                let formData = new FormData()
+                // 服务端接收文件的参数名，文件数据，文件名
+                formData.append('file', blobInfo.blob(), blobInfo.filename())
+                ajax({
+                  method: 'POST',
+                  url: '/upload',
+                  contentType: false,
+                  data: formData,
+                  success: function (data) {
+                    success(data.url)
+                  }
+                })
+              }
+            }
+          })
+        },
+        val: {
+          'title': '{{ article.title }}',
+          'show': '{{ article.show }}',
+          'type': '{{ article.type }}',
+          'fromLabel': '{{ article.from.label }}',
+          'fromHref': '{{ article.from.href }}',
+          'content': decodeURIComponent('{{ article.content }}'),
+          'createdTime': '{{ article.createdTime | dateE(0, "YYYY-MM-DD HH:mm:ss") }}',
+        },
+        items: [
+          {
+            label: '标题',
+            elements: {
+              eType: 'input',
+              name: 'title',
+              layVerify: 'required'
+            }
+          },
+          {
+            label: '显示',
+            elements: {
+              eType: 'select',
+              name: 'show',
+              option: [
+                {value: 'false', label: '否'},
+                {value: 'true', label: '是'},
+              ]
+            }
+          },
+          {
+            label: '类型',
+            elements: {
+              eType: 'select',
+              name: 'type',
+              layVerify: 'select',
+              option: [
+                {value: 'null', label: '请选择', selected: true},
+                {% for i, j in ArticleType %}
+                {value: '{{ j }}', label: '{{ j }}'},
+                {% endfor %}
+              ],
+            }
+          },
+          {
+            label: '来源',
+            elements: [
+              {
+                eType: 'input',
+                name: 'fromLabel',
+                placeholder: '请输入来源标签……'
+              },
+              {
+                eType: 'input',
+                name: 'fromHref',
+                placeholder: '请输入来源链接……'
+              }
+            ]
+          },
+          {
+            label: '内容',
+            elements: [
+              {
+                eType: 'textarea',
+                name: 'content',
+                raws: '15',
+              },
+              {
+                eType: 'char',
+                name: 'upload',
+                element: '<input hidden="hidden" id="upload">'
+              }
+            ]
+          },
+          {
+            label: '创建时间',
+            elements: {
+              eType: 'date',
+              name: 'createdTime',
+              type: 'datetime'
+            }
+          },
+        ]
+      }
+    })
+  })
+</script>
+{% endblock %}

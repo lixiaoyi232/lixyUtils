@@ -1,0 +1,99 @@
+{% extends "../back.html" %}
+
+{% block css %}
+{{ super() }}
+{% endblock %}
+
+{% block main %}
+  <div class="layui-card myCard">
+    <div class="layui-card-header">群组</div>
+    <div class="layui-card-body">
+      <div id="myTable"></div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+  $(function () {
+    newTable({
+      // btns: {
+      //   items: [
+      //     {% if curAdmin.isSuperUser or curAdmin.permissions.atc_atc_a %}
+      //     'new',
+      //     {% endif %}
+      //     {% if curAdmin.isSuperUser or curAdmin.permissions.atc_atc_d %}
+      //     'dels',
+      //     {% endif %}
+      //     'setCols',
+      //   ]
+      // },
+      // search: {
+      //   'class': 'selects',
+      //   labelWidth: '100',
+      //   items: [
+      //     {
+      //       label: '标题',
+      //       elements: {
+      //         eType: 'input',
+      //         name: 'title'
+      //       }
+      //     },
+      //     {
+      //       label: 'ID',
+      //       elements: {
+      //         eType: 'between',
+      //         name: 'id'
+      //       }
+      //     },
+      //     {
+      //       label: '创建时间',
+      //       elements: {
+      //         eType: 'date',
+      //         name: 'createdTime',
+      //         range: true
+      //       }
+      //     }
+      //   ]
+      // },
+      table: {
+        checkboxType: 'none',
+        tool: {
+          items: [
+            {
+              layEvent: 'into',
+              'class': 'layui-btn-primary',
+              label: '进入',
+              event: function (obj, config, render) {openWindow('/admin/chat/chat/' + obj.data.id, undefined, {resizable: 'yes'})}
+            },
+          ]
+        },
+        // templates: [
+        //   {
+        //     id: 'f',
+        //     content: '<a href="[[ d.from.href ]]">[[ d.from.label ]]</a>'
+        //   },
+        // ],
+        config: {
+          elem: '#chat',
+          url: '/admin/chat/chat/table',
+          toolbar: '',
+          cols: [
+            [
+              {field: 'id', sort: true, title: 'ID', width:100, fixed: 'left', show: false},
+              {field: 'account', sort: true, title: '账号'},
+              {% if curAdmin.isSuperUser %}
+              {field: 'notReadSU', sort: true, title: '未读数'},
+              {% else %}
+              {field: 'notRead', sort: true, title: '未读数'},
+              {% endif %}
+              {fixed: 'right', width:200, align: 'center', toolbar: '#operation'}
+            ]
+          ]
+        }
+      }
+    })
+  })
+</script>
+{% endblock %}

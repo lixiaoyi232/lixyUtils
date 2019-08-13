@@ -1,0 +1,495 @@
+{% extends "../base.html" %}
+
+{% block header %}
+<title>西部故事后台</title>
+<meta name="Keywords" Content="西部故事后台">
+<meta name="Description" Content="西部故事后台">
+{% endblock %}
+
+{% block css %}
+
+<link rel="stylesheet" href="/static/css/admin/admin.css">
+<link rel="stylesheet" href="/static/css/admin/back.css">
+<style>
+  a {
+    color: #2687a7;
+  }
+</style>
+
+{% endblock %}
+
+
+{% block body %}
+  <div id="LAY_app" class="layadmin-tabspage-none">
+    <div class="layui-layout layui-layout-admin">
+      <div class="layui-header">
+        <!-- 头部区域 -->
+        <ul class="layui-nav layui-layout-left">
+          <!-- <li class="layui-nav-item layadmin-flexible" lay-unselect="">
+            <a href="javascript:;" layadmin-event="flexible" title="侧边伸缩">
+              <i class="layui-icon layui-icon-shrink-right" id="LAY_app_flexible"></i>
+            </a>
+          </li>
+          <li class="layui-nav-item layui-hide-xs" lay-unselect="">
+            <a href="http://www.layui.com/admin/" target="_blank" title="前台">
+              <i class="layui-icon layui-icon-website"></i>
+            </a>
+          </li>
+          <li class="layui-nav-item" lay-unselect="">
+            <a href="javascript:;" layadmin-event="refresh" title="刷新">
+              <i class="layui-icon layui-icon-refresh-3"></i>
+            </a>
+          </li>
+          <li class="layui-nav-item layui-hide-xs" lay-unselect="">
+            <input type="text" placeholder="搜索..." autocomplete="off" class="layui-input layui-input-search" layadmin-event="serach" lay-action="template/search/keywords=">
+          </li>
+          <span class="layui-nav-bar" style="width: 0px; left: 0px; opacity: 0;"></span> -->
+        </ul>
+        <ul class="layui-nav layui-layout-right" lay-filter="layadmin-layout-right">
+
+          <!-- <li class="layui-nav-item" lay-unselect="">
+            <a lay-href="app/message/" layadmin-event="message">
+              <i class="layui-icon layui-icon-notice"></i>
+
+              <script type="text/html" template="" lay-url="./json/message/new.js">
+                <span class="layui-badge-dot"></span>
+              </script>
+              <span class="layui-badge-dot"></span>
+
+            </a>
+          </li>
+          <li class="layui-nav-item layui-hide-xs" lay-unselect="">
+            <a href="javascript:;" layadmin-event="theme">
+              <i class="layui-icon layui-icon-theme"></i>
+            </a>
+          </li>
+          <li class="layui-nav-item layui-hide-xs" lay-unselect="">
+            <a href="javascript:;" layadmin-event="note">
+              <i class="layui-icon layui-icon-note"></i>
+            </a>
+          </li>
+          <li class="layui-nav-item layui-hide-xs" lay-unselect="">
+            <a href="javascript:;" layadmin-event="fullscreen">
+              <i class="layui-icon layui-icon-screen-full"></i>
+            </a>
+          </li> -->
+          <li class="layui-nav-item" lay-unselect="">
+            <a href="javascript:;"> <cite>{{ curAdmin.account }}</cite> <span class="layui-nav-more"></span></a>
+            <dl class="layui-nav-child">
+              <dd><a id="info">基本资料</a></dd>
+              <dd><a id="cp">修改密码</a></dd>
+              <hr>
+              <dd style="text-align: center;"><a id="logout">退出</a></dd>
+            </dl>
+          </li>
+
+          <!-- <li class="layui-nav-item layui-hide-xs" lay-unselect="">
+            <a href="javascript:;" layadmin-event="about"><i class="layui-icon layui-icon-more-vertical"></i></a>
+          </li>
+          <li class="layui-nav-item layui-show-xs-inline-block layui-hide-sm" lay-unselect="">
+            <a href="javascript:;" layadmin-event="more"><i class="layui-icon layui-icon-more-vertical"></i></a>
+          </li>
+          <span class="layui-nav-bar"></span> -->
+        </ul>
+      </div>
+
+      <!-- 侧边菜单 -->
+      <div class="layui-side layui-side-menu">
+        <div class="layui-side-scroll">
+          <div class="layui-logo"><a href="/admin"><span>西部故事后台</span></a></div>
+          <ul class="layui-nav layui-nav-tree" lay-shrink="all" id="LAY-system-side-menu" lay-filter="layadmin-system-side-menu">
+            <!-- <li data-name="homes" data-jump="" class="layui-nav-item">
+              <a href="javascript:;" lay-tips="主页" lay-direction="2">
+                <i class="layui-icon layui-icon-home"></i>
+                <cite>主页</cite>
+                <span class="layui-nav-more"></span>
+              </a>
+              <dl class="layui-nav-child">
+                <dd data-name="home"><a href="/admin">首页</a></dd>
+                <dd data-name="homepage1" data-jump="home/homepage1"><a href="javascript:;" lay-href="home/homepage1">主页一</a></dd>
+                <dd data-name="homepage2" data-jump="home/homepage2"><a href="javascript:;" lay-href="home/homepage2">主页二</a></dd>
+              </dl>
+            </li> -->
+            <li data-name="home" data-jump="system/get" class="layui-nav-item ">
+              <a href="/admin" lay-href="system/get" lay-tips="首页" lay-direction="2">
+                <i class="layui-icon layui-icon-auz"></i>
+                <cite>首页</cite>
+              </a>
+            </li>
+            <li data-name="place" data-jump="" class="layui-nav-item">
+              <a href="javascript:;" lay-tips="地点" lay-direction="2">
+                <i class="layui-icon layui-icon-home"></i>
+                <cite>地点</cite>
+                <span class="layui-nav-more"></span>
+              </a>
+              <dl class="layui-nav-child">
+                <dd data-name="country"><a href="/admin/area/country">国家及地区</a></dd>
+                <dd data-name="province"><a href="/admin/area/province">大陆省份</a></dd>
+                <dd data-name="city"><a href="/admin/area/city">城市</a></dd>
+                <dd data-name="county"><a href="/admin/area/county">区县</a></dd>
+              </dl>
+            </li>
+            {% if curAdmin.isSuperUser or curAdmin.permissions.mem %}
+            <li data-name="member" data-jump="" class="layui-nav-item">
+              <a href="javascript:;" lay-tips="前台用户管理" lay-direction="2">
+                <i class="layui-icon layui-icon-home"></i>
+                <cite>前台用户管理</cite>
+                <span class="layui-nav-more"></span>
+              </a>
+              <dl class="layui-nav-child">
+                {% if curAdmin.isSuperUser or curAdmin.permissions.mem_sch %}
+                <dd data-name="school"><a href="/admin/member/school">学校</a></dd>
+                {% endif %}
+                {% if curAdmin.isSuperUser or curAdmin.permissions.mem_std %}
+                <dd data-name="student"><a href="/admin/member/student">学生</a></dd>
+                {% endif %}
+                {% if curAdmin.isSuperUser or curAdmin.permissions.mem_tch %}
+                <dd data-name="teacher"><a href="/admin/member/teacher">老师</a></dd>
+                {% endif %}
+                {% if curAdmin.isSuperUser or curAdmin.permissions.mem_grp %}
+                <dd data-name="whGroup"><a href="/admin/member/whGroup">爱心团体</a></dd>
+                {% endif %}
+                {% if curAdmin.isSuperUser or curAdmin.permissions.mem_psn %}
+                <dd data-name="whPerson"><a href="/admin/member/whPerson">爱心人士</a></dd>
+                {% endif %}
+                {% if curAdmin.isSuperUser or curAdmin.permissions.mem_oth %}
+                <dd data-name="other"><a href="/admin/member/other">其他人士</a></dd>
+                {% endif %}
+                {% if curAdmin.isSuperUser %}
+                <dd data-name="mapply"><a href="/admin/member/apply">团体申请</a></dd>
+                {% endif %}
+                {% if curAdmin.isSuperUser or curAdmin.permissions.mem_sta %}
+                <dd data-name="sapply"><a href="/admin/member/sapply">入学申请</a></dd>
+                {% endif %}
+              </dl>
+            </li>
+            {% endif %}
+            {% if curAdmin.isSuperUser %}
+            <li data-name="adminPrj" data-jump="" class="layui-nav-item">
+              <a href="javascript:;" lay-tips="后台用户管理" lay-direction="2">
+                <i class="layui-icon layui-icon-home"></i>
+                <cite>后台用户管理</cite>
+                <span class="layui-nav-more"></span>
+              </a>
+              <dl class="layui-nav-child">
+                <dd data-name="admin"><a href="/admin/admin/admin">后台用户</a></dd>
+                <dd data-name="allot"><a href="/admin/admin/allot">分配区域</a></dd>
+              </dl>
+            </li>
+            {% endif %}
+            {% if curAdmin.isSuperUser or curAdmin.permissions.mch %}
+            <li data-name="matchPrj" data-jump="" class="layui-nav-item">
+              <a href="javascript:;" lay-tips="大赛管理" lay-direction="2">
+                <i class="layui-icon layui-icon-home"></i>
+                <cite>大赛管理</cite>
+                <span class="layui-nav-more"></span>
+              </a>
+              <dl class="layui-nav-child">
+                {% if curAdmin.isSuperUser or curAdmin.permissions.mch_mch %}
+                <dd data-name="match"><a href="/admin/match/match">大赛</a></dd>
+                {% endif %}
+                {% if curAdmin.isSuperUser or curAdmin.permissions.mch_apl %}
+                <dd data-name="matchApply"><a href="/admin/match/apply">报名表</a></dd>
+                {% endif %}
+                {% if curAdmin.isSuperUser or curAdmin.permissions.mch_sfv %}
+                <dd data-name="matchFirstVerify"><a href="/admin/match/verify1">初赛故事管理</a></dd>
+                {% endif %}
+                {% if curAdmin.isSuperUser or curAdmin.permissions.mch_ssv %}
+                <dd data-name="matchSecondVerify"><a href="/admin/match/verify2">复赛故事管理</a></dd>
+                {% endif %}
+                {% if curAdmin.isSuperUser or curAdmin.permissions.mch_stv %}
+                <dd data-name="matchThirdVerify"><a href="/admin/match/verify3">获奖感言管理</a></dd>
+                {% endif %}
+              </dl>
+            </li>
+            {% endif %}
+            {% if curAdmin.isSuperUser or curAdmin.permissions.sty %}
+            <li data-name="storyPrj" data-jump="" class="layui-nav-item">
+              <a href="javascript:;" lay-tips="故事管理" lay-direction="2">
+                <i class="layui-icon layui-icon-home"></i>
+                <cite>故事管理</cite>
+                <span class="layui-nav-more"></span>
+              </a>
+              <dl class="layui-nav-child">
+                {% if curAdmin.isSuperUser or curAdmin.permissions.sty_sty %}
+                <dd data-name="story"><a href="/admin/story/story">故事</a></dd>
+                {% endif %}
+                {% if curAdmin.isSuperUser or curAdmin.permissions.sty_typ %}
+                <dd data-name="storyType"><a href="/admin/story/type">故事类别</a></dd>
+                {% endif %}
+                {% if curAdmin.isSuperUser or curAdmin.permissions.sty_cmt %}
+                <dd data-name="storyComment"><a href="/admin/story/comment">故事评论</a></dd>
+                {% endif %}
+              </dl>
+            </li>
+            {% endif %}
+            {% if curAdmin.isSuperUser or curAdmin.permissions.aid %}
+            <li data-name="aidPrj" data-jump="" class="layui-nav-item">
+              <a href="javascript:;" lay-tips="助学金管理" lay-direction="2">
+                <i class="layui-icon layui-icon-home"></i>
+                <cite>助学金管理</cite>
+                <span class="layui-nav-more"></span>
+              </a>
+              <dl class="layui-nav-child">
+                {% if curAdmin.isSuperUser or curAdmin.permissions.aid_apl %}
+                <dd data-name="aidApply"><a href="/admin/aid/apply">申请单</a></dd>
+                {% endif %}
+                {% if curAdmin.isSuperUser or curAdmin.permissions.aid_aid %}
+                <dd data-name="aid"><a href="/admin/aid/aid">资助单</a></dd>
+                {% endif %}
+                {% if curAdmin.isSuperUser or curAdmin.permissions.aid_dtl %}
+                <dd data-name="aidDetail"><a href="/admin/aid/detail">资助明细</a></dd>
+                {% endif %}
+                {% if curAdmin.isSuperUser or curAdmin.permissions.aid_sav %}
+                <dd data-name="aidVerify"><a href="/admin/aid/verify">故事审核</a></dd>
+                {% endif %}
+              </dl>
+            </li>
+            {% endif %}
+            {% if curAdmin.isSuperUser or curAdmin.permissions.atc %}
+            <li data-name="articlePrj" data-jump="" class="layui-nav-item">
+              <a href="javascript:;" lay-tips="文章管理" lay-direction="2">
+                <i class="layui-icon layui-icon-home"></i>
+                <cite>文章管理</cite>
+                <span class="layui-nav-more"></span>
+              </a>
+              <dl class="layui-nav-child">
+                {% if curAdmin.isSuperUser or curAdmin.permissions.atc_atc %}
+                <dd data-name="article"><a href="/admin/article/article">文章</a></dd>
+                {% endif %}
+                {% if curAdmin.isSuperUser or curAdmin.permissions.atc_atc %}
+                <dd data-name="dfile"><a href="/admin/article/dfile">文件下载</a></dd>
+                {% endif %}
+              </dl>
+            </li>
+            {% endif %}
+            {% if curAdmin.isSuperUser or curAdmin.permissions.svy %}
+            <li data-name="surveyPrj" data-jump="" class="layui-nav-item">
+              <a href="javascript:;" lay-tips="调查问卷管理" lay-direction="2">
+                <i class="layui-icon layui-icon-home"></i>
+                <cite>调查问卷管理</cite>
+                <span class="layui-nav-more"></span>
+              </a>
+              <dl class="layui-nav-child">
+                {% if curAdmin.isSuperUser or curAdmin.permissions.svy_svy %}
+                <dd data-name="survey"><a href="/admin/survey/survey">调查问卷</a></dd>
+                {% endif %}
+              </dl>
+            </li>
+            {% endif %}
+            {% if curAdmin.isSuperUser or curAdmin.permissions.dts %}
+            <li data-name="datasPrj" data-jump="" class="layui-nav-item">
+              <a href="javascript:;" lay-tips="数据中心" lay-direction="2">
+                <i class="layui-icon layui-icon-home"></i>
+                <cite>数据中心</cite>
+                <span class="layui-nav-more"></span>
+              </a>
+              <dl class="layui-nav-child">
+                {% if curAdmin.isSuperUser or curAdmin.permissions.dts_atb %}
+                <dd data-name="all"><a href="/admin/datas/all">数据查询</a></dd>
+                {% endif %}
+                {% if curAdmin.isSuperUser or curAdmin.permissions.dts_cnt %}
+                <dd data-name="matchCount"><a href="/admin/count/match">大赛统计</a></dd>
+                <dd data-name="schoolMatchCount"><a href="/admin/count/schoolMatch">学校大赛统计</a></dd>
+                <dd data-name="studentAwardCount"><a href="/admin/count/studentAward">学生获奖统计</a></dd>
+                <dd data-name="memberCount"><a href="/admin/count/member">用户故事统计</a></dd>
+                <dd data-name="schoolCount"><a href="/admin/count/school">学校团体故事统计</a></dd>
+                <dd data-name="whGroupCount"><a href="/admin/count/whGroup">爱心团体故事统计</a></dd>
+                <dd data-name="moneyCount"><a href="/admin/count/money">学生钱款类查询</a></dd>
+                {% endif %}
+              </dl>
+            </li>
+            {% endif %}
+            {% if curAdmin.isSuperUser or curAdmin.permissions.cht %}
+            <li data-name="chatPrj" data-jump="" class="layui-nav-item">
+              <a href="javascript:;" lay-tips="跨网通" lay-direction="2">
+                <i class="layui-icon layui-icon-home"></i>
+                <cite>跨网通</cite>
+                <span class="layui-nav-more"></span>
+              </a>
+              <dl class="layui-nav-child">
+                <dd data-name="chat"><a href="/admin/chat/chat">群聊</a></dd>
+                {% if curAdmin.isSuperUser or curAdmin.permissions.cht_act %}
+                <dd data-name="aChat"><a href="/admin/chat/a-chat">单聊</a></dd>
+                {% endif %}
+                {% if curAdmin.isSuperUser or curAdmin.permissions.cht_act %}
+                <dd data-name="aChatList"><a href="/admin/chat/list">通讯录</a></dd>
+                {% endif %}
+                {% if curAdmin.isSuperUser or curAdmin.permissions.cht_psh %}
+                <dd data-name="push"><a href="/admin/chat/push">推送</a></dd>
+                {% endif %}
+              </dl>
+            </li>
+            {% endif %}
+            {% if curAdmin.isSuperUser or curAdmin.permissions.wcg %}
+            <li data-name="webConfig" data-jump="" class="layui-nav-item ">
+              <a href="/admin/web/config" lay-tips="网站管理" lay-direction="2">
+                <i class="layui-icon layui-icon-auz"></i>
+                <cite>网站管理</cite>
+              </a>
+            </li>
+            {% endif %}
+            <!-- <li data-name="get" data-jump="system/get" class="layui-nav-item ">
+              <a href="javascript:;" lay-href="system/get" lay-tips="授权" lay-direction="2">
+                <i class="layui-icon layui-icon-auz"></i>
+                <cite>授权</cite>
+              </a>
+            </li> -->
+            <span class="layui-nav-bar" style="top: 494px; height: 0px; opacity: 0;"></span>
+          </ul>
+        </div>
+      </div>
+
+
+      <!-- 页面标签 -->
+      <script type="text/html" template="" lay-done="layui.element.render('nav', 'layadmin-pagetabs-nav')">
+        <div class="layadmin-pagetabs" id="LAY_app_tabs">
+          <div class="layui-icon layadmin-tabs-control layui-icon-prev" layadmin-event="leftPage"></div>
+          <div class="layui-icon layadmin-tabs-control layui-icon-next" layadmin-event="rightPage"></div>
+          <div class="layui-icon layadmin-tabs-control layui-icon-down">
+            <ul class="layui-nav layadmin-tabs-select" lay-filter="layadmin-pagetabs-nav">
+              <li class="layui-nav-item" lay-unselect>
+                <a href="javascript:;"></a>
+                <dl class="layui-nav-child layui-anim-fadein">
+                  <dd layadmin-event="closeThisTabs"><a href="javascript:;">关闭当前标签页</a></dd>
+                  <dd layadmin-event="closeOtherTabs"><a href="javascript:;">关闭其它标签页</a></dd>
+                  <dd layadmin-event="closeAllTabs"><a href="javascript:;">关闭全部标签页</a></dd>
+                </dl>
+              </li>
+            </ul>
+          </div>
+          <div class="layui-tab" lay-unauto lay-allowClose="true" lay-filter="layadmin-layout-tabs">
+            <ul class="layui-tab-title" id="LAY_app_tabsheader">
+              <li lay-id="/"><i class="layui-icon layui-icon-home"></i></li>
+            </ul>
+          </div>
+        </div>
+      </script>
+
+
+      <!-- 主体内容 -->
+      <div class="layui-body" id="LAY_app_body">
+        <div class="layadmin-tabsbody-item layui-show">
+          <div class="layui-fluid">
+            {% block main %}
+            {% endblock %}
+          </div>
+        </div>
+      </div>
+
+      <!-- 辅助元素，一般用于移动设备下遮罩 -->
+      <div class="layadmin-body-shade" layadmin-event="shade"></div>
+
+    </div>
+  </div>
+
+
+{% endblock %}
+
+{% block script %}
+{{super()}}
+<script src="/static/third-party/layui/lay/modules/authtree.js"></script>
+<script src="/static/js/componentLib.js"></script>
+<script src="/static/js/formComponent.js"></script>
+<script src="/static/js/tableComponent.js"></script>
+<script>
+  // init
+  $(function () {
+    // 侧边栏选中项样式
+    $('[data-name=\'{{layuiThis.child}}\']').addClass('layui-this')
+    $('[data-name=\'{{layuiThis.parent}}\']').addClass('layui-nav-itemed')
+
+    $('#info').on('click', function() {
+      layer.open({
+        type: 2,
+        title: '基本资料',
+        shade: 0.8,
+        area: ['90%', '90%'],
+        content: '/admin/info'
+      })
+    })
+    $('#cp').on('click', function() {
+      var index = layer.open({
+        type: 1,
+        title: '修改密码',
+        offset: '100px',
+        skin: 'layui-layer-rim',
+        area: ['360px', '240px'],
+        content: '<div id="changepw"></div>'
+      })
+      newForm({
+        parent: '#changepw',
+        form: {
+          submit: {
+            event: function (data) {
+              $('[lay-filter="myFormSubmit"]').attr('disabled', true)
+              $('[lay-filter="myFormSubmit"]').addClass('layui-btn-disabled')
+              ajax({
+                method: 'POST',
+                url: '/admin/admin/admin/{{ curAdmin.id }}/cp',
+                data: JSON.stringify(data.field),
+                success: function () {
+                  $('[lay-filter="myFormSubmit"]').attr('disabled', false)
+                  $('[lay-filter="myFormSubmit"]').removeClass('layui-btn-disabled')
+                  layer.msg('修改密码成功', {time: 2000, icon:6})
+                  layer.close(index)
+                },
+                fail: function () {
+                  $('[lay-filter="myFormSubmit"]').attr('disabled', false)
+                  $('[lay-filter="myFormSubmit"]').removeClass('layui-btn-disabled')
+                },
+                error: function () {
+                  $('[lay-filter="myFormSubmit"]').attr('disabled', false)
+                  $('[lay-filter="myFormSubmit"]').removeClass('layui-btn-disabled')
+                }
+              })
+            }
+          },
+          items: [
+            {
+              label: '密码',
+              elements: {
+                eType: 'input',
+                name: 'pw',
+                layVerify: 'pass'
+              }
+            },
+            {
+              label: '确认密码',
+              elements: {
+                eType: 'input',
+                name: 'cfpw',
+                layVerify: 'same'
+              }
+            },
+          ],
+          verify: {
+            pass: [/(.+){6,20}$/, '密码必须6到20位'],
+            same: function (value) {
+              if (value !== $('[name=pw]').val()) return '确认密码必须和密码一致'
+            }
+          }
+        }
+      })
+    })
+
+    $('#logout').on('click', function() {
+      $('#logout').attr('disabled', true)
+      ajax({
+        method: 'POST',
+        url: '/admin/logout',
+        success: function () {
+          $('#logout').attr('disabled', false)
+          layui.layer.msg('登出成功',{ time: 1000 })
+          window.setTimeout(function () {
+            location.href = '/admin/login'
+          }, 1100)
+        },
+        fail: function () {
+          $('#logout').attr('disabled', false)
+        }
+      })
+    })
+  })
+</script>
+{% endblock %}

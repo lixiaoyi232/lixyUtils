@@ -1,0 +1,243 @@
+{% extends "../layout/layout-member-center.html" %}
+
+{% block css %}
+{{ super() }}
+{% endblock %}
+
+{% block body %}
+
+<div class="layui-card myCard">
+  <div class="layui-card-header">资助留言</div>
+  <div class="layui-card-body">
+    <div id="myTable"></div>
+    <div id="myForm"></div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+  $(function () {
+    newTable({
+      btns: {
+        items: [
+          // 'new',
+          // 'setCols',
+        ]
+      },
+      search: {
+        'class': 'selects',
+        labelWidth: '100',
+        submit: {
+          'class': 'layui-btn greenBtn'
+        },
+        items: [
+          {
+            label: '回复人',
+            elements: {
+              eType: 'input',
+              name: 'memberName'
+            }
+          },
+          {
+            label: '回复类型',
+            elements: {
+              eType: 'select',
+              name: 'type',
+              option: [
+                {value: 'all', label: '&nbsp;', selected: true},
+                {% for i, j in AidMessageType %}
+                {value: '{{ j }}', label: '{{ j }}'},
+                {% endfor %}
+              ]
+            }
+          },
+          {
+            label: '主题',
+            elements: {
+              eType: 'input',
+              name: 'subject'
+            }
+          },
+          {
+            label: '内容',
+            elements: {
+              eType: 'input',
+              name: 'content'
+            }
+          },
+        ]
+      },
+      table: {
+        checkboxType: 'none',
+        tool: {
+          items: [
+            'info',
+            // {
+            //   layEvent: 'del',
+            //   'class': 'layui-btn-danger[[# if(d.member.id !== {{ curMember.id }} && (\'{{ curMember.type }}\' !== \'{{ MemberType.school }}\' || d.member.student == null || d.member.student.school.member.id !== {{ curMember.id }})){ ]] none[[#  } ]]',
+            // }
+          ]
+        },
+        templates: [
+          {
+            id: 'mn',
+            content: '[[ d.member.name ]]'
+          },
+          {
+            id: 'c',
+            content: '<pre>[[ decodeURIComponent(d.content) ]]</pre>'
+          },
+          {
+            id: 'i1',
+            content: '[[# if (d.img1) { ]]<a href="[[ d.img1 ]]" style="cursor: pointer;" target="_blank"><img class="tableImg" src="[[ d.img1 ]]"></a>[[# } ]]'
+          },
+          {
+            id: 'i2',
+            content: '[[# if (d.img2) { ]]<a href="[[ d.img2 ]]" style="cursor: pointer;" target="_blank"><img class="tableImg" src="[[ d.img2 ]]"></a>[[# } ]]'
+          },
+          {
+            id: 'i3',
+            content: '[[# if (d.img3) { ]]<a href="[[ d.img3 ]]" style="cursor: pointer;" target="_blank"><img class="tableImg" src="[[ d.img3 ]]"></a>[[# } ]]'
+          },
+          {
+            id: 'tCreatedTime',
+            content: '[[ dateFormat(d.createdTime, \'YYYY-MM-DD HH:mm:ss\') ]]'
+          },
+        ],
+        config: {
+          elem: '#aidMessage',
+          url: '/aid/message/table?aidDetailId={{ aidDetailId }}',
+          cols: [
+            [
+              {field: 'id', sort: true, title: 'ID', width:100, show: false},
+              {width:80, align: 'center', toolbar: '#operation'},
+              {field: 'memberName', sort: true, title: '回复人', templet: '#mn'},
+              {field: 'type', sort: true, title: '回复类型'},
+              {field: 'subject', sort: true, title: '主题'},
+              {field: 'content', sort: true, title: '内容', templet: '#c'},
+              {field: 'img1', sort: true, title: '图片1', templet: '#i1'},
+              {field: 'img2', sort: true, title: '图片2', templet: '#i2'},
+              {field: 'img3', sort: true, title: '图片3', templet: '#i3'},
+              {field: 'createdTime', sort: true, title: '提交时间', width:180, align: 'center', templet: '#tCreatedTime'},
+            ]
+          ]
+        }
+      }
+    })
+    {% if curMember.type == MemberType.school or curMember.type == MemberType.student or curMember.type == MemberType.whPerson or curMember.type == MemberType.whGroup %}
+    newForm({
+      form: {
+        labelWidth: '120',
+        submit: {
+          label: '提交留言',
+          'class': 'layui-btn brownBtn',
+          event: function (data) {
+            $('[lay-filter="myFormSubmit"]').attr('disabled', true)
+            $('[lay-filter="myFormSubmit"]').addClass('layui-btn-disabled')
+            data.field.aidDetailId = '{{ aidDetailId }}'
+            data.field.content = encodeURIComponent(data.field.content)
+            ajax({
+              method: 'POST',
+              url: '/member-center/aid-message/',
+              data: JSON.stringify(data.field),
+              success: function () {
+                layer.msg('留言成功', {time: 2000, icon:6})
+                window.location.reload()
+              },
+              fail: function () {
+                $('[lay-filter="myFormSubmit"]').attr('disabled', false)
+                $('[lay-filter="myFormSubmit"]').removeClass('layui-btn-disabled')
+              },
+              error: function () {
+                $('[lay-filter="myFormSubmit"]').attr('disabled', false)
+                $('[lay-filter="myFormSubmit"]').removeClass('layui-btn-disabled')
+              }
+            })
+          }
+        },
+        items: [
+          {% if curMember.type == MemberType.whPerson or curMember.type == MemberType.whGroup %}
+          {
+            label: '回复类型',
+            show: false,
+            elements: {
+              eType: 'select',
+              name: 'type',
+              layVerify: 'select',
+              option: [
+                {value: '{{ AidMessageType.normal }}', label: '{{ AidMessageType.normal }}', selected: true},
+              ],
+            }
+          },
+          {% else %}
+          {
+            label: '回复类型',
+            elements: {
+              eType: 'select',
+              name: 'type',
+              layVerify: 'select',
+              option: [
+                {value: 'null', label: '请选择', selected: true},
+                {% for i, j in AidMessageType %}
+                {value: '{{ j }}', label: '{{ j }}'},
+                {% endfor %}
+              ],
+            }
+          },
+          {% endif %}
+          {
+            label: '主题',
+            elements: {
+              eType: 'input',
+              name: 'subject',
+              display: 'block',
+              layVerify: 'required'
+            }
+          },
+          {
+            label: '内容',
+            elements: {
+              eType: 'textarea',
+              name: 'content',
+              layVerify: 'required'
+            }
+          },
+          {
+            label: '图片1',
+            elements: {
+              eType: 'file',
+              name: 'img1',
+              btnClass: 'layui-btn greenBtn'
+            }
+          },
+          {
+            label: '图片2',
+            elements: {
+              eType: 'file',
+              name: 'img2',
+              btnClass: 'layui-btn greenBtn'
+            }
+          },
+          {
+            label: '图片3',
+            elements: {
+              eType: 'file',
+              name: 'img3',
+              btnClass: 'layui-btn greenBtn'
+            }
+          },
+        ],
+        verify: {
+          select: function (value) {
+            if (value === '' || value === 'null') return '必填项不能为空'
+          },
+        }
+      }
+    })
+    {% endif %}
+  })
+</script>
+{% endblock %}

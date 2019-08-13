@@ -1,0 +1,333 @@
+{% extends "./layout-website.html" %}
+
+
+{% block css %}
+{{ super() }}
+<link rel="stylesheet" href="/static/css/website/layout-headerfooter.css">
+{% endblock %}
+
+
+{% block body %}
+{% block bodyHeader %}
+  <div class="header">
+    <!-- 大屏幕 -->
+    <div class="header-main layui-hide-xs layui-hide-sm layui-show-md-block layui-show-lg-block">
+      <div class="header-logo">
+        <a href="/"><img src="{{ webConfig.logoImg }}" alt=""></a>
+      </div>
+      <ul class="menu">
+        <li class="menuitem" m:class="{selected: menuHovered === 'about'}">
+          <a href="javascript:;" data-value="about">关于我们</a>
+          <div class="menuSelectedBar"></div>
+          <ul class="submenu" style="display: none;" m-if="subMenu.about.isShowing">
+            <li><a href="{{ webConfig.linkSource }}">平台缘起</a></li>
+            <li><a href="{{ webConfig.linkActivity }}">活动案例</a></li>
+            <li><a href="{{ webConfig.linkVIPservice }}">会员服务</a></li>
+          </ul>
+        </li>
+        <li class="menuitem" m:class="{selected: menuHovered === 'news'}">
+          <a href="javascript:;" data-value="news">新闻中心</a>
+          <div class="menuSelectedBar"></div>
+          <ul class="submenu" style="display: none;" m-if="subMenu.news.isShowing">
+            <li><a href="/news">新闻动态</a></li>
+            <li><a href="/news2">媒体报道</a></li>
+            <li><a href="/videos">在线视频</a></li>
+          </ul>
+        </li>
+        <li class="menuitem" m:class="{selected: menuHovered === 'story'}">
+          <a href="/story" data-value="story">西部故事</a>
+          <div class="menuSelectedBar"></div>
+        </li>
+        <li class="menuitem" m:class="{selected: menuHovered === 'match'}">
+          <a href="/match" data-value="match">原创大赛</a>
+          <div class="menuSelectedBar"></div>
+        </li>
+        <li class="menuitem" m:class="{selected: menuHovered === 'web'}" style="display: none;">
+          <a href="javascript:;" data-value="web">网博会</a>
+          <div class="menuSelectedBar"></div>
+        </li>
+        <li class="menuitem" m:class="{selected: menuHovered === 'group'}">
+          <a href="javascript:;" data-value="group">会员列表</a>
+          <div class="menuSelectedBar"></div>
+          <ul class="submenu" style="display: none;" m-if="subMenu.group.isShowing">
+            <li><a href="/member-list?memberType=%E5%AD%A6%E6%A0%A1">学校</a></li>
+            <li><a href="/member-list?memberType=%E7%88%B1%E5%BF%83%E5%9B%A2%E4%BD%93">爱心团体</a></li>
+          </ul>
+        </li>
+      </ul>
+
+      <div class="member-div">
+        {% if curMember %}
+        <a class="member-btn" href="javascript:;">{{curMember.nickName}}{% if curMember.notReadNoti > 0 %}<span class="layui-badge-dot"></span>{% endif %}</a>
+        <ul class="user-menu">
+          <li><a href="/member/{{curMember.id}}">我的主页</a></li>
+          <li><a href="/member-center">用户中心{% if curMember.notReadNoti > 0 %}<span class="layui-badge-dot"></span>{% endif %}</a></li>
+          <li><a class="logout" href="javascript:;">登出</a></li>
+        </ul>
+        {% else %}
+        <!-- <a href="javascript:;">注册</a> &nbsp;&nbsp;
+        <a href="javascript:;">登录</a> -->
+        <a href="/signup">注册</a> &nbsp;|&nbsp;
+        <a href="/login">登录</a>
+        {% endif %}
+      </div>
+
+    </div>
+    <div class="blue-bar"></div>
+
+    <!-- 小屏幕 -->
+    <div class="header-main-mini layui-show-xs-block layui-show-sm-block layui-hide-md layui-hide-lg">
+      <div class="header-logo">
+        <a href="/"><img src="{{ webConfig.logoImg }}" alt=""></a>
+      </div>
+      <div class="header-menu-toggle">
+        <a href="javascript:;" id="btn-header-menu-toggle">
+          <s class="bar"></s>
+          <s class="bar"></s>
+          <s class="bar"></s>
+        </a>
+      </div>
+      <div class="header-menu-mini layui-hide">
+        <ul class="menu">
+          <li class="menuitem" m:class="{selected: menuHovered === 'about' || menuSelected === 'about'}">
+            <a href="javascript:;" data-value="about">关于我们</a>
+            <ul class="submenu">
+              <li style="display: none;" m-if="menuSelected==='about'">
+                <a href="{{ webConfig.linkSource }}" data-value="1-1">平台缘起</a>
+              </li>
+              <li style="display: none;" m-if="menuSelected==='about'">
+                <a href="{{ webConfig.linkActivity }}" data-value="1-2">活动案例</a>
+              </li>
+              <li style="display: none;" m-if="menuSelected==='about'">
+                <a href="{{ webConfig.linkVIPservice }}" data-value="1-3">会员服务</a>
+              </li>
+            </ul>
+          </li>
+          <li class="menuitem" m:class="{selected: menuHovered === 'news' || menuSelected === 'news'}">
+            <a href="javascript:;" data-value="news">新闻中心</a>
+            <ul class="submenu">
+              <li style="display: none;" m-if="menuSelected==='news'">
+                <a href="/news" data-value="2-1">新闻动态</a>
+              </li>
+              <li style="display: none;" m-if="menuSelected==='news'">
+                <a href="/news2" data-value="2-2">媒体报道</a>
+              </li>
+              <li style="display: none;" m-if="menuSelected==='news'">
+                <a href="/videos" data-value="2-3">在线视频</a>
+              </li>
+            </ul>
+          </li>
+          <li class="menuitem" m:class="{selected: menuHovered === 'story'}">
+            <a href="/story" data-value="story">西部故事</a>
+          </li>
+          <li class="menuitem" m:class="{selected: menuHovered === 'match'}">
+            <a href="/match" data-value="match">原创大赛</a>
+          </li>
+          <li class="menuitem" m:class="{selected: menuHovered === 'web'}" style="display: none;">
+            <a href="javascript:;" data-value="web">网博会</a>
+          </li>
+          <li class="menuitem" m:class="{selected: menuHovered === 'group'}">
+            <a href="javascript:;" data-value="group">会员列表</a>
+            <ul class="submenu">
+              <li style="display: none;" m-if="menuSelected==='group'">
+                <a href="/member-list?memberType=%E5%AD%A6%E6%A0%A1" data-value="6-1">学校</a>
+              </li>
+              <li style="display: none;" m-if="menuSelected==='group'">
+                <a href="/member-list?memberType=%E7%88%B1%E5%BF%83%E5%9B%A2%E4%BD%93" data-value="6-2">爱心团体</a>
+              </li>
+            </ul>
+          </li>
+        </ul>
+        <div class="member-div">
+          {% if curMember %}
+          <div><a href="/member/{{curMember.id}}">我的主页</a></div>
+          <div><a href="/member-center">用户中心
+          {% if curMember.notReadNoti > 0 %}<span class="layui-badge-dot"></span>{% endif %}
+          </a></div>
+          <div><a class="logout" href="javascript:;">登出</a></div>
+          {% else %}
+          <!-- <a href="javascript:;">注册</a> &nbsp;&nbsp;
+          <a href="javascript:;">登录</a> -->
+          <div><a href="/signup">注册</a></div>
+          <div><a href="/login">登录</a></div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+
+  </div>
+
+  {% endblock %}
+  <div class="main">
+    {% block main %}
+    {% endblock %}
+  </div>
+
+  {% block bodyFooter %}
+  <div class="footer">
+    <div class="friend-linking">
+      <a href="javascript:;">千才万事有限公司</a> |
+      <a href="javascript:;">黄羊川</a> |
+      <a href="javascript:;">联系我们</a> |
+      <a href="javascript:;">隐私权政策</a> |
+      <a href="javascript:;">服务条款</a>
+    </div>
+    <div class="text">
+      地址：中国天津南开区红旗路192号瀛寰大厦3门顶层<br>
+      Tel:022-58690075<br>
+      EMail:service@westchinastory.com<br>
+      建议分辨率:1920x1080<br>
+      ©2017 WestChinastory.com 版权所有<br>
+      津ICP备16006631号
+    </div>
+  </div>
+  {% endblock %}
+
+{% endblock %}
+
+
+{% block script %}
+  {{ super() }}
+  <script>
+    var menuHovered = undefined
+    var menuSelected = undefined
+    var subMenu = {
+      about: {isShowing: false, timeout: null},
+      news: {isShowing: false, timeout: null},
+      group: {isShowing: false, timeout: null}
+    }
+    $(function () {
+      var subMenuBarStartHeight = '60px'
+      var subMenuBarEndHeight = '100px'
+      if (document.body.clientWidth < 1200) {
+        subMenuBarStartHeight = '40px'
+        subMenuBarEndHeight = '80px'
+      }
+
+      window.onresize = function () {
+        if (document.body.clientWidth < 1200) {
+          subMenuBarStartHeight = '40px'
+          subMenuBarEndHeight = '80px'
+        } else {
+          subMenuBarStartHeight = '60px'
+          subMenuBarEndHeight = '100px'
+        }
+      }
+
+      // 大屏幕 菜单项 悬停事件
+      $('.header-main .menuitem').hover(
+        function() {
+          var newValue = $(this).find('a').data('value')
+          menuHovered = newValue
+          mBindRender()
+          for (var key in subMenu) {
+            if (subMenu.hasOwnProperty(key)) {
+              if (subMenu[key].timeout != null) {
+                clearTimeout(subMenu[key].timeout)
+                subMenu[key].timeout = null
+              }
+              subMenu[key].isShowing = false
+            }
+          }
+          if (newValue in subMenu) {
+            subMenu[newValue].isShowing = true
+          }
+          mIfRender()
+        },
+        function() {
+          var newValue = $(this).find('a').data('value')
+          if (newValue in subMenu) {
+            subMenu[newValue].timeout = setTimeout(function() {
+              subMenu[newValue].isShowing = false
+              mIfRender()
+              menuHovered = undefined
+              mBindRender()
+            }, 500)
+          } else {
+            menuHovered = undefined
+            mBindRender()
+          }
+        }
+      )
+
+      // 大屏幕 用户菜单
+      $('.member-btn, .user-menu').hover(
+        function() {
+          $('.user-menu').show()
+        },
+        function() {
+          $('.user-menu').hide()
+        }
+      )
+
+      // 小屏幕 菜单键
+      $('#btn-header-menu-toggle').on('click', function() {
+        var $toggle = $('.header-menu-toggle')
+        var $menu = $('.header-menu-mini')
+        var $main = $('.main')
+        var $footer = $('.footer')
+        if ($toggle.hasClass('x')) {
+          $toggle.removeClass('x')
+          $menu.addClass('layui-hide')
+          $main.removeClass('layui-hide')
+          $footer.removeClass('layui-hide')
+        } else {
+          $toggle.addClass('x')
+          $menu.removeClass('layui-hide')
+          $main.addClass('layui-hide')
+          $footer.addClass('layui-hide')
+        }
+      })
+      // 小屏幕 菜单项点击事件
+      $('.header-menu-mini .menuitem>a').hover(function() {
+        var newValue = $(this).data('value')
+        menuHovered = newValue
+
+        // 有新值
+        if (menuSelected !== newValue) {
+          // 之前有值
+          if (menuSelected) {
+            menuSelected = undefined
+            if (newValue === 'about' || newValue === 'news' || newValue === 'group') {
+              menuSelected = newValue
+            }
+            mIfRender()
+            mBindRender()
+          // 之前无值
+          } else {
+            if (newValue === 'about' || newValue === 'news' || newValue === 'group') {
+              menuSelected = newValue
+              mIfRender()
+            }
+          }
+          mBindRender()
+        }
+      }, function() {
+        menuHovered = undefined
+        mBindRender()
+      })
+
+
+
+      // 登出
+      $('.logout').on('click', function() {
+        $('.logout').attr('disabled', true)
+        ajax({
+          method: 'POST',
+          url: '/logout',
+          success: function () {
+            $('.logout').attr('disabled', false)
+            layui.layer.msg('登出成功',{ time: 1000 })
+            window.setTimeout(function () {
+              location.href = '/'
+            }, 1100)
+          },
+          fail: function () {
+            $('.logout').attr('disabled', false)
+          }
+        })
+      })
+    })
+  </script>
+{% endblock %}

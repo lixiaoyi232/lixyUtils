@@ -1,0 +1,67 @@
+{% extends "../layout/layout-member-center.html" %}
+
+{% block css %}
+{{ super() }}
+<link rel="stylesheet" href="/static/css/website/mytable.css">
+{% endblock %}
+
+{% block member_center_main %}
+<!-- <div id="table-follow"></div> -->
+<div class="layui-card">
+  <div class="layui-card-header">关注我的</div>
+  <div class="layui-card-body">
+    <div id="myTable"></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script src="/static/js/mytable.js"></script>
+<script>
+  $(function () {
+    newTable({
+      btns: {
+        items: [
+          // 'setCols'
+        ]
+      },
+      search: {
+        'class': 'selects',
+        labelWidth: '100',
+        submit: {
+          'class': 'layui-btn greenBtn'
+        },
+        items: [
+          {
+            label: '用户昵称',
+            elements: {
+              eType: 'input',
+              name: 'nickName'
+            }
+          },
+        ]
+      },
+      table: {
+        checkboxType: 'none',
+        templates: [
+          {
+            id: 'tNickName',
+            content: '<a href="/member/[[ d.id ]]" target="_blank" style="cursor: pointer;">[[ d.nickName ]]</a>'
+          },
+        ],
+        config: {
+          elem: '#followed',
+          url: '/member-center/info-followed/table',
+          cols: [
+            [
+              {field: 'id', title: 'ID', align: 'center', show: false, sort: true, width: 100},
+              {field: 'nickName', title: '用户昵称', align: 'center', sort: true, minWidth: 140, templet: '#tNickName'},
+            ]
+          ]
+        }
+      }
+    })
+  })
+</script>
+{% endblock %}

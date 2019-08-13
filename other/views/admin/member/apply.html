@@ -1,0 +1,205 @@
+{% extends "../back.html" %}
+
+{% block css %}
+{{ super() }}
+<style>
+  html {
+    overflow: hidden;
+  }
+</style>
+{% endblock %}
+
+{% block main %}
+  <div class="layui-card myCard">
+    <div class="layui-card-header">前台团体申请用户管理</div>
+    <div class="layui-card-body">
+      <div id="myTable"></div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+  $(function () {
+    newTable({
+      btns: {
+        items: [
+          {% if curAdmin.isSuperUser %}
+          'dels',
+          {% endif %}
+          'setCols'
+        ]
+      },
+      search: {
+        'class': 'selects',
+        labelWidth: '120',
+        items: [
+          {
+            label: '类型',
+            elements: {
+              eType: 'select',
+              name: 'type',
+              option: [
+                {value: 'all', label: '&nbsp;', selected: true},
+                {value: '{{ MemberType.school }}', label: '{{ MemberType.school }}'},
+                {value: '{{ MemberType.whGroup }}', label: '{{ MemberType.whGroup }}'},
+              ]
+            }
+          },
+          {
+            label: '团体名称',
+            elements: {
+              eType: 'input',
+              name: 'name'
+            }
+          },
+          {
+            label: '联系人姓名',
+            elements: {
+              eType: 'input',
+              name: 'contactName'
+            }
+          },
+          {
+            label: '联系手机',
+            elements: {
+              eType: 'input',
+              name: 'phoneNumber'
+            }
+          },
+          {
+            label: 'Email',
+            elements: {
+              eType: 'input',
+              name: 'email'
+            }
+          },
+          {
+            label: '国家及地区',
+            elements: {
+              eType: 'input',
+              name: 'countryName'
+            }
+          },
+          {
+            label: '大陆省份',
+            elements: {
+              eType: 'input',
+              name: 'provinceName'
+            }
+          },
+          {
+            label: '城市',
+            elements: {
+              eType: 'input',
+              name: 'cityName'
+            }
+          },
+          {
+            label: '区县',
+            elements: {
+              eType: 'input',
+              name: 'countyName'
+            }
+          },
+          {
+            label: '详细地址',
+            elements: {
+              eType: 'input',
+              name: 'areaDetail'
+            }
+          },
+          {
+            label: '已处理',
+            elements: {
+              eType: 'select',
+              name: 'end',
+              option: [
+                {value: 'all', label: '&nbsp;', selected: true},
+                {value: 'true', label: '是'},
+                {value: 'false', label: '否'},
+              ]
+            }
+          },
+        ]
+      },
+      table: {
+        tool: {
+          items: [
+            {% if curAdmin.isSuperUser %}
+            {
+              layEvent: 'end',
+              'class': 'layui-btn-primary[[# if(d.end){ ]] none[[#  } ]]',
+              label: '处理',
+              event: function (obj, config, render) {
+                var path = config.url.split('?')[0]
+                path = (path[path.length - 1] === '/' ? path.slice(0, path.length - 6) : (path.slice(0, path.length - 5)))
+                layer.confirm('真的确认处理', function(index){
+                  ajax({
+                    method: 'POST',
+                    url: path + obj.data.id + '/end',
+                    data: JSON.stringify({data: [obj.data.id], endRadio: true}),
+                    success: function () {
+                      layer.msg('处理成功', {time: 2000, icon:6})
+                      render()
+                      layer.close(index)
+                    }
+                  })
+                })
+              }
+            },
+            {% endif %}
+            {% if curAdmin.isSuperUser %}
+            'del'
+            {% endif %}
+          ]
+        },
+        templates: [
+          {
+            id: 'tEnd',
+            content: '[[# if (d.end) { ]]是[[# } else { ]]否[[# } ]]'
+          },
+          {
+            id: 'tCountryName',
+            content: '[[ d.country.name ]]'
+          },
+          {
+            id: 'tProvinceName',
+            content: '[[ d.county != null ? d.county.city.province.name : \'\' ]]'
+          },
+          {
+            id: 'tCityName',
+            content: '[[ d.county != null ? d.county.city.name : \'\' ]]'
+          },
+          {
+            id: 'tCountyName',
+            content: '[[ d.county != null ? d.county.name : \'\' ]]'
+          },
+        ],
+        config: {
+          elem: '#apply',
+          url: '/admin/member/apply/table',
+          cols: [
+            [
+              {field: 'id', title: 'ID', align: 'center', show: false, sort: true, width: 100, fixed: 'left'},
+              {field: 'name', title: '团体名称', align: 'center', sort: true, minWidth: 250, fixed: 'left'},
+              {field: 'type', title: '类型', align: 'center', sort: true, width: 100},
+              {field: 'end', title: '已处理', align: 'center', sort: true, width: 80, templet: '#tEnd'},
+              {field: 'countryName', title: '国家及地区', align: 'center', sort: true, minWidth: 150, templet: '#tCountryName'},
+              {field: 'provinceName', title: '大陆省份', align: 'center', sort: true, minWidth: 150, templet: '#tProvinceName'},
+              {field: 'cityName', title: '城市', align: 'center', sort: true, minWidth: 190, templet: '#tCityName'},
+              {field: 'countyName', title: '区县', align: 'center', sort: true, minWidth: 250, templet: '#tCountyName'},
+              {field: 'areaDetail', title: '详细地址', align: 'center', sort: true, minWidth: 250},
+              {field: 'contactName', title: '联系人姓名', align: 'center', sort: true, minWidth: 140},
+              {field: 'phoneNumber', title: '联系手机', align: 'center', sort: true, width: 120},
+              {field: 'email', title: 'Email', align: 'center', sort: true, minWidth: 180},
+              {align: 'center', width:120, fixed: 'right', toolbar: '#operation'}
+            ]
+          ]
+        }
+      }
+    })
+  })
+</script>
+{% endblock %}

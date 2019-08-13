@@ -1,0 +1,288 @@
+{% extends "../back.html" %}
+
+{% block css %}
+{{ super() }}
+<style>
+  html {
+    overflow: hidden;
+  }
+</style>
+{% endblock %}
+
+{% block main %}
+  <div class="layui-card myCard">
+    <div class="layui-card-header">报名表审核</div>
+    <div class="layui-card-body">
+      <div id="myTable"></div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+  $(function () {
+    newTable({
+      btns: {
+        items: [
+          {
+            layEvent: 'export',
+            'class': 'layui-btn-normal',
+            label: '导出',
+            event: function (obj, config, render) {
+              layer.confirm('确认导出吗？', function(index){
+                window.location = '/admin/match/apply/export' + (config.url.split('?')[1] != null ? '?' + config.url.split('?')[1] : '')
+                layer.close(index)
+              })
+            }
+          },
+          {% if curAdmin.isSuperUser or curAdmin.permissions.mch_apl_a %}
+          'new',
+          {% endif %}
+          {% if curAdmin.isSuperUser or curAdmin.permissions.mch_apl_d %}
+          'dels',
+          {% endif %}
+          'setCols'
+        ]
+      },
+      search: {
+        'class': 'selects',
+        labelWidth: '100',
+        val: {
+          matchId: '{{ match.id }}'
+        },
+        items: [
+          {
+            label: '大赛',
+            elements: {
+              eType: 'select',
+              name: 'matchId',
+              option: [
+                {value: 'all', label: '&nbsp;', selected: true},
+                {% for match in matchs %}
+                {value: '{{ match.id }}', label: '{{ match.name }}'},
+                {% endfor %}
+              ]
+            }
+          },
+          {
+            label: '会员学校',
+            elements: {
+              eType: 'select',
+              name: 'schoolVerifyIn',
+              option: [
+                {value: 'all', label: '&nbsp;', selected: true},
+                {value: '{{ VerifyStatus.ok }}', label: '是'},
+                {value: '{{ VerifyStatus.wait }},{{ VerifyStatus.no }}', label: '否'},
+              ]
+            }
+          },
+          {
+            label: '学生账号',
+            elements: {
+              eType: 'input',
+              name: 'account'
+            }
+          },
+          {
+            label: '学生姓名',
+            elements: {
+              eType: 'input',
+              name: 'name'
+            }
+          },
+          {
+            label: '大陆省份',
+            elements: {
+              eType: 'input',
+              name: 'provinceName'
+            }
+          },
+          {
+            label: '身份证号',
+            elements: {
+              eType: 'input',
+              name: 'idCard'
+            }
+          },
+          {
+            label: '指导教师',
+            elements: {
+              eType: 'input',
+              name: 'teacherName'
+            }
+          },
+          {
+            label: '学校编号',
+            elements: {
+              eType: 'input',
+              name: 'schoolAccount'
+            }
+          },
+          {
+            label: '学校名称',
+            elements: {
+              eType: 'input',
+              name: 'schoolName'
+            }
+          },
+          {
+            label: '报名时间',
+            elements: {
+              eType: 'date',
+              name: 'createdTime',
+              range: true
+            }
+          },
+          {
+            label: '审核状态',
+            elements: {
+              eType: 'select',
+              name: 'status',
+              option: [
+                {value: 'all', label: '&nbsp;'},
+                {% for i, j in MatchApplyStatus %}
+                {value: '{{ j }}', label: '{{ j }}'},
+                {% endfor %}
+              ]
+            }
+          },
+          {
+            label: '学段',
+            elements: {
+              eType: 'select',
+              name: 'period',
+              option: [
+                {value: 'all', label: '&nbsp;'},
+                {% for i, j in StudentPeriod %}
+                {% if i != 'LiXiao' %}{value: '{{ j }}', label: '{{ j }}'},{% endif %}
+                {% endfor %}
+              ]
+            }
+          },
+          {
+            label: '管理员',
+            elements: {
+              eType: 'select',
+              name: 'adminId_',
+              option: [
+                {value: 'all', label: '&nbsp;', selected: true},
+                {% for i in admins %}
+                {value: '{{ i.id }}', label: '{{ i.account }}'},
+                {% endfor %}
+              ]
+            }
+          },
+        ]
+      },
+      table: {
+        tool: {
+          items: [
+            {% if curAdmin.isSuperUser or curAdmin.permissions.mch_apl_g %}
+            'info',
+            {% endif %}
+            {% if curAdmin.isSuperUser or curAdmin.permissions.mch_apl_u %}
+            'edit',
+            {% endif %}
+            {% if curAdmin.isSuperUser or curAdmin.permissions.mch_apl_d %}
+            'del',
+            {% endif %}
+            {% if curAdmin.isSuperUser or curAdmin.permissions.mch_apl_v %}
+            {
+              layEvent: 'verify',
+              label: '审核',
+              'class': 'layui-btn-primary [[# if(((new Date(d.match.matchApplyStart)) > (new Date()) || (new Date()) > (new Date(d.match.matchEnd))) || d.status !== \'{{ MatchApplyStatus.wait }}\'){ ]] none[[#  } ]]',
+              event: function (obj, config, render) {
+                var path = config.url.split('?')[0]
+                path = (path[path.length - 1] === '/' ? path.slice(0, path.length - 6) : (path.slice(0, path.length - 5)))
+                window.tableRender = render
+                layer.open({
+                  type: 2,
+                  title: '审核',
+                  shade: 0.8,
+                  area: ['90%', '90%'],
+                  content: path + obj.data.id + '/verify'
+                })
+                // openWindow(path + obj.data.id + '/verify')
+              }
+            }
+            {% endif %}
+          ]
+        },
+        templates: [
+          {
+            id: 'tMatchName',
+            content: '[[ d.match.name ]]'
+          },
+          {
+            id: 'tSchoolVerifyIn',
+            content: '[[# if (d.school.verify === \'{{ VerifyStatus.ok }}\') { ]]是[[# } else { ]]否[[# } ]]'
+          },
+          // {
+          //   id: 'tAge',
+          //   content: '[[ getAgeByIdCard(d.student.member.idCard, d.createdTime) ]]'
+          // },
+          {
+            id: 'tBirthday',
+            content: '[[ getBirthdayByIdCard(d.student.member.idCard) ]]'
+          },
+          {
+            id: 'tStudentIdCard',
+            content: '[[ d.student.member.idCard ]]'
+          },
+          {
+            id: 'tPhoto',
+            content: '[[# if (d.photo) { ]]<a href="[[ d.photo ]]" style="cursor: pointer;" target="_blank"><img class="tableImg" src="[[ d.photo ]]"></a>[[# } ]]'
+          },
+          {
+            id: 'tSchoolAccount',
+            content: '[[ d.school.member.account ]]'
+          },
+          {
+            id: 'tSchoolName',
+            content: '[[ d.school.member.name ]]'
+          },
+          {
+            id: 'tStudentPhone',
+            content: '[[ d.student.member.phoneNumber ]]'
+          },
+          {
+            id: 'tCreatedTime',
+            content: '[[ dateFormat(d.createdTime, \'YYYY-MM-DD HH:mm:ss\') ]]'
+          }
+        ],
+        config: {
+          elem: '#matchApply',
+          url: '/admin/match/apply/table',
+          cols: [
+            [
+              {field: 'id', sort: true, title: 'ID', width:100, align: 'center', fixed: 'left', show: false},
+              {field: 'status', sort: true, title: '审核状态', width:100, align: 'center'},
+              {field: 'name', sort: true, title: '学生姓名', minWidth:140, align: 'center'},
+              {field: 'schoolName', sort: true, title: '学校名称', minWidth:250, align: 'center', templet: '#tSchoolName'},
+              {field: 'period', sort: true, title: '学段', align: 'center'},
+              {field: 'photo', title: '照片', align: 'center', templet: '#tPhoto'},
+              {field: 'age', sort: true, title: '年龄', align: 'center'},
+              {field: 'grade', sort: true, title: '年级', align: 'center'},
+              {field: 'schoolAccount', sort: true, title: '学校编号', minWidth:140, align: 'center', templet: '#tSchoolAccount'},
+              {field: 'account', sort: true, title: '学生账号', minWidth:140, align: 'center'},
+              {field: 'teacherName', sort: true, title: '指导教师', minWidth:140, align: 'center'},
+              {field: 'createdTime', sort: true, title: '报名时间', width:180, align: 'center', templet: '#tCreatedTime'},
+              {field: 'birthday', title: '出生日期', width:120, align: 'center'},
+              {field: 'idCard', title: '身份证号', width:180, align: 'center', sort: true},
+              {field: 'phoneNumber', sort: true, title: '手机', width:120, align: 'center'},
+              {field: 'matchName', sort: true, title: '大赛', minWidth:100, templet: '#tMatchName'},
+              {field: 'address', sort: true, title: '邮寄地址', minWidth:140},
+              {field: 'schoolVerifyIn', sort: true, title: '会员学校', width:100, align: 'center', templet: '#tSchoolVerifyIn'},
+              {field: 'provinceName', sort: true, title: '大陆省份', minWidth:150, align: 'center'},
+              // {field: 'remark1', sort: true, title: '评语1', align: 'center'},
+              // {field: 'remark2', sort: true, title: '评语2', align: 'center'},
+              {fixed: 'right', width:200, align: 'center', toolbar: '#operation'}
+            ]
+          ]
+        }
+      }
+    })
+  })
+</script>
+{% endblock %}

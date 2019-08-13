@@ -1,0 +1,317 @@
+{% extends "./layout/layout-headerfooter.html" %}
+
+
+{% block css %}
+<link rel="stylesheet" href="/static/css/website/animate.css">
+{{super()}}
+<link rel="stylesheet" href="/static/css/website/homepage.css">
+<style>
+.banner {
+  background-image: url('{{ webConfig.homeBannerImg }}')
+}
+.statistics {
+  background-image: url('{{ webConfig.homeStatisticsImg }}')
+}
+.match {
+  background-image: url('{{ webConfig.homeMatchImg }}');
+}
+</style>
+{% endblock %}
+
+
+{% block main %}
+  <!-- 横幅 -->
+  <div class="banner">
+    <div class="words">
+      <img src="/static/images/website/word_rang.png" alt="" class="word1 revealOnScroll" data-animation="fadeInLeft">
+      <img src="/static/images/website/word_meige.png" alt="" class="word2 revealOnScroll" data-animation="fadeInLeft">
+      <img src="/static/images/website/word_xuesheng.png" alt="" class="word3 revealOnScroll" data-animation="fadeInLeft">
+      <img src="/static/images/website/word_douyou.png" alt="" class="word4 revealOnScroll" data-animation="fadeInLeft">
+      <img src="/static/images/website/word_gongping.png" alt="" class="word5 revealOnScroll" data-animation="fadeInRight">
+      <img src="/static/images/website/word_de.png" alt="" class="word6 revealOnScroll" data-animation="fadeInRight">
+      <img src="/static/images/website/word_wutai.png" alt="" class="word7 revealOnScroll" data-animation="fadeInRight">
+    </div>
+  </div>
+
+  <!-- 关于我们 -->
+  <div class="about-us div900">
+    <div class="title">
+      关于我们
+      <div class="english">
+        ABOUT US
+      </div>
+    </div>
+    <div class="content">
+      <p>
+        故事开始于一位慈善热情的企业家，温世仁先生。他生前经常讲一个故事：路上有一块大石头，第一个人经过被绊倒，怒骂一声之后离去；第二个人经过被绊倒，怪自己运气不好也离去，只有第三个人被绊倒后，起身把石头搬移开，从此，这条路上走的人就多了。
+      </p>
+      <p>
+        温世仁先生正是那位搬开石头的人——他在五十岁之后，决定将毕生赚取的财富，投身公益，希望透过教育解决全球庞大贫困人口的问题。不但在人文、科技两个范畴跨界整合，更远及中国大陆西部偏乡，运用网络科技改变西部受限于硬件环境的发展困难。
+      </p>
+      <!-- <p>
+        他于2002年创立「千乡万才科技有限公司」规划整合西部1000所学校，「以校领乡」辅导10000名学生学习计算机，从农业社会跳过工业社会阶段，直接走向网络社会。以网络缩短城乡距离。坚信网络科技是解决贫穷的最好礼物，知识可以创造财富。并将这个计划命名为：「千乡万才」。河北拉哈沟乡的村民也透过「千乡万才计划」在网上销售农产品，成功卖出八十多万斤的蔬菜——这是过去西部农民无法想象的新世界。
+      </p> -->
+    </div>
+
+    <div class="button">
+      <a href="javascript:;">更多</a>
+    </div>
+  </div>
+
+  <!-- 统计 -->
+  <div class="statistics layui-hide-xs layui-hide-sm layui-show-md-block layui-show-lg-block">
+    <!-- <img src="/static/images/website/banner4sky.png" alt="" width="100%"> -->
+
+    <div class="texts">
+      <div class="div1000 layui-row layui-col-space13" style="height:100%">
+        <div class="layui-col-xs3 block">
+          <div class="text1">11</div>
+          <div class="text2">Years</div>
+          <div class="border"></div>
+          <div class="text3">[西部故事]<br>项目至今已经进行十一年</div>
+        </div>
+        <div class="layui-col-xs3 block">
+            <div class="text1">276</div>
+            <div class="text2">Schools</div>
+            <div class="border"></div>
+            <div class="text3">鼓励当地学生创作故事，<br>发掘记录地方特色，共有276所学校</div>
+        </div>
+        <div class="layui-col-xs3 block">
+            <div class="text1">23,000</div>
+            <div class="text2">Students</div>
+            <div class="border"></div>
+            <div class="text3">将近23,000人的学生参与</div>
+        </div>
+        <div class="layui-col-xs3 block">
+            <div class="text1">234,000</div>
+            <div class="text2">Stories</div>
+            <div class="border"></div>
+            <div class="text3">积累了234,000余篇故事</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 活动案例 -->
+  <div class="activity div1200">
+    <div class="title">
+      活动案例
+      <div class="english">
+        ACTIVITY EXAMPLES
+      </div>
+    </div>
+    <div class="content div900">
+      千乡万才公司创办人温世仁先生，生前致力于开发大西部，投入资源，以学校为核心，建立网络系统，
+      资助在地学生透过科技的力量，与外部连结，并对外介绍在地的文化与民情。
+      十余年来，除了温家企业持续支持，并陆续吸引九百多位爱心人士及企业团体，加入资助者的行列。
+      经由网站平台，资助者可以直接和受助学生沟通，关心学生成长及学习情况。
+    </div>
+
+    <div class="images layui-row">
+      <div class="layui-col-xs12 layui-col-sm6 layui-col-md3 image revealOnScroll" data-animation="flipInY">
+        <a href="/article/4">
+          <img src="{{ webConfig.homeActivity1Img }}" alt="" width="100%">
+          <div class="image-shade"></div>
+          <div class="image-text">奖助计划</div>
+          <!-- <div class="image-border"></div> -->
+        </a>
+      </div>
+      <div class="layui-col-xs12 layui-col-sm6 layui-col-md3 image revealOnScroll" data-animation="flipInY">
+        <a href="/article/5">
+          <img src="{{ webConfig.homeActivity2Img }}" alt="" width="100%">
+          <div class="image-shade"></div>
+          <div class="image-text">原创大赛</div>
+          <!-- <div class="image-border"></div> -->
+        </a>
+      </div>
+      <div class="layui-col-xs12 layui-col-sm6 layui-col-md3 image revealOnScroll" data-animation="flipInY">
+        <a href="/article/6">
+          <img src="{{ webConfig.homeActivity3Img }}" alt="" width="100%">
+          <div class="image-shade"></div>
+          <div class="image-text">网页博览会</div>
+          <!-- <div class="image-border"></div> -->
+        </a>
+      </div>
+      <div class="layui-col-xs12 layui-col-sm6 layui-col-md3 image revealOnScroll" data-animation="flipInY">
+        <a href="/article/7">
+          <img src="{{ webConfig.homeActivity4Img }}" alt="" width="100%">
+          <div class="image-shade"></div>
+          <div class="image-text">交流培训</div>
+          <!-- <div class="image-border"></div> -->
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- 大赛 -->
+  <div class="match">
+  </div>
+
+  <!-- 故事头 -->
+  <a name="type"></a>
+  <div class="story div1200">
+    <div class="title">
+      西部故事
+      <div class="english">
+        WEST STORY
+      </div>
+    </div>
+    <ul class="menu">
+      {% for type in types %}
+      <li data-value="{{type.id}}" class="type-story-menu-item"><a href="javascript:;" {% if curType.id === type.id %}class="selected" {% endif %}>{{type.name}}</a></li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <!-- 故事列表 -->
+  <div class="story-list-backgroud">
+    <div class="story-list div1200">
+      <div class="story-row layui-row layui-col-space13">
+        {% for story in typeStorTableOpt.datas %}
+        <div class="layui-col-xs12 layui-col-sm6 layui-col-md3 block revealOnScroll admiStoryDelay" data-animation="{% if loop.index0 % 4 < 2 %}bounceInLeft{% else %}bounceInRight{% endif %}">
+          <a href="/story/{{story.id}}"><div class="image" style="background-image: url({{story.img}})"></div></a>
+          <div class="story-detail">
+            <div class="story-detail-block1">
+              <div class="name">
+                {% if story.storyMatch.award %}
+                <span class="award">{{story.storyMatch.award}}</span>
+                {% endif %}
+                {% if story.isDigest %}
+                <span class="digest">精</span>
+                {% endif %}
+                <a href="/story/{{story.id}}" class="layui-elip">{{story.title}}</a>
+              </div>
+              <div class="type">分类：{{story.type.name}}</div>
+              <div class="number">浏览：{{story.pageViews}} 评论：{{story.comments.length}}</div>
+            </div>
+            <div class="story-detail-block2">
+              <div class="author"><a href="/member/{{story.author.id}}">{{story.author.nickName}}</a></div>
+              <div class="date">{{story.publishTime | date('YYYY-MM-DD')}}</div>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="button">
+      <a href="/story-list?storyTypeId={{curType.id}}">更多</a>
+    </div>
+  </div>
+
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+$(function() {
+
+  setTimeout(function() {
+    var $window = $(window)
+    var windowHeight = $window.height()
+    function handleAnimation() {
+      var scrolled = $window.scrollTop()
+      $('.revealOnScroll:not(.animated)').each(function () {
+        var $this = $(this)
+        var offsetTop = $this.offset().top
+        if (scrolled + windowHeight > offsetTop) {
+          if ($this.data('timeout')) {
+            window.setTimeout(function() {
+              $this.addClass('animated ' + $this.data('animation'))
+            }, parseInt($this.data('timeout'), 10))
+          } else {
+            $this.addClass('animated ' + $this.data('animation'))
+          }
+        }
+      })
+
+      var $aboutUs = $('.about-us')
+      if (scrolled + windowHeight > $aboutUs.offset().top) {
+        $aboutUs.find('.title').addClass('animBannerWordFadeIn')
+        $aboutUs.find('.content').addClass('animBannerWordFadeIn')
+      }
+
+      var $activity = $('.activity')
+      if (scrolled + windowHeight > $activity.offset().top) {
+        $activity.find('.title').addClass('animBannerWordFadeIn')
+        $activity.find('.content').addClass('animBannerWordFadeIn')
+      }
+
+      var $story = $('.story')
+      if (scrolled + windowHeight > $story.offset().top) {
+        $story.find('.title').addClass('animBannerWordFadeIn')
+      }
+
+    }
+    $window.on('scroll', handleAnimation)
+    handleAnimation()
+  }, 0)
+
+  var isFirstAnimationOver = false
+  var isSecondAnimationOver = true
+  // webkitAnimationEnd
+  $('.banner .word7').on('animationend', function() {
+    if (isFirstAnimationOver) {
+      isSecondAnimationOver = true
+    } else {
+      isFirstAnimationOver = true
+      $('.banner .words img').removeClass('revealOnScroll').removeClass('fadeInLeft').removeClass('fadeInRight')
+      $('.banner .words img').css('animation-duration', '1600ms')
+      $('.banner .word1').css('animation-delay', '0ms');
+      $('.banner .word2').css('animation-delay', '100ms');
+      $('.banner .word3').css('animation-delay', '200ms');
+      $('.banner .word4').css('animation-delay', '300ms');
+      $('.banner .word5').css('animation-delay', '400ms');
+      $('.banner .word6').css('animation-delay', '500ms');
+      $('.banner .word7').css('animation-delay', '600ms');
+    }
+  })
+
+  $('.banner').hover(
+    function () {
+      if (isFirstAnimationOver && isSecondAnimationOver) {
+        isSecondAnimationOver = false
+        $('.banner .words img').removeClass('animBannerWordFadeIn')
+        setTimeout(function() {
+          $('.banner .words img').addClass('animBannerWordFadeIn')
+        }, 0)
+      }
+    },
+    function () {
+    }
+  )
+
+  $('.statistics .block').hover(
+    function() {
+      $(this).find('.text1').addClass('animStatisticsBlockZoomIn')
+      $(this).find('.text2').addClass('animStatisticsBlockZoomIn')
+      $(this).find('.border').addClass('animStatisticsBlockZoomIn')
+      $(this).find('.text3').addClass('animStatisticsBlockZoomIn')
+    },
+    function() {
+      $(this).find('.text1').removeClass('animStatisticsBlockZoomIn')
+      $(this).find('.text2').removeClass('animStatisticsBlockZoomIn')
+      $(this).find('.border').removeClass('animStatisticsBlockZoomIn')
+      $(this).find('.text3').removeClass('animStatisticsBlockZoomIn')
+    }
+  )
+
+  $('.activity .image').hover(
+    function () {
+      $(this).find('.image-text').addClass('animActivityWordZoomIn')
+      $(this).find('.image-shade').addClass('animActivityshadeFadeIn')
+    },
+    function () {
+      $(this).find('.image-text').removeClass('animActivityWordZoomIn')
+      $(this).find('.image-shade').removeClass('animActivityshadeFadeIn')
+    }
+  )
+
+  $('.type-story-menu-item').on('click', function() {
+    var typeId = $(this).data('value')
+    location.href = '/?typeId=' + typeId + '#type'
+  })
+})
+
+</script>
+{% endblock%}

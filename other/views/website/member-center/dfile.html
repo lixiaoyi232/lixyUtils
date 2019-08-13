@@ -1,0 +1,113 @@
+{% extends "../layout/layout-member-center.html" %}
+
+{% block css %}
+{{ super() }}
+<link rel="stylesheet" href="/static/css/website/mytable.css">
+{% endblock %}
+
+{% block member_center_main %}
+<!-- <br>
+<br>
+<div id="table-dfile"></div> -->
+<div class="layui-card">
+  <div class="layui-card-header">文件下载</div>
+  <div class="layui-card-body">
+    <div id="myTable"></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script src="/static/js/mytable.js"></script>
+<script>
+  // $(function () {
+  //   var table = new MyTable({
+  //     el: '#table-dfile',
+  //     url: '/member-center/daily/dfile/table',
+  //     limit: 10,
+  //     cols: [
+  //       {
+  //         title: 'id',
+  //         html: function(dfile) {
+  //           return dfile.id
+  //         }
+  //       },
+  //       {
+  //         title: '文件',
+  //         html: function(dfile) {
+  //           var isIE = !!window.ActiveXObject || "ActiveXObject" in window
+  //           var isIE = true
+  //           if (isIE) return '<a href="' + dfile.link + '?filename=' + encodeURIComponent(dfile.title) + ((dfile.filename = dfile.link.split('.')[1], dfile.filename) != null ? '.' + dfile.filename : '') + '&_=' + (new Date()).getTime() + '" target="_blank">' + dfile.title + '</a>'
+  //           else return '<a href="' + dfile.link + '" download="' + dfile.title + '">' + dfile.title + '</a>'
+  //         }
+  //       },
+  //       {
+  //         title: '发布时间',
+  //         html: function(dfile) {
+  //           return dateFormat(new Date(dfile.createdTime), 'YYYY-MM-DD HH:mm:ss')
+  //         }
+  //       }
+  //     ]
+  //   })
+  //   table.fetch()
+  //   var downloadTemplate = function(filePath){
+  //     window.location.href=filePath
+  //   }
+  // })
+  $(function () {
+    newTable({
+      btns: {
+        items: [
+          // 'setCols'
+        ]
+      },
+      search: {
+        'class': 'selects',
+        labelWidth: '100',
+        submit: {
+          'class': 'layui-btn greenBtn'
+        },
+        items: [
+          {
+            label: '标题',
+            elements: {
+              eType: 'input',
+              name: 'title'
+            }
+          },
+        ]
+      },
+      table: {
+        checkboxType: 'none',
+        // tool: {
+        //   items: [
+        //   ]
+        // },
+        templates: [
+          {
+            id: 'tTitle',
+            content: '<a href="[[ d.link ]]?filename=[[ encodeURIComponent(d.title) ]][[ (d.filename = d.link.split(\'.\')[1], d.filename) != null ? \'.\' + d.filename : \'\' ]]&_=' + (new Date()).getTime() + '" target="_blank">[[ d.title ]]</a>'
+          },
+          {
+            id: 'tCreatedTime',
+            content: '[[ dateFormat(d.createdTime, \'YYYY-MM-DD HH:mm:ss\') ]]'
+          }
+        ],
+        config: {
+          elem: '#dfile',
+          url: '/member-center/daily/dfile/table',
+          cols: [
+            [
+              {field: 'id', title: 'ID', align: 'center', show: false, sort: true, width: 100},
+              {field: 'title', title: '标题', align: 'left', sort: true, minWidth: 180, templet: '#tTitle'},
+              {field: 'createdTime', title: '时间', align: 'center', sort: true, width: 180, templet: '#tCreatedTime'},
+              // {width:140, align: 'center', toolbar: '#operation'}
+            ]
+          ]
+        }
+      }
+    })
+  })
+</script>
+{% endblock %}

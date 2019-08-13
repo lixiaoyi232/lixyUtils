@@ -1,0 +1,96 @@
+{% extends "../back.html" %}
+
+{% block css %}
+{{ super() }}
+{% endblock %}
+
+{% block main %}
+  <div class="layui-card myCard">
+    <div class="layui-card-header">爱心团体故事统计</div>
+    <div class="layui-card-body">
+      <div id="myTable"></div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+  $(function () {
+    newTable({
+      btns: {
+        items: [
+          'setCols'
+        ]
+      },
+      search: {
+        'class': 'selects',
+        labelWidth: '120',
+        items: [
+          {
+            label: '团体账号',
+            elements: {
+              eType: 'input',
+              name: 'memberAccount'
+            }
+          },
+          {
+            label: '团体名称',
+            elements: {
+              eType: 'input',
+              name: 'memberName'
+            }
+          },
+          {
+            label: '时间段',
+            elements: {
+              eType: 'date',
+              name: 'storiesPublishTime',
+              range: true
+            }
+          }
+        ]
+      },
+      table: {
+        templates: [
+          {
+            id: 'tCountryName',
+            content: '[[ d.member.country.name ]]'
+          },
+          {
+            id: 'tProvinceName',
+            content: '[[# if (d.member.county != null) { ]][[ d.member.county.city.province.name ]][[# } else { ]][[# } ]]'
+          },
+          {
+            id: 'tMemberAccount',
+            content: '[[ d.member.account ]]'
+          },
+          {
+            id: 'tMemberName',
+            content: '[[ d.member.name ]]'
+          },
+        ],
+        config: {
+          elem: '#whGroup',
+          url: '/admin/count/whGroup/table',
+          cols: [
+            [
+              {field: 'id', sort: true, title: 'ID', width:100, align: 'center', fixed: 'left', show: false},
+              {field: 'countryName', sort: true, title: '国家及地区', width:190, align: 'center', templet: '#tCountryName'},
+              {field: 'provinceName', sort: true, title: '大陆省份', width:150, align: 'center', templet: '#tProvinceName'},
+              {field: 'memberAccount', sort: true, title: '团体账号', minWidth:140, align: 'center', templet: '#tMemberAccount'},
+              {field: 'memberName', sort: true, title: '团体名称', minWidth:140, align: 'center', templet: '#tMemberName'},
+              {field: 'members', title: '当前人数', width:90, align: 'center'},
+              {field: 'memberCount', title: '写故事总人数', width:120, align: 'center'},
+              {field: 'storyCount', title: '故事总数', width:90, align: 'center'},
+              {field: 'aidCount', title: '总资助次数', width:110, align: 'center'},
+              {field: 'aidStudentCount', title: '资助学生数', width:110, align: 'center'},
+              {field: 'aidStudentStoryCount', title: '资助学生写故事数', width:150, align: 'center'},
+            ]
+          ]
+        }
+      }
+    })
+  })
+</script>
+{% endblock %}

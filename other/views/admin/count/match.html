@@ -1,0 +1,286 @@
+{% extends "../back.html" %}
+
+{% block css %}
+{{ super() }}
+{% endblock %}
+
+{% block main %}
+  <div class="layui-card myCard">
+    <div class="layui-card-header">大赛统计</div>
+    <div class="layui-card-body">
+      <div id="cut"></div>
+      <div id="myTable"></div>
+      <br><br>
+      <div id="myTable2"></div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+  $(function () {
+    var once = false
+    var t1 = {
+      admin: {
+        btns: {
+          items: [
+            'setCols'
+          ]
+        },
+        table: {
+          checkboxType: 'none',
+          config: {
+            elem: '#matchCount1',
+            url: '/admin/count/match/table?mode=admin&initMatchId={{ match.id }}',
+            page: false,
+            cols: [
+              [
+                {field: 'name', title: '统计', width: 200},
+                {field: 'count', title: '总计', width: 100},
+                {% for i in admins %}
+                {field: '{{ i.id }}', title: '{{ i.account }}'},
+                {% endfor %}
+              ]
+            ]
+          }
+        }
+      },
+      place: {
+        btns: {
+          items: [
+            'setCols'
+          ]
+        },
+        table: {
+          checkboxType: 'none',
+          config: {
+            elem: '#matchCount1',
+            url: '/admin/count/match/table?mode=place&initMatchId={{ match.id }}',
+            page: false,
+            cols: [
+              [
+                {field: 'name', title: '统计', width: 200},
+                {field: 'count', title: '总计', width: 100},
+                {% for i in provinces %}
+                {% if i.name == '黑龙江省' %}
+                {field: '{{ i.id }}', title: '{{ i.name.slice(0, 3) }}', show: false},
+                {% else %}
+                {field: '{{ i.id }}', title: '{{ i.name.slice(0, 2) }}'{% if ['甘肃省', '四川省', '青海省', '陕西省', '河北省', '宁夏回族自治区', '重庆市'].indexOf(i.name) == -1 %}, show: false{% endif %}},
+                {% endif %}
+                {% endfor %}
+              ]
+            ]
+          }
+        }
+      },
+      period: {
+        btns: {
+          items: [
+            'setCols'
+          ]
+        },
+        table: {
+          checkboxType: 'none',
+          config: {
+            elem: '#matchCount1',
+            url: '/admin/count/match/table?mode=period&initMatchId={{ match.id }}',
+            page: false,
+            cols: [
+              [
+                {field: 'name', title: '统计', width: 200},
+                {field: 'count', title: '总计', width: 100},
+                {% for i, j in StudentPeriod %}
+                {% if i != 'LiXiao' %}{field: '{{ j }}', title: '{{ j }}组'},{% endif %}
+                {% endfor %}
+              ]
+            ]
+          }
+        }
+      }
+    }
+    var t2 = {
+      admin: {
+        parent: '#myTable2',
+        btns: {
+          items: [
+            'setCols'
+          ]
+        },
+        search: {
+          'class': 'selects',
+          labelWidth: '100',
+          items: [
+            {
+              label: '范围',
+              elements: {
+                eType: 'select',
+                name: 'matchId',
+                option: [
+                  {value: '{{ match.id }}*1', label: '上周', selected: true},
+                  {value: '{{ match.id }}*2', label: '两周前'},
+                  {value: '{{ match.id }}*3', label: '三周前'},
+                  {% for i in matchs %}
+                  {value: '{{ i.id }}', label: '{{ i.name }}'},
+                  {% endfor %}
+                ]
+              }
+            }
+          ]
+        },
+        table: {
+          checkboxType: 'none',
+          config: {
+            elem: '#matchCount2',
+            url: '/admin/count/match/table?mode=admin&initMatchId={{ match.id }}&second=true',
+            page: false,
+            cols: [
+              [
+                {field: 'name', title: '统计', width: 200},
+                {field: 'count', title: '总计', width: 100},
+                {% for i in admins %}
+                {field: '{{ i.id }}', title: '{{ i.account }}'},
+                {% endfor %}
+              ]
+            ]
+          }
+        }
+      },
+      place: {
+        parent: '#myTable2',
+        btns: {
+          items: [
+            'setCols'
+          ]
+        },
+        search: {
+          'class': 'selects',
+          labelWidth: '100',
+          items: [
+            {
+              label: '范围',
+              elements: {
+                eType: 'select',
+                name: 'matchId',
+                option: [
+                  {value: '{{ match.id }}*1', label: '上周', selected: true},
+                  {value: '{{ match.id }}*2', label: '两周前'},
+                  {value: '{{ match.id }}*3', label: '三周前'},
+                  {% for i in matchs %}
+                  {value: '{{ i.id }}', label: '{{ i.name }}'},
+                  {% endfor %}
+                ]
+              }
+            }
+          ]
+        },
+        table: {
+          checkboxType: 'none',
+          config: {
+            elem: '#matchCount2',
+            url: '/admin/count/match/table?mode=place&initMatchId={{ match.id }}&second=true',
+            page: false,
+            cols: [
+              [
+                {field: 'name', title: '统计', width: 200},
+                {field: 'count', title: '总计', width: 100},
+                {% for i in provinces %}
+                {% if i.name == '黑龙江省' %}
+                {field: '{{ i.id }}', title: '{{ i.name.slice(0, 3) }}', show: false},
+                {% else %}
+                {field: '{{ i.id }}', title: '{{ i.name.slice(0, 2) }}'{% if ['甘肃省', '四川省', '青海省', '陕西省', '河北省', '宁夏回族自治区', '重庆市'].indexOf(i.name) == -1 %}, show: false{% endif %}},
+                {% endif %}
+                {% endfor %}
+              ]
+            ]
+          }
+        }
+      },
+      period: {
+        parent: '#myTable2',
+        btns: {
+          items: [
+            'setCols'
+          ]
+        },
+        search: {
+          'class': 'selects',
+          labelWidth: '100',
+          items: [
+            {
+              label: '范围',
+              elements: {
+                eType: 'select',
+                name: 'matchId',
+                option: [
+                  {value: '{{ match.id }}*1', label: '上周', selected: true},
+                  {value: '{{ match.id }}*2', label: '两周前'},
+                  {value: '{{ match.id }}*3', label: '三周前'},
+                  {% for i in matchs %}
+                  {value: '{{ i.id }}', label: '{{ i.name }}'},
+                  {% endfor %}
+                ]
+              }
+            }
+          ]
+        },
+        table: {
+          checkboxType: 'none',
+          config: {
+            elem: '#matchCount2',
+            url: '/admin/count/match/table?mode=period&initMatchId={{ match.id }}&second=true',
+            page: false,
+            cols: [
+              [
+                {field: 'name', title: '统计', width: 200},
+                {field: 'count', title: '总计', width: 100},
+                {% for i, j in StudentPeriod %}
+                {% if i != 'LiXiao' %}{field: '{{ j }}', title: '{{ j }}组'},{% endif %}
+                {% endfor %}
+              ]
+            ]
+          }
+        }
+      }
+    }
+    newForm({
+      parent: '#cut',
+      form: {
+        submit: {
+          show: false
+        },
+        val: {
+          table: 'admin'
+        },
+        done: function () {
+          newTable(t1['admin'])
+          newTable(t2['admin'])
+        },
+        items: [
+          {
+            label: '模式',
+            elements: {
+              eType: 'select',
+              name: 'table',
+              option: [
+                {value: 'admin', label: '管理员模式'},
+                {value: 'place', label: '地区模式'},
+                {value: 'period', label: '组别模式'}
+              ],
+              events: [
+                {
+                  name: 'laySelect',
+                  callback: function (data) {
+                    newTable(t1[data.value])
+                    newTable(t2[data.value])
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    })
+  })
+</script>
+{% endblock %}

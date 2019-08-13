@@ -1,0 +1,193 @@
+{% extends "../back.html" %}
+
+{% block css %}
+{{ super() }}
+{% endblock %}
+
+{% block body %}
+  <div class="layui-card myCard">
+    <div class="layui-card-header">{{ score.student.member.name }}的成绩</div>
+    <div class="layui-card-body layui-tab layui-tab-brief">
+      <div id="myForm"></div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+  $(function () {
+    newForm({
+      form: {
+        labelWidth: '100',
+        submit: {
+          event: function (data) {
+            $('[lay-filter="myFormSubmit"]').attr('disabled', true)
+            $('[lay-filter="myFormSubmit"]').addClass('layui-btn-disabled')
+            ajax({
+              method: 'POST',
+              url: '/admin/member/score/{{ score.id }}',
+              data: JSON.stringify(data.field),
+              success: function () {
+                layer.msg('修改成功', {time: 2000, icon:6})
+                parent.tableRender()
+                window.setTimeout(function () {parent.layer.close(parent.layer.getFrameIndex(window.name))}, 2000)
+              },
+              fail: function () {
+                $('[lay-filter="myFormSubmit"]').attr('disabled', false)
+                $('[lay-filter="myFormSubmit"]').removeClass('layui-btn-disabled')
+              },
+              error: function () {
+                $('[lay-filter="myFormSubmit"]').attr('disabled', false)
+                $('[lay-filter="myFormSubmit"]').removeClass('layui-btn-disabled')
+              }
+            })
+          }
+        },
+        val: {
+          'chinese': '{{ score.chinese }}',
+          'math': '{{ score.math }}',
+          'english': '{{ score.english }}',
+          'biology': '{{ score.biology }}',
+          'physics': '{{ score.physics }}',
+          'chemistry': '{{ score.chemistry }}',
+          'politics': '{{ score.politics }}',
+          'geography': '{{ score.geography }}',
+          'history': '{{ score.history }}',
+          'classRanking': '{{ score.classRanking }}',
+          'gradeRanking': '{{ score.gradeRanking }}',
+          'semester1': '{{ Math.floor(score.semester / 2) if score.semester != null }}',
+          'semester2': '{{ score.semester % 2 if score.semester != null else "null" }}',
+          'type': '{{ score.type if score.type != null else "null" }}',
+        },
+        items: [
+          {
+            label: '语文',
+            elements: {
+              eType: 'input',
+              name: 'chinese',
+              type: 'number',
+              layVerify: 'required'
+            }
+          },
+          {
+            label: '数学',
+            elements: {
+              eType: 'input',
+              name: 'math',
+              type: 'number',
+              layVerify: 'required'
+            }
+          },
+          {
+            label: '英语',
+            elements: {
+              eType: 'input',
+              name: 'english',
+              type: 'number',
+            }
+          },
+          {
+            label: '生物',
+            elements: {
+              eType: 'input',
+              name: 'biology',
+              type: 'number',
+            }
+          },
+          {
+            label: '物理',
+            elements: {
+              eType: 'input',
+              name: 'physics',
+              type: 'number',
+            }
+          },
+          {
+            label: '化学',
+            elements: {
+              eType: 'input',
+              name: 'chemistry',
+              type: 'number',
+            }
+          },
+          {
+            label: '政治',
+            elements: {
+              eType: 'input',
+              name: 'politics',
+              type: 'number',
+            }
+          },
+          {
+            label: '地理',
+            elements: {
+              eType: 'input',
+              name: 'geography',
+              type: 'number',
+            }
+          },
+          {
+            label: '历史',
+            elements: {
+              eType: 'input',
+              name: 'history',
+              type: 'number',
+            }
+          },
+          {
+            label: '班级名次',
+            elements: {
+              eType: 'input',
+              name: 'classRanking',
+              type: 'number',
+            }
+          },
+          {
+            label: '年级名次',
+            elements: {
+              eType: 'input',
+              name: 'gradeRanking',
+              type: 'number',
+            }
+          },
+          {
+            label: '资助学期',
+            elements: [
+              {
+                eType: 'date',
+                name: 'semester1',
+                type: 'year'
+              },
+              {
+                eType: 'select',
+                name: 'semester2',
+                option: [
+                  {value: 'null', label: '请选择', selected: true},
+                  {value: '0', label: '3月~7月'},
+                  {value: '1', label: '9月~下一年1月'},
+                ]
+              }
+            ]
+          },
+          {
+            label: '类型',
+            elements: {
+              eType: 'select',
+              name: 'type',
+              option: [
+                {value: 'null', label: '请选择'},
+                {% for i, j in StudentScoreType %}
+                {value: '{{ j }}', label: '{{ j }}'},
+                {% endfor %}
+              ]
+            }
+          },
+        ],
+        verify: {
+        }
+      }
+    })
+  })
+</script>
+{% endblock %}

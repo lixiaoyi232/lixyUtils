@@ -1,0 +1,225 @@
+{% extends "../layout/layout-member-center.html" %}
+
+{% block css %}
+{{ super() }}
+<link rel="stylesheet" href="/static/css/website/mytable.css">
+{% endblock %}
+
+{% block member_center_main %}
+<!-- <a href="/member-center/story/new" >写故事</a>
+<br>
+<br>
+<div id="table-story"></div> -->
+  <div class="layui-card myCard">
+    <div class="layui-card-header">我的故事（若想删除故事，请联系系统管理员。）</div>
+    <div class="layui-card-body">
+      <div id="myTable"></div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script src="/static/js/mytable.js"></script>
+<script>
+  // $(function () {
+  //   var table = new MyTable({
+  //     el: '#table-story',
+  //     url: '/member-center/story/table',
+  //     limit: 10,
+  //     cols: [
+  //       {
+  //         title: 'id',
+  //         html: function(story) {
+  //           return story.id
+  //         }
+  //       },
+  //       {
+  //         title: '项目',
+  //         html: function(story) {
+  //           return story.logicType
+  //         }
+  //       },
+  //       {
+  //         title: '类别',
+  //         html: function(story) {
+  //           return story.type.name
+  //         }
+  //       },
+  //       {
+  //         title: '题目',
+  //         html: function(story) {
+  //           return '<a href="/story/' + story.id + '">' + story.title + '</a>'
+  //         }
+  //       },
+  //       {
+  //         title: '状态',
+  //         html: function(story) {
+  //           return story.status
+  //         }
+  //       },
+  //       {
+  //         title: '发布时间',
+  //         html: function(story) {
+  //           return dateFormat(new Date(story.publishTime), 'YYYY-MM-DD HH:mm:ss')
+  //         }
+  //       },
+  //       {
+  //         title: '操作',
+  //         html: function(story) {
+  //           let now = new Date('{{now}}')
+  //           let pushlishedTime = new Date(story.publishTime)
+  //           let limitedTime = new Date(pushlishedTime.setHours(pushlishedTime.getHours() + 48))
+  //           if (story.status === '{{StoryStatus.draft}}'
+  //               || story.status === '{{StoryStatus.revamp}}'
+  //               || (story.status === '{{StoryStatus.published}}'
+  //                   && story.logicType === '{{LogicType.normal}}' && now < limitedTime)) {
+  //             return '<a href="/member-center/story/' + story.id + '/edit">编辑</a>'
+  //           } else {
+  //             return ''
+  //           }
+  //         }
+  //       }
+  //     ],
+  //     onFetch: bindHandlers
+  //   })
+
+  //   table.fetch()
+
+  //   function bindHandlers(rowDatas) {
+  //     $('.btn-story-delete').on('click', function() {
+  //       var $btn = $(this)
+  //       $btn.attr('disabled', true)
+  //       var id = $btn.parents('tr').data('id')
+  //       ajax({
+  //         method: 'DELETE',
+  //         url: '/member-center/story/' + id,
+  //         success: function () {
+  //           $btn.attr('disabled', false)
+  //           layui.layer.msg('删除成功',{ time: 1000 })
+  //           window.setTimeout(function () {
+  //             location.reload()
+  //           }, 1100)
+  //         },
+  //         fail: function () {
+  //           $btn.attr('disabled', false)
+  //         }
+  //       })
+  //     })
+  //   }
+  // })
+
+  $(function () {
+    newTable({
+      btns: {
+        items: [
+          // 'setCols'
+        ]
+      },
+      search: {
+        'class': 'selects',
+        labelWidth: '100',
+        submit: {
+          'class': 'layui-btn greenBtn'
+        },
+        items: [
+          {
+            label: '标题',
+            elements: {
+              eType: 'input',
+              name: 'title'
+            }
+          },
+        ]
+      },
+      table: {
+        checkboxType: 'none',
+        tool: {
+          items: [
+            {
+              layEvent: 'edit',
+              'class': 'layui-btn-primary [[# if ((d.logicType === \'{{ LogicType.normal }}\' && (d.status === \'{{ StoryStatus.published }}\' && ((new Date()).getTime() - (new Date(d.publishTime)).getTime() > 172800000))) || (d.logicType === \'{{ LogicType.match }}\' && (d.status === \'{{ StoryStatus.wait }}\' || d.status === \'{{ StoryStatus.published }}\' || ((d.storyMatch.stage === \'{{ StoryStage.first }}\' && ((new Date(d.storyMatch.matchApply.match.storyStart)) > (new Date()) || (new Date()) > (new Date(d.storyMatch.matchApply.match.storyEnd)))) || (d.storyMatch.stage === \'{{ StoryStage.second }}\' && ((new Date(d.storyMatch.matchApply.match.finalStoryStart)) > (new Date()) || (new Date()) > (new Date(d.storyMatch.matchApply.match.finalStoryEnd)))) || (d.storyMatch.stage === \'{{ StoryStage.third }}\' && (new Date(d.storyMatch.matchApply.match.matchEnd)) > (new Date()))))) || (d.logicType === \'{{ LogicType.aid }}\' && ({{ not canEditAidStory }} || d.status === \'{{ StoryStatus.wait }}\' || d.status === \'{{ StoryStatus.published }}\'))) { ]]none[[# } ]]',
+              event: function (obj, config, render) {
+                window.location.href = '/member-center/story/' + obj.data.id + '/edit?_next={{encodedUrl}}'
+              }
+            },
+          ]
+        },
+        templates: [
+          {
+            id: 'tTitle',
+            content: '<a href="/story/[[ d.id ]]" target="_blank" style="cursor: pointer;">[[ d.title ]]</a>'
+          },
+          {
+            id: 'tTypeName',
+            content: '[[ d.type.name ]]'
+          },
+          {
+            id: 'tIsDigest',
+            content: '[[ d.isDigest ? \'是\' : \'否\' ]]'
+          },
+          {
+            id: 'tImgIsDigest',
+            content: '[[ d.imgIsDigest ? \'是\' : \'否\' ]]'
+          },
+          {
+            id: 'tPublishTime',
+            content: '[[ dateFormat(d.publishTime, \'YYYY-MM-DD HH:mm:ss\') ]]'
+          },
+          {
+            id: 'tProvinceName',
+            content: '[[ d.author.county.city.province.name ]]'
+          },
+          {
+            id: 'tAuthorAccount',
+            content: '[[ d.author.account ]]'
+          },
+          {
+            id: 'tAuthorName',
+            content: '[[ d.author.name ]]'
+          },
+          {
+            id: 'tAuthorType',
+            content: '[[ d.author.type ]]'
+          },
+          {
+            id: 'tStoryMatchStage',
+            content: '[[ d.storyMatch != null ? d.storyMatch.stage : \'\' ]]'
+          },
+          {
+            id: 'tStoryMatchFirstScore',
+            content: '[[ d.storyMatch != null ? d.storyMatch.firstScore : \'\' ]]'
+          },
+          {
+            id: 'tStoryMatchSecondScore',
+            content: '[[ d.storyMatch != null ? d.storyMatch.secondScore : \'\' ]]'
+          },
+          {
+            id: 'tStoryMatchAward',
+            content: '[[ d.storyMatch != null && d.storyMatch.award != null ? d.storyMatch.award : \'\' ]]'
+          },
+          {
+            id: 'tMatchName',
+            content: '[[ d.storyMatch != null && d.storyMatch.matchApply != null && d.storyMatch.matchApply.match != null ? d.storyMatch.matchApply.match.name : \'\' ]]'
+          },
+        ],
+        config: {
+          elem: '#mstory',
+          url: '/member-center/story/table',
+          cols: [
+            [
+              {field: 'id', title: 'ID', align: 'center', show: false, sort: true, width: 100},
+              {width:80, align: 'center', toolbar: '#operation'},
+              // {field: 'logicType', title: '逻辑类别', align: 'center', sort: true, width: 120},
+              {field: 'title', title: '标题', align: 'center', sort: true, minWidth: 150, templet: '#tTitle'},
+              {field: 'typeName', title: '类别', align: 'center', sort: true, minWidth: 150, templet: '#tTypeName'},
+              {field: 'status', title: '状态', align: 'center', sort: true, width: 120},
+              {field: 'publishTime', title: '提交时间', align: 'center', sort: true, width: 180, templet: '#tPublishTime'},
+            ]
+          ]
+        }
+      }
+    })
+  })
+</script>
+{% endblock %}

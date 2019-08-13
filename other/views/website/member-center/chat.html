@@ -1,0 +1,37 @@
+{% extends "../layout/layout-member-center.html" %}
+
+{% block css %}
+{{ super() }}
+{% endblock %}
+
+{% block member_center_main %}
+
+<div class="layui-card">
+  <div class="layui-card-header">群聊</div>
+  <div class="layui-card-body">
+    <div>
+      {% if member.type == MemberType.school %}
+        {% if member.school.admin != null %}
+        {{ member.name }} <button id="toChat" type="button" class="layui-btn layui-btn-primary">与管理员交流{% if member.notRead > 0 %}<span class="layui-badge">{{ member.notRead }}</span>{% endif %}</button>
+        {% else %}
+        您的学校尚未分配
+        {% endif %}
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+  $(function () {
+    {% if member.school.admin != null %}
+    $('#toChat').on('click', function (e) {
+      openWindow('/member-center/chat/{{ member.school.admin.id }}')
+    })
+    {% endif %}
+  })
+</script>
+{% endblock %}

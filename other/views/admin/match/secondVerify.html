@@ -1,0 +1,531 @@
+{% extends "../back.html" %}
+
+{% block css %}
+{{ super() }}
+<style>
+  html {
+    overflow: hidden;
+  }
+</style>
+{% endblock %}
+
+{% block main %}
+  <div class="layui-card myCard">
+    <div class="layui-card-header">复赛故事管理</div>
+    <div class="layui-card-body">
+      <div id="myTable"></div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script src="/static/third-party/xlsx.full.min.js"></script>
+<script>
+  $(function () {
+    newTable({
+      btns: {
+        items: [
+          {% if curAdmin.isSuperUser or curAdmin.permissions.mch_ssv_aw %}
+          {
+            layEvent: 'importf',
+            'class': 'layui-btn-normal importf',
+            label: '导入',
+            event: function (obj, config, render) {
+              var importf = function (event) {
+                console.log('进入importf')
+                if(!event.target.files) {return}
+                console.log('event.target.files存在')
+                var letter_arr = ['','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']
+                var rABS = false
+                var wb = ''
+                var file = event.target.files[0]
+                console.log('判断扩展名')
+                if (file.name.split('.')[1] !== 'xlsx') {
+                  layer.msg('必须是以.xlsx结尾的excel文件', {time: 3000, icon:5, anim: 6})
+                  return
+                }
+                console.log('新建reader')
+                var reader = new FileReader()
+                console.log('新建reader完成')
+                reader.onload = function (e) {
+                  console.log('读取文件完成')
+                  var awards = [{% for i, j in Award %}'{{ j }}'{% if not loop.last %},{% endif %}{% endfor %}]
+                  var seconds = {}
+                  var award = 'null'
+                  var data = e.target.result
+                  console.log('判断rABS')
+                  if (rABS) {
+                    wb = XLSX.read(btoa(this.fixdata(data)), {//手动转化
+                      type: 'base64'
+                    })
+                  } else {
+                    wb = XLSX.read(data, {
+                      type: 'binary'
+                    })
+                  }
+                  console.log('获取工作簿对象')
+                  var data_obj = wb.Sheets[wb.SheetNames[0]]
+                  if (data_obj['!ref'] == null) {
+                    layer.msg('表格数据错误', {time: 3000, icon:5, anim: 6})
+                    return
+                  }
+                  console.log('拆分!ref')
+                  var data_scope = data_obj['!ref']
+                  var data_scope_arr_two = data_scope.split(':')
+                  var data_scope_arr_four = ['','','','']
+                  for (var i = 0; i < data_scope_arr_two[0].length; i++) {
+                    if (isNaN(data_scope_arr_two[0][i])){
+                      data_scope_arr_four[0] += data_scope_arr_two[0][i]
+                    }else{
+                      data_scope_arr_four[1] += data_scope_arr_two[0][i]
+                    }
+                  }
+                  for (var i = 0; i < data_scope_arr_two[1].length; i++) {
+                    if (isNaN(data_scope_arr_two[1][i])){
+                      data_scope_arr_four[2] += data_scope_arr_two[1][i]
+                    }else{
+                      data_scope_arr_four[3] += data_scope_arr_two[1][i]
+                    }
+                  }
+                  console.log('判断单元格')
+                  if (data_scope_arr_four[0] !== 'A' || data_scope_arr_four[2] !== 'Q') {
+                    layer.msg('表格最大列是' + data_scope_arr_four[2] + '，不是Q', {time: 3000, icon:5, anim: 6})
+                    return
+                  }
+                  if (data_scope_arr_four[1] !== '1') {
+                    layer.msg('表格不是从第一行开始', {time: 3000, icon:5, anim: 6})
+                    return
+                  }
+                  if (isNaN(parseInt(data_scope_arr_four[3]))) {
+                    layer.msg('表格错误', {time: 3000, icon:5, anim: 6})
+                    return
+                  }
+                  if (data_obj['A1'] == null || data_obj['A1'].v !== 'ID') {
+                    layer.msg('A1单元格不是ID', {time: 3000, icon:5, anim: 6})
+                    return
+                  }
+                  if (data_obj['D1'] == null || data_obj['D1'].v !== '初赛故事') {
+                    layer.msg('D1单元格不是初赛故事', {time: 3000, icon:5, anim: 6})
+                    return
+                  }
+                  if (data_obj['F1'] == null || data_obj['F1'].v !== '评语1') {
+                    layer.msg('F1单元格不是评语1', {time: 3000, icon:5, anim: 6})
+                    return
+                  }
+                  if (data_obj['G1'] == null || data_obj['G1'].v !== '评语2') {
+                    layer.msg('G1单元格不是评语2', {time: 3000, icon:5, anim: 6})
+                    return
+                  }
+                  if (data_obj['I1'] == null || data_obj['I1'].v !== '奖项') {
+                    layer.msg('I1单元格不是奖项', {time: 3000, icon:5, anim: 6})
+                    return
+                  }
+                  console.log('判断数据单元格')
+                  data_scope_arr_four[1] = parseInt(data_scope_arr_four[1])
+                  data_scope_arr_four[3] = parseInt(data_scope_arr_four[3])
+                  for (var i = data_scope_arr_four[1] + 1; i <= parseInt(data_scope_arr_four[3]); i++) {
+                    if (data_obj['A' + i] == null || isNaN(parseInt(data_obj['A' + i].v))) {
+                      layer.msg('A' + i + '单元格不是数字', {time: 3000, icon:5, anim: 6})
+                      return
+                    }
+                    if (data_obj['I' + i] != null && data_obj['I' + i].v  !== '' && awards.indexOf(data_obj['I' + i].v) === -1) {
+                      layer.msg('I' + i + '单元格奖项名称错误', {time: 3000, icon:5, anim: 6})
+                      return
+                    }
+                    if (data_obj['D' + i] == null) {
+                      layer.msg('D' + i + '单元格初赛故事名称错误', {time: 3000, icon:5, anim: 6})
+                      return
+                    }
+                    award = (data_obj['I' + i] != null && data_obj['I' + i].v  !== '') ? data_obj['I' + i].v : 'null'
+                    if (seconds[award] == null) seconds[award] = {ids: []}
+                    seconds[award].ids.push(parseInt(data_obj['A' + i].v))
+                    seconds[award][parseInt(data_obj['A' + i].v)] = {first: data_obj['D' + i].v, remark1: data_obj['F' + i] != null ? data_obj['F' + i].v : '', remark2: data_obj['G' + i] != null ? data_obj['G' + i].v : ''}
+                  }
+                  console.log('loading遮罩')
+                  var importfIndex = layer.load(0, {shade: [0.4,'#fff']})
+                  console.log('发送ajax')
+                  ajax({
+                    method: 'POST',
+                    timeout: 600 * 1000,
+                    url: '/admin/match/awards',
+                    data: JSON.stringify(seconds),
+                    success: function () {
+                      layer.msg('颁奖成功', {time: 3000, icon:6})
+                      layer.close(importfIndex)
+                      render()
+                    },
+                    fail: function () {
+                      layer.close(importfIndex)
+                    },
+                    error: function () {
+                      layer.close(importfIndex)
+                    }
+                  })
+                  console.log('ajax结束')
+                }
+                if(rABS) {
+                  reader.readAsArrayBuffer(file);
+                } else {
+                  reader.readAsBinaryString(file);
+                }
+              }
+              console.log('新建input')
+              var $input = $('<input type="file">')
+              console.log('添加input事件')
+              $input.on('change', importf)
+              console.log('触发点击事件')
+              $input.trigger('click')
+              console.log('点击结束')
+            }
+          },
+          {% endif %}
+          {
+            layEvent: 'export',
+            'class': 'layui-btn-normal',
+            label: '导出',
+            event: function (obj, config, render) {
+              layer.confirm('确认导出吗？', function(index){
+                window.location = '/admin/match/verify2/export' + (config.url.split('?')[1] != null ? '?' + config.url.split('?')[1] : '')
+                layer.close(index)
+              })
+            }
+          },
+          'setCols'
+        ]
+      },
+      search: {
+        'class': 'selects',
+        labelWidth: '100',
+        val: {
+          matchId: '{{ match.id }}'
+        },
+        items: [
+          {
+            label: '大赛',
+            elements: {
+              eType: 'select',
+              name: 'matchId',
+              option: [
+                {value: 'all', label: '&nbsp;', selected: true},
+                {% for match in matchs %}
+                {value: '{{ match.id }}', label: '{{ match.name }}'},
+                {% endfor %}
+              ]
+            }
+          },
+          {
+            label: '会员学校',
+            elements: {
+              eType: 'select',
+              name: 'schoolVerifyIn',
+              option: [
+                {value: 'all', label: '&nbsp;', selected: true},
+                {value: '{{ VerifyStatus.ok }}', label: '是'},
+                {value: '{{ VerifyStatus.wait }},{{ VerifyStatus.no }}', label: '否'},
+              ]
+            }
+          },
+          {
+            label: '标题',
+            elements: {
+              eType: 'input',
+              name: 'storyTitle'
+            }
+          },
+          {
+            label: '学生账号',
+            elements: {
+              eType: 'input',
+              name: 'account'
+            }
+          },
+          {
+            label: '学生姓名',
+            elements: {
+              eType: 'input',
+              name: 'name'
+            }
+          },
+          {
+            label: '大陆省份',
+            elements: {
+              eType: 'input',
+              name: 'provinceName'
+            }
+          },
+          {
+            label: '学段',
+            elements: {
+              eType: 'select',
+              name: 'period',
+              option: [
+                {value: 'all', label: '&nbsp;'},
+                {% for i, j in StudentPeriod %}
+                {% if i != 'LiXiao' %}{value: '{{ j }}', label: '{{ j }}'},{% endif %}
+                {% endfor %}
+              ]
+            }
+          },
+          {
+            label: '学校编号',
+            elements: {
+              eType: 'input',
+              name: 'schoolAccount'
+            }
+          },
+          {
+            label: '学校名称',
+            elements: {
+              eType: 'input',
+              name: 'schoolName'
+            }
+          },
+          {
+            label: '状态',
+            elements: {
+              eType: 'select',
+              name: 'status',
+              option: [
+                {value: 'all', label: '&nbsp;', selected: true},
+                {% for i, j in StoryStatus %}
+                {% if j != StoryStatus.draft %}{value: '{{ j }}', label: '{{ j }}'},{% endif %}
+                {% endfor %}
+              ]
+            }
+          },
+          {
+            label: '奖项',
+            elements: {
+              eType: 'select',
+              name: 'storyMatchsAward',
+              option: [
+                {value: 'all', label: '&nbsp;', selected: true},
+                {% for i, j in Award %}
+                {value: '{{ j }}', label: '{{ j }}'},
+                {% endfor %}
+              ]
+            }
+          },
+          {
+            label: '是否获奖',
+            elements: {
+              eType: 'select',
+              name: 'haveStoryMatchsAward',
+              option: [
+                {value: 'all', label: '&nbsp;', selected: true},
+                {value: 'true', label: '是'},
+                {value: 'false', label: '否'},
+              ]
+            }
+          },
+          {
+            label: '管理员',
+            elements: {
+              eType: 'select',
+              name: 'adminId_',
+              option: [
+                {value: 'all', label: '&nbsp;', selected: true},
+                {% for i in admins %}
+                {value: '{{ i.id }}', label: '{{ i.account }}'},
+                {% endfor %}
+              ]
+            }
+          },
+        ]
+      },
+      table: {
+        tool: {
+          items: [
+            // 'del',
+            {% if curAdmin.isSuperUser or curAdmin.permissions.sty_sty_u %}
+            {
+              layEvent: 'toEdit',
+              label: '编辑',
+              'class': 'layui-btn-primary [[# if(d.second == null){ ]] none[[#  } ]]',
+              event: function (obj, config, render) {
+                window.tableRender = render
+                layer.open({
+                  type: 2,
+                  title: '编辑',
+                  shade: 0.8,
+                  area: ['90%', '90%'],
+                  content: '/admin/story/story/' + obj.data.second.story.id
+                })
+              }
+            },
+            {% endif %}
+            {% if curAdmin.isSuperUser or curAdmin.permissions.mch_ssv_f %}
+            {
+              layEvent: 'final',
+              label: '审核',
+              'class': 'layui-btn-primary [[# if(((new Date(d.match.finalVerifyStart)) > (new Date()) || (new Date()) > (new Date(d.match.finalVerifyEnd))) || d.second == null || d.second.story.status !== \'{{ StoryStatus.wait }}\'){ ]] none[[#  } ]]',
+              event: function (obj, config, render) {
+                var path = config.url.split('?')[0]
+                path = (path[path.length - 1] === '/' ? path.slice(0, path.length - 6) : (path.slice(0, path.length - 5)))
+                window.tableRender = render
+                layer.open({
+                  type: 2,
+                  title: '审核',
+                  shade: 0.8,
+                  area: ['90%', '90%'],
+                  content: path + obj.data.second.story.id + '/final'
+                })
+              }
+            },
+            {% endif %}
+            {% if curAdmin.isSuperUser or curAdmin.permissions.mch_ssv_aw %}
+            {
+              layEvent: 'award',
+              label: '颁奖',
+              'class': 'layui-btn-primary [[# if(((new Date(d.match.matchApplyStart)) > (new Date()) || (new Date()) > (new Date(d.match.matchEnd))) || d.second == null || d.second.story.status !== \'{{ StoryStatus.published }}\'){ ]] none[[#  } ]]',
+              event: function (obj, config, render) {
+                var index = layer.open({
+                  type: 1,
+                  title: '颁奖',
+                  offset: '100px',
+                  skin: 'layui-layer-rim',
+                  area: ['600px', '300px'],
+                  content: '<div id="toAward"></div>'
+                })
+                newForm({
+                  parent: '#toAward',
+                  form: {
+                    submit: {
+                      event: function (data) {
+                        var importfIndex = layer.load(0, {shade: [0.4,'#fff']})
+                        $('[lay-filter="myFormSubmit"]').attr('disabled', true)
+                        $('[lay-filter="myFormSubmit"]').addClass('layui-btn-disabled')
+                        var awardObj = {}
+                        awardObj[data.field.award] = {ids: [obj.data.id]}
+                        awardObj[data.field.award][obj.data.id] = {first: obj.data.first.story.title, remark1: obj.data.remark1 != null ? obj.data.remark1 : '', remark2: obj.data.remark2 != null ? obj.data.remark2 : ''}
+                        ajax({
+                          method: 'POST',
+                          url: '/admin/match/awards',
+                          data: JSON.stringify(awardObj),
+                          success: function () {
+                            $('[lay-filter="myFormSubmit"]').attr('disabled', false)
+                            $('[lay-filter="myFormSubmit"]').removeClass('layui-btn-disabled')
+                            layer.msg('颁奖成功', {time: 3000, icon:6})
+                            layer.close(importfIndex)
+                            render()
+                            layer.close(index)
+                          },
+                          fail: function () {
+                            $('[lay-filter="myFormSubmit"]').attr('disabled', false)
+                            $('[lay-filter="myFormSubmit"]').removeClass('layui-btn-disabled')
+                            layer.close(importfIndex)
+                          },
+                          error: function () {
+                            $('[lay-filter="myFormSubmit"]').attr('disabled', false)
+                            $('[lay-filter="myFormSubmit"]').removeClass('layui-btn-disabled')
+                            layer.close(importfIndex)
+                          }
+                        })
+                      }
+                    },
+                    items: [
+                      {
+                        label: '',
+                        elements: {
+                          eType: 'radio',
+                          name: 'award',
+                          children: [
+                            {title: '白金奖', value: '白金奖', checked:true},
+                            {title: '金奖', value: '金奖'},
+                            {title: '银奖', value: '银奖'},
+                            {title: '铜奖', value: '铜奖'},
+                            {title: '优秀奖', value: '优秀奖'},
+                            {title: '回收', value: 'null'}
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                })
+              }
+            }
+            {% endif %}
+          ]
+        },
+        templates: [
+          {
+            id: 'tMatchName',
+            content: '[[ d.match.name ]]'
+          },
+          {
+            id: 'tSchoolVerifyIn',
+            content: '[[ d.school.verify === \'{{ VerifyStatus.ok }}\' ? \'是\' : \'否\' ]]'
+          },
+          {
+            id: 'tSchoolAccount',
+            content: '[[ d.school.member.account ]]'
+          },
+          {
+            id: 'tSchoolName',
+            content: '[[ d.school.member.name ]]'
+          },
+          {
+            id: 'tFirstTitle',
+            content: '[[ d.first != null ? \'<a href="/story/\' + d.first.story.id + \'" target="_blank" style="cursor: pointer;">\' + d.first.story.title + \'</a>\' : \'\' ]]'
+          },
+          {
+            id: 'tSecondTitle',
+            content: '[[ d.second != null ? \'<a href="/story/\' + d.second.story.id + \'" target="_blank" style="cursor: pointer;">\' + d.second.story.title + \'</a>\' : \'\' ]]'
+          },
+          {
+            id: 'tThirdTitle',
+            content: '[[ d.third != null ? \'<a href="/story/\' + d.third.story.id + \'" target="_blank" style="cursor: pointer;">\' + d.third.story.title + \'</a>\' : \'\' ]]'
+          },
+          {
+            id: 'tRemark1',
+            content: '[[ d.remark1 != null ? d.remark1 : \'\' ]]'
+          },
+          {
+            id: 'tRemark2',
+            content: '[[ d.remark2 != null ? d.remark2 : \'\' ]]'
+          },
+          {
+            id: 'tStoryStatus',
+            content: '[[ d.second != null ? d.second.story.status : \'\' ]]'
+          },
+          {
+            id: 'tPublishTime',
+            content: '[[ d.second != null ? dateFormat(d.second.story.publishTime, \'YYYY-MM-DD HH:mm:ss\') : \'\' ]]'
+          },
+          {
+            id: 'tStoryMatchsAward',
+            content: '[[ d.second != null && d.second.award != null ? d.second.award : \'\' ]]'
+          }
+        ],
+        config: {
+          elem: '#verify',
+          url: '/admin/match/verify2/table',
+          cols: [
+            [
+              {field: 'id', sort: true, title: 'ID', width:100, align: 'center', fixed: 'left', show: false},
+              {field: 'schoolName', sort: true, title: '学校名称', minWidth:250, align: 'center', templet: '#tSchoolName'},
+              {field: 'name', sort: true, title: '学生姓名', minWidth:140, align: 'center'},
+              {field: 'firstTitle', title: '初赛故事', minWidth:150, templet: '#tFirstTitle'},
+              {field: 'secondTitle', title: '复赛故事', minWidth:150, templet: '#tSecondTitle'},
+              {field: 'storyMatchsAward', sort: true, title: '奖项', width: 80, templet: '#tStoryMatchsAward'},
+              {field: 'remark1', sort: true, title: '评语1', minWidth:200, align: 'center', templet: '#tRemark1'},
+              {field: 'remark2', sort: true, title: '评语2', minWidth:200, align: 'center', templet: '#tRemark2'},
+              {field: 'matchName', sort: true, title: '大赛', minWidth:150, templet: '#tMatchName'},
+              {field: 'period', sort: true, title: '学段', align: 'center'},
+              {field: 'thirdTitle', title: '获奖感言', minWidth:150, templet: '#tThirdTitle'},
+              {field: 'schoolAccount', sort: true, title: '学校编号', minWidth:140, align: 'center', templet: '#tSchoolAccount'},
+              {field: 'account', sort: true, title: '学生账号', minWidth:140, align: 'center'},
+              {field: 'storyStatus', title: '状态', width:100, align: 'center', templet: '#tStoryStatus'},
+              {field: 'storyPublishTime', title: '提交时间', width:180, align: 'center', templet: '#tPublishTime'},
+              {field: 'schoolVerifyIn', sort: true, title: '会员学校', width:100, align: 'center', templet: '#tSchoolVerifyIn'},
+              {field: 'provinceName', title: '大陆省份', align: 'center', sort: true, minWidth: 150},
+              {fixed: 'right', width:150, align: 'center', toolbar: '#operation'}
+            ]
+          ]
+        }
+      }
+    })
+  })
+</script>
+{% endblock %}

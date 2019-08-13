@@ -1,0 +1,469 @@
+{% extends "../back.html" %}
+
+{% block css %}
+{{ super() }}
+<style>
+  html {
+    overflow: hidden;
+  }
+</style>
+{% endblock %}
+
+{% block main %}
+  <div class="layui-card myCard">
+    <div class="layui-card-header">资助单</div>
+    <div class="layui-card-body">
+      <div id="myTable"></div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+  $(function () {
+    newTable({
+      btns: {
+        items: [
+          {% if curAdmin.isSuperUser or curAdmin.permissions.aid_aid_a %}
+          'new',
+          {% endif %}
+          {% if curAdmin.isSuperUser or curAdmin.permissions.aid_aid_d %}
+          'dels',
+          {% endif %}
+          'setCols',
+          {% if curAdmin.isSuperUser or curAdmin.permissions.aid_aid_v %}
+          {
+            layEvent: 'ok2',
+            'class': 'layui-btn-normal',
+            label: '收款',
+            event: function (obj, config, render) {
+              var data = table.checkStatus(config.id).data
+              var items = []
+              for (var i in data) if (data.hasOwnProperty(i)) items.push(data[i].id)
+              ajax({
+                method: 'POST',
+                url: '/admin/aid/aid/status',
+                data: JSON.stringify({statusRadio: '{{ AidStatus.ok2 }}', data: items}),
+                success: function () {
+                  layer.msg('状态改变成功', {time: 2000, icon:6})
+                  render()
+                },
+              })
+            }
+          },
+          {
+            layEvent: 'cancel',
+            'class': 'layui-btn-normal',
+            label: '取消',
+            event: function (obj, config, render) {
+              var data = table.checkStatus(config.id).data
+              var items = []
+              for (var i in data) if (data.hasOwnProperty(i)) items.push(data[i].id)
+              ajax({
+                method: 'POST',
+                url: '/admin/aid/aid/status',
+                data: JSON.stringify({statusRadio: '{{ AidStatus.cancel }}', data: items}),
+                success: function () {
+                  layer.msg('状态改变成功', {time: 2000, icon:6})
+                  render()
+                },
+              })
+            }
+          },
+          {
+            layEvent: 'end',
+            'class': 'layui-btn-normal',
+            label: '完结',
+            event: function (obj, config, render) {
+              var data = table.checkStatus(config.id).data
+              var items = []
+              for (var i in data) if (data.hasOwnProperty(i)) items.push(data[i].id)
+              ajax({
+                method: 'POST',
+                url: '/admin/aid/aid/status',
+                data: JSON.stringify({statusRadio: '{{ AidStatus.end }}', data: items}),
+                success: function () {
+                  layer.msg('状态改变成功', {time: 2000, icon:6})
+                  render()
+                },
+              })
+            }
+          },
+          {% endif %}
+        ]
+      },
+      search: {
+        'class': 'selects',
+        labelWidth: '100',
+        items: [
+          {
+            label: '通知内容',
+            elements: {
+              eType: 'select',
+              name: 'inform',
+              option: [
+                {value: 'all', label: '&nbsp;'},
+                {value: 'true', label: '有'},
+                {value: 'false', label: '无'},
+              ]
+            }
+          },
+          {
+            label: '状态',
+            elements: {
+              eType: 'select',
+              name: 'status',
+              option: [
+                {value: 'all', label: '&nbsp;'},
+                {% for i, j in AidStatus %}
+                {value: '{{ j }}', label: '{{ j }}'},
+                {% endfor %}
+              ]
+            }
+          },
+          {
+            label: '资助单号',
+            elements: {
+              eType: 'input',
+              name: 'number'
+            }
+          },
+          {
+            label: '申请单号',
+            elements: {
+              eType: 'input',
+              name: 'aidApplyNumber'
+            }
+          },
+          {
+            label: '学生账号',
+            elements: {
+              eType: 'input',
+              name: 'studentAccount'
+            }
+          },
+          {
+            label: '学生姓名',
+            elements: {
+              eType: 'input',
+              name: 'studentName'
+            }
+          },
+          {
+            label: '大陆省份',
+            elements: {
+              eType: 'input',
+              name: 'provinceName'
+            }
+          },
+          {
+            label: '学校编号',
+            elements: {
+              eType: 'input',
+              name: 'schoolAccount'
+            }
+          },
+          {
+            label: '学校名称',
+            elements: {
+              eType: 'input',
+              name: 'schoolName'
+            }
+          },
+          {
+            label: '爱心团体',
+            elements: {
+              eType: 'input',
+              name: 'group'
+            }
+          },
+          {
+            label: '资助人账号',
+            elements: {
+              eType: 'input',
+              name: 'memberAccount'
+            }
+          },
+          {
+            label: '资助人姓名',
+            elements: {
+              eType: 'input',
+              name: 'memberName'
+            }
+          },
+          {
+            label: '提交时间',
+            elements: {
+              eType: 'date',
+              name: 'publishTime',
+              range: true
+            }
+          },
+          {
+            label: '提交人',
+            elements: {
+              eType: 'input',
+              name: 'publishUser'
+            }
+          },
+        ]
+      },
+      table: {
+        tool: {
+          items: [
+            {% if curAdmin.isSuperUser or curAdmin.permissions.aid_dtl %}
+            {
+              layEvent: 'detail',
+              label: '明细',
+              'class': 'layui-btn-primary[[# if(d.status === \'{{ AidStatus.cancel }}\' || d.status === \'{{ AidStatus.wait1 }}\'){ ]] none[[#  } ]]',
+              event: function (obj, config, render) {
+                var path = config.url.split('?')[0]
+                path = (path[path.length - 1] === '/' ? path.slice(0, path.length - 6) : (path.slice(0, path.length - 5)))
+                // openWindow(path + obj.data.id + '/info')
+                layer.open({
+                  type: 2,
+                  title: '待助卡',
+                  shade: 0.8,
+                  area: ['90%', '90%'],
+                  content: path + obj.data.id + '/detail'
+                })
+                // window.location.href = '/admin/aid/aid/' + obj.data.id + '/detail'
+              }
+            },
+            {% endif %}
+            {% if curAdmin.isSuperUser or curAdmin.permissions.aid_aid_v %}
+            {
+              layEvent: 'toAffirmPay',
+              label: '付款',
+              'class': 'layui-btn-primary[[# if(d.status !== \'{{ AidStatus.wait1 }}\' && d.status !== \'{{ AidStatus.wait2 }}\'){ ]] none[[#  } ]]',
+              event: function (obj, config, render) {
+                var path = config.url.split('?')[0]
+                path = (path[path.length - 1] === '/' ? path.slice(0, path.length - 6) : (path.slice(0, path.length - 5)))
+                // layer.confirm('真的确认付款行么', function(index){
+                //   ajax({
+                //     method: 'POST',
+                //     url: path + obj.data.id + '/toAffirmPay',
+                //     success: function () {
+                //       layer.msg('确认付款成功', {time: 2000, icon:6})
+                //       render()
+                //       layer.close(index)
+                //     }
+                //   })
+                // })
+
+                window.tableRender = function () {
+                  ajax({
+                    method: 'POST',
+                    url: path + obj.data.id + '/toAffirmPay',
+                    success: function () {
+                      layer.msg('确认付款成功', {time: 2000, icon:6})
+                      render()
+                      layer.close(index)
+                    }
+                  })
+                  render()
+                }
+                layer.open({
+                  type: 2,
+                  title: '编辑',
+                  shade: 0.8,
+                  area: ['90%', '90%'],
+                  content: '/admin/aid/detail/new?aidId=' + obj.data.id
+                })
+              }
+            },
+            {% endif %}
+            {% if curAdmin.isSuperUser or curAdmin.permissions.aid_aid_v %}
+            {
+              layEvent: 'toAffirmReceive',
+              label: '收款',
+              'class': 'layui-btn-primary[[# if(d.status !== \'{{ AidStatus.ok }}\'){ ]] none[[#  } ]]',
+              event: function (obj, config, render) {
+                var path = config.url.split('?')[0]
+                path = (path[path.length - 1] === '/' ? path.slice(0, path.length - 6) : (path.slice(0, path.length - 5)))
+                layer.confirm('真的确认收款行么', function(index){
+                  ajax({
+                    method: 'POST',
+                    url: path + obj.data.id + '/toAffirmReceive',
+                    success: function () {
+                      layer.msg('确认收款成功', {time: 2000, icon:6})
+                      render()
+                      layer.close(index)
+                    }
+                  })
+                })
+              }
+            },
+            {% endif %}
+            {% if curAdmin.isSuperUser or curAdmin.permissions.aid_aid_v %}
+            {
+              layEvent: 'toEnd',
+              label: '完结',
+              'class': 'layui-btn-primary[[# if(d.status !== \'{{ AidStatus.ok2 }}\' && d.status !== \'{{ AidStatus.wait2 }}\'){ ]] none[[#  } ]]',
+              event: function (obj, config, render) {
+                var path = config.url.split('?')[0]
+                path = (path[path.length - 1] === '/' ? path.slice(0, path.length - 6) : (path.slice(0, path.length - 5)))
+                layer.confirm('真的完结行么', function(index){
+                  ajax({
+                    method: 'POST',
+                    url: path + obj.data.id + '/toEnd',
+                    success: function () {
+                      layer.msg('完结成功', {time: 2000, icon:6})
+                      render()
+                      layer.close(index)
+                    }
+                  })
+                })
+              }
+            },
+            {% endif %}
+            {% if curAdmin.isSuperUser or curAdmin.permissions.aid_aid_g %}
+            // 'info',
+            {% endif %}
+            {% if curAdmin.isSuperUser or curAdmin.permissions.aid_aid_u %}
+            // {
+            //   layEvent: 'edit',
+            //   'class': 'layui-btn-primary [[# if(d.status === \'{{ AidApplyStatus.cancel }}\' || d.status === \'{{ AidApplyStatus.end }}\'){ ]] none[[#  } ]]',
+            // },
+            'edit',
+            {% endif %}
+            {% if curAdmin.isSuperUser or curAdmin.permissions.aid_aid_d %}
+            'del',
+            {% endif %}
+            {% if curAdmin.isSuperUser or curAdmin.permissions.aid_aid_v %}
+            // {
+            //   layEvent: 'status',
+            //   label: '状态',
+            //   'class': 'layui-btn-primary [[# if(d.status === \'{{ AidStatus.cancel }}\' || d.status === \'{{ AidStatus.end }}\'){ ]] none[[#  } ]]',
+            //   event: function (obj, config, render) {
+            //     var path = config.url.split('?')[0]
+            //     path = (path[path.length - 1] === '/' ? path.slice(0, path.length - 6) : (path.slice(0, path.length - 5)))
+            //     var index = layer.open({
+            //       type: 1,
+            //       title: '状态',
+            //       offset: '100px',
+            //       skin: 'layui-layer-rim',
+            //       area: ['550px', '200px'],
+            //       content: '<div id="changeStatus"></div>'
+            //     })
+            //     newForm({
+            //       parent: '#changeStatus',
+            //       form: {
+            //         submit: {
+            //           event: function (data) {
+            //             $('[lay-filter="myFormSubmit"]').attr('disabled', true)
+            //             $('[lay-filter="myFormSubmit"]').addClass('layui-btn-disabled')
+            //             ajax({
+            //               method: 'POST',
+            //               url: '/admin/aid/aid/status',
+            //               data: JSON.stringify({statusRadio: data.field.statusRadio, data: [obj.data.id]}),
+            //               success: function () {
+            //                 $('[lay-filter="myFormSubmit"]').attr('disabled', false)
+            //                 $('[lay-filter="myFormSubmit"]').removeClass('layui-btn-disabled')
+            //                 layer.msg('状态改变成功', {time: 2000, icon:6})
+            //                 render()
+            //                 layer.close(index)
+            //               },
+            //               fail: function () {
+            //                 $('[lay-filter="myFormSubmit"]').attr('disabled', false)
+            //                 $('[lay-filter="myFormSubmit"]').removeClass('layui-btn-disabled')
+            //               },
+            //               error: function () {
+            //                 $('[lay-filter="myFormSubmit"]').attr('disabled', false)
+            //                 $('[lay-filter="myFormSubmit"]').removeClass('layui-btn-disabled')
+            //               }
+            //             })
+            //           }
+            //         },
+            //         val: {
+            //           statusRadio: '{{ AidStatus.ok2 }}'
+            //         },
+            //         items: [
+            //           {
+            //             label: '状态',
+            //             elements: {
+            //               eType: 'radio',
+            //               name: 'statusRadio',
+            //               children: [
+            //                 {title: '{{ AidStatus.ok2 }}', value: '{{ AidStatus.ok2 }}'},
+            //                 {title: '{{ AidStatus.cancel }}', value: '{{ AidStatus.cancel }}'},
+            //                 {title: '{{ AidStatus.end }}', value: '{{ AidStatus.end }}'},
+            //               ]
+            //             }
+            //           }
+            //         ]
+            //       }
+            //     })
+            //   }
+            // },
+            {% endif %}
+          ]
+        },
+        templates: [
+          {
+            id: 'tAidApplyNumber',
+            content: '[[ d.aidApply.number ]]'
+          },
+          {
+            id: 'tStudentAccount',
+            content: '[[ d.aidApply.account ]]'
+          },
+          {
+            id: 'tStudentName',
+            content: '[[ d.aidApply.name ]]'
+          },
+          {
+            id: 'tProvinceName',
+            content: '[[ d.aidApply.provinceName ]]'
+          },
+          {
+            id: 'tSchoolAccount',
+            content: '[[ d.aidApply.schoolAccount ]]'
+          },
+          {
+            id: 'tSchoolName',
+            content: '[[ d.aidApply.schoolName ]]'
+          },
+          {
+            id: 'tMemberAccount',
+            content: '[[ d.member.account ]]'
+          },
+          {
+            id: 'tMemberName',
+            content: '[[ d.member.name ]]'
+          },
+          {
+            id: 'tPublishTime',
+            content: '[[ dateFormat(d.publishTime, \'YYYY-MM-DD HH:mm:ss\') ]]'
+          },
+        ],
+        config: {
+          elem: '#aid',
+          url: '/admin/aid/aid/table',
+          cols: [
+            [
+              {field: 'id', title: 'ID', align: 'center', show: false, sort: true, width: 100, fixed: 'left'},
+              {field: 'studentName', title: '学生姓名', align: 'center', sort: true, minWidth: 140, templet: '#tStudentName', fixed: 'left'},
+              {field: 'schoolName', title: '学校名称', align: 'center', sort: true, minWidth: 250, templet: '#tSchoolName'},
+              {field: 'memberAccount', title: '资助人账号', align: 'center', sort: true, minWidth: 140, templet: '#tMemberAccount'},
+              {field: 'memberName', title: '资助人姓名', align: 'center', sort: true, minWidth: 140, templet: '#tMemberName'},
+              {field: 'group', title: '爱心团体', align: 'center', sort: true, minWidth: 140},
+              {field: 'status', title: '状态', align: 'center', sort: true, width: 100},
+              {field: 'inform', title: '通知内容', align: 'center', sort: true, minWidth: 200},
+              {field: 'provinceName', title: '大陆省份', align: 'center', sort: true, minWidth: 150, templet: '#tProvinceName'},
+              {field: 'schoolAccount', title: '学校编号', align: 'center', sort: true, minWidth: 140, templet: '#tSchoolAccount'},
+              {field: 'studentAccount', title: '学生账号', align: 'center', sort: true, minWidth: 140, templet: '#tStudentAccount'},
+              {field: 'number', title: '资助单号', align: 'center', sort: true, width: 160},
+              {field: 'aidApplyNumber', title: '申请单号', align: 'center', sort: true, minWidth: 170, templet: '#tAidApplyNumber'},
+              {field: 'publishTime', title: '提交时间', align: 'center', sort: true, width: 180, templet: '#tPublishTime'},
+              {field: 'publishUser', title: '提交人', align: 'center', sort: true, minWidth: 140},
+              {align: 'center', width: 220, fixed: 'right', toolbar: '#operation'}
+            ]
+          ]
+        }
+      }
+    })
+  })
+</script>
+{% endblock %}

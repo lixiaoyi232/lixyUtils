@@ -1,0 +1,102 @@
+{% extends "../back.html" %}
+
+{% block css %}
+{{ super() }}
+{% endblock %}
+
+{% block main %}
+  <div class="layui-card myCard">
+    <div class="layui-card-header">城市管理</div>
+    <div class="layui-card-body layui-tab layui-tab-brief">
+      <div id="myTable"></div>
+  </div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+  $(function () {
+    newTable({
+      btns: {
+        items: [
+          {% if curAdmin.isSuperUser %}
+          'new',
+          {% endif %}
+          {% if curAdmin.isSuperUser %}
+          'dels',
+          {% endif %}
+          'setCols'
+        ]
+      },
+      search: {
+        'class': 'selects',
+        labelWidth: '100',
+        items: [
+          {
+            label: '城市名',
+            elements: {
+              eType: 'input',
+              name: 'name'
+            }
+          },
+          {
+            label: '城市编号',
+            elements: {
+              eType: 'input',
+              name: 'number'
+            }
+          },
+          {
+            label: '大陆省份名',
+            elements: {
+              eType: 'input',
+              name: 'provinceName'
+            }
+          },
+          // {
+          //   label: 'ID',
+          //   elements: {
+          //     eType: 'between',
+          //     name: 'id'
+          //   }
+          // }
+        ]
+      },
+      table: {
+        tool: {
+          items: [
+            {% if curAdmin.isSuperUser or true %}
+            // 'info',
+            {% endif %}
+            {% if curAdmin.isSuperUser %}
+            'edit',
+            {% endif %}
+            {% if curAdmin.isSuperUser %}
+            'del'
+            {% endif %}
+          ]
+        },
+        templates: [
+          {
+            id: 'tProvinceName',
+            content: '[[ d.province.name ]]'
+          },
+        ],
+        config: {
+          elem: '#city',
+          url: '/admin/area/city/table',
+          cols: [
+            [
+              {field: 'id', title: 'ID', align: 'center', show: false, sort: true, width: 100, fixed: 'left'},
+              {field: 'name', title: '城市名', align: 'center', sort: true, minWidth: 190},
+              {field: 'number', title: '城市编号', sort: true, align: 'center', minWidth: 100},
+              {field: 'provinceName', title: '大陆省份名', sort: true, align: 'center', minWidth: 150, templet: '#tProvinceName'},
+              {align: 'center', width:150, fixed: 'right', toolbar: '#operation'}
+            ]
+          ]
+        }
+      }
+    })
+  })
+</script>
+{% endblock %}

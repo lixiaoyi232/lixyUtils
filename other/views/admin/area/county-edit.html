@@ -1,0 +1,195 @@
+{% extends "../back.html" %}
+
+{% block css %}
+{{ super() }}
+{% endblock %}
+
+{% block body %}
+  <div class="layui-card myCard">
+    <div class="layui-card-header">{{ county.name }}</div>
+    <div class="layui-card-body layui-tab layui-tab-brief">
+      <div id="myForm"></div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+  $(function () {
+    newForm({
+      form: {
+        labelWidth: '100',
+        submit: {
+          event: function (data) {
+            $('[lay-filter="myFormSubmit"]').attr('disabled', true)
+            $('[lay-filter="myFormSubmit"]').addClass('layui-btn-disabled')
+            data.field.intro = encodeURI(data.field.intro)
+            ajax({
+              method: 'POST',
+              url: '/admin/area/county/{{ county.id }}',
+              data: JSON.stringify(data.field),
+              success: function () {
+                layer.msg('修改成功', {time: 2000, icon:6})
+                parent.tableRender()
+                window.setTimeout(function () {parent.layer.close(parent.layer.getFrameIndex(window.name))}, 2000)
+                // window.setTimeout(function () {window.location.href = '/admin/area/county'}, 2000)
+              },
+              fail: function () {
+                $('[lay-filter="myFormSubmit"]').attr('disabled', false)
+                $('[lay-filter="myFormSubmit"]').removeClass('layui-btn-disabled')
+              },
+              error: function () {
+                $('[lay-filter="myFormSubmit"]').attr('disabled', false)
+                $('[lay-filter="myFormSubmit"]').removeClass('layui-btn-disabled')
+              }
+            })
+          }
+        },
+        val: {
+          'name': '{{ county.name }}',
+          'number': '{{ county.number }}',
+          'cityId': '{{ county.city.id }}'
+        },
+        items: [
+          {
+            label: '区县名',
+            elements: {
+              eType: 'input',
+              name: 'name',
+              layVerify: 'required'
+            }
+          },
+          {
+            label: '区县编号',
+            elements: {
+              eType: 'input',
+              name: 'number',
+              layVerify: 'required|number'
+            }
+          },
+          {
+            label: '城市',
+            elements: [
+              {
+                eType: 'char',
+                name: 'cityShow',
+                element: '<div class="layui-form-label"><button type="button" class="inblk layui-btn layui-btn-primary">修改</button></div><div class="layui-input-block cities" style="">{{ county.city.name }}</div>',
+                events: [
+                  {
+                    type: 'delegate',
+                    name: 'click',
+                    query: 'button',
+                    callback: function (e) {
+                      e.preventDefault()
+                      layer.closeAll()
+                      var index = layer.open({
+                        type: 1,
+                        title: '选择城市',
+                        offset: ['5px', '5px'],
+                        skin: 'layui-layer-rim',
+                        area: [(document.body.clientWidth - 20) + 'px', (document.body.clientHeight - 20) + 'px'],
+                        content: '<div id="chooseCity"></div>',
+                        maxmin: true
+                      })
+                      newTable({
+                        parent: '#chooseCity',
+                        type: 'layer',
+                        btns: {
+                          items: [
+                            {
+                              layEvent: 'backCity',
+                              'class': 'layui-btn-normal',
+                              label: '确认选择',
+                              event: function (obj, config, render) {
+                                var data = table.checkStatus(config.id).data
+                                if (data.length === 0) layer.close(index)
+                                else if (data.length > 0) {
+                                  $('[name=cityId]').val(data[0].id)
+                                  $($('[name=city]').children()[0]).html(data[0].name)
+                                  layer.close(index)
+                                }
+                              }
+                            },
+                            {
+                              layEvent: 'cancelCity',
+                              label: '取消',
+                              event: function (obj, config, render) {layer.close(index)}
+                            }
+                          ]
+                        },
+                        search: {
+                          'class': 'selects',
+                          labelWidth: '100',
+                          items: [
+                            {
+                              label: '城市名',
+                              elements: {
+                                eType: 'input',
+                                name: 'name'
+                              }
+                            },
+                            {
+                              label: '城市编号',
+                              elements: {
+                                eType: 'input',
+                                name: 'number'
+                              }
+                            },
+                            {
+                              label: 'ID',
+                              elements: {
+                                eType: 'between',
+                                name: 'id'
+                              }
+                            }
+                          ]
+                        },
+                        table: {
+                          checkboxType: 'radio',
+                          templates: [
+                            {
+                              id: 'p',
+                              content: '[[ d.province.name ]]'
+                            },
+                          ],
+                          config: {
+                            elem: '#city',
+                            url: '/admin/area/city/table',
+                            cols: [
+                              [
+                                {field: 'id', sort: true, title: 'ID', width:100, fixed: 'left', show: false},
+                                {field: 'name', sort: true, title: '城市名'},
+                                {field: 'number', sort: true, title: '城市编号'},
+                                {field: 'provinceId', sort: true, title: '大陆省份', templet: '#p'},
+                              ]
+                            ]
+                          }
+                        }
+                      })
+                    }
+                  }
+                ]
+              },
+              {
+                eType: 'input',
+                name: 'cityId',
+                show: false,
+                layVerify: 'cityRqd'
+              }
+            ]
+          },
+        ],
+        verify: {
+          number: function (value) {
+            if (!(/^\d+$/.test(value))) return '必须为数字'
+          },
+          cityRqd: function (value) {
+            if (value === '') return '城市不能为空'
+          }
+        }
+      }
+    })
+  })
+</script>
+{% endblock %}

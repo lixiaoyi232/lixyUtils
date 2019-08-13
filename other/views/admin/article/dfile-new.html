@@ -1,0 +1,77 @@
+{% extends "../back.html" %}
+
+{% block css %}
+{{ super() }}
+{% endblock %}
+
+{% block body %}
+  <div class="layui-card myCard">
+    <div class="layui-card-header">新建文件下载</div>
+    <div class="layui-card-body layui-tab layui-tab-brief">
+      <div id="myForm"></div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+  $(function () {
+    newForm({
+      form: {
+        labelWidth: '120',
+        submit: {
+          event: function (data) {
+            $('[lay-filter="myFormSubmit"]').attr('disabled', true)
+            $('[lay-filter="myFormSubmit"]').addClass('layui-btn-disabled')
+            data.field.content = encodeURIComponent(data.field.content)
+            ajax({
+              method: 'POST',
+              url: '/admin/article/dfile/new',
+              data: JSON.stringify(data.field),
+              success: function () {
+                layer.msg('新建成功', {time: 2000, icon:6})
+                parent.tableRender()
+                window.setTimeout(function () {parent.layer.close(parent.layer.getFrameIndex(window.name))}, 2000)
+                // window.setTimeout(function () {window.location.href = '/admin/article/article'}, 2000)
+              },
+              fail: function () {
+                $('[lay-filter="myFormSubmit"]').attr('disabled', false)
+                $('[lay-filter="myFormSubmit"]').removeClass('layui-btn-disabled')
+              },
+              error: function () {
+                $('[lay-filter="myFormSubmit"]').attr('disabled', false)
+                $('[lay-filter="myFormSubmit"]').removeClass('layui-btn-disabled')
+              }
+            })
+          }
+        },
+        items: [
+          {
+            label: '标题',
+            elements: {
+              eType: 'input',
+              name: 'title',
+              layVerify: 'required'
+            }
+          },
+          {
+            label: '文件',
+            elements: {
+              eType: 'file',
+              name: 'link',
+              layVerify: 'phtRqd',
+              accept: 'file'
+            }
+          },
+        ],
+        verify: {
+          phtRqd: function (value) {
+            if (value === '') return '文件不能为空'
+          }
+        }
+      }
+    })
+  })
+</script>
+{% endblock %}

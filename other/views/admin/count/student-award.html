@@ -1,0 +1,203 @@
+{% extends "../back.html" %}
+
+{% block css %}
+{{ super() }}
+{% endblock %}
+
+{% block main %}
+  <div class="layui-card myCard">
+    <div class="layui-card-header">学生获奖统计</div>
+    <div class="layui-card-body">
+      <div id="myTable"></div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+  $(function () {
+    var matchs = JSON.parse('{{ JSON.stringify(matchs)|safe }}')
+    var a = [
+      {field: 'id', sort: true, title: 'ID', width:100, align: 'center', fixed: 'left', show: false},
+      {field: 'provinceName', sort: true, title: '大陆省份', width:150, align: 'center', show: false, templet: '#tProvinceName'},
+      {field: 'smemberAccount', sort: true, title: '学校编号', minWidth:140, align: 'center', show: false, templet: '#tSmemberAccount'},
+      {field: 'smemberName', sort: true, title: '学校名称', minWidth:250, align: 'center', templet: '#tSmemberName'},
+      {field: 'memberAccount', sort: true, title: '学生账号', minWidth:140, align: 'center', show: false, templet: '#tMemberAccount'},
+      {field: 'memberName', sort: true, title: '学生姓名', minWidth:140, align: 'center', templet: '#tMemberName'},
+      {field: 'adminAccount', sort: true, title: '管理员', width:120, align: 'center', show: false, templet: '#tAdminAccount'},
+      {field: 'count', title: '获奖次数', width:120, align: 'center'},
+    ]
+
+    var t = {
+      btns: {
+        items: [
+          {
+            layEvent: 'export',
+            'class': 'layui-btn-normal',
+            label: '导出',
+            event: function (obj, config, render) {
+              layer.confirm('确认导出吗？', function(index){
+                window.location = '/admin/count/studentAward/export' + (config.url.split('?')[1] != null ? '?' + config.url.split('?')[1] : '')
+                layer.close(index)
+              })
+            }
+          },
+          'setCols'
+        ]
+      },
+      search: {
+        'class': 'selects',
+        labelWidth: '100',
+        submit: {
+          event: function (data, config, render) {
+            t.table.config.url = config.url
+            var query = config.url.split('?')[1]
+            var queryObj = {}
+            if (query != null) queryObj = queryToObj(query)
+            b = []
+            for (var i in a) if (a.hasOwnProperty(i)) b.push(a[i])
+            if (queryObj.matchNumber != null) {
+              var min = (queryObj.matchNumber.split('*')[0] || 0) * 1
+              var max = (queryObj.matchNumber.split('*')[1] || Infinity) * 1
+              if (min !== 0) t.search.items[2].elements[0].children[0].value = min
+              else t.search.items[2].elements[0].children[0].value = ''
+              if (max !== Infinity) t.search.items[2].elements[0].children[1].value = max
+              else t.search.items[2].elements[0].children[1].value = ''
+              for (var i in matchs) if (matchs.hasOwnProperty(i)) if (matchs[i].number >= min && matchs[i].number <= max) b.push({field: matchs[i].id + '', title: '第' + matchs[i].number + '届', align: 'center'})
+            } else {
+              t.search.items[2].elements[0].children[0].value = ''
+              t.search.items[2].elements[0].children[1].value = ''
+              for (var i = 0; i < 10; i++) if (matchs[i] != null) b.push({field: matchs[i].id + '', title: '第' + matchs[i].number + '届', align: 'center'})
+            }
+            t.search.val = queryObj
+            if (queryObj.memberAccount != null) t.search.items[0].elements[0].value = queryObj.memberAccount
+            t.table.config.cols[0] = b
+            layer.close(config.searchIndex)
+            newTable(t)
+          }
+        },
+        items: [
+          {
+            label: '学校编号',
+            elements: {
+              eType: 'input',
+              name: 'smemberAccount'
+            }
+          },
+          {
+            label: '学校名称',
+            elements: {
+              eType: 'input',
+              name: 'smemberName'
+            }
+          },
+          {
+            label: '届数',
+            elements: {
+              eType: 'between',
+              name: 'matchNumber'
+            }
+          },
+          {
+            label: '大陆省份',
+            elements: {
+              eType: 'select',
+              name: 'provinceId',
+              option: [
+                {value: 'all', label: '&nbsp;'},
+                {% for i in provinces %}
+                {value: '{{ i.id }}', label: '{{ i.name }}'},
+                {% endfor %}
+              ]
+            }
+          },
+          {
+            label: '组别',
+            elements: {
+              eType: 'select',
+              name: 'matchApplyPeriod',
+              option: [
+                {value: 'all', label: '&nbsp;'},
+                {% for i, j in StudentPeriod %}
+                {% if i != 'LiXiao' %}{value: '{{ j }}', label: '{{ j }}'},{% endif %}
+                {% endfor %}
+              ]
+            }
+          },
+          {
+            label: '管理员',
+            elements: {
+              eType: 'select',
+              name: 'adminId',
+              option: [
+                {value: 'all', label: '&nbsp;', selected: true},
+                {% for i in admins %}
+                {value: '{{ i.id }}', label: '{{ i.account }}'},
+                {% endfor %}
+              ]
+            }
+          },
+          {
+            label: '学生账号',
+            elements: {
+              eType: 'input',
+              name: 'memberAccount'
+            }
+          },
+          {
+            label: '学生姓名',
+            elements: {
+              eType: 'input',
+              name: 'memberName'
+            }
+          },
+        ]
+      },
+      table: {
+        templates: [
+          {
+            id: 'tVerifyIn',
+            content: '[[# if (d.verify === \'{{ VerifyStatus.ok }}\') { ]]是[[# } else { ]][[# } ]]'
+          },
+          {
+            id: 'tProvinceName',
+            content: '[[# if (d.member.county != null) { ]][[ d.member.county.city.province.name ]][[# } else { ]][[# } ]]'
+          },
+          {
+            id: 'tSmemberAccount',
+            content: '[[ d.school.member.account ]]'
+          },
+          {
+            id: 'tSmemberName',
+            content: '[[ d.school.member.name ]]'
+          },
+          {
+            id: 'tMemberAccount',
+            content: '[[ d.member.account ]]'
+          },
+          {
+            id: 'tMemberName',
+            content: '[[ d.member.name ]]'
+          },
+          {
+            id: 'tAdminAccount',
+            content: '[[# if (d.school.admin != null) { ]][[ d.school.admin.account ]][[# } else { ]][[# } ]]'
+          },
+        ],
+        config: {
+          elem: '#studentAward',
+          url: '/admin/count/studentAward/table',
+          // page: false,
+          cols: []
+        }
+      }
+    }
+    var b = []
+    for (var i in a) if (a.hasOwnProperty(i)) b.push(a[i])
+    for (var i = 0; i < 10; i++) if (matchs[i] != null) b.push({field: matchs[i].id + '', title: '第' + matchs[i].number + '届', align: 'center'})
+    t.table.config.cols[0] = b
+    newTable(t)
+  })
+</script>
+{% endblock %}

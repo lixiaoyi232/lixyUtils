@@ -1,0 +1,120 @@
+{% extends "../back.html" %}
+
+{% block css %}
+{{ super() }}
+{% endblock %}
+
+{% block body %}
+  <div class="layui-card myCard">
+    <div class="layui-card-header">报名表</div>
+    <div class="layui-card-body layui-tab layui-tab-brief">
+      <div id="myForm"></div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+  $(function () {
+    newForm({
+      form: {
+        labelWidth: '120',
+        submit: {
+          show: false
+        },
+        items: [
+          {
+            label: '大赛',
+            elements: {
+              eType: 'char',
+              name: 'account',
+              element: '<div class="layui-input-block" style="">{{ matchApply.match.name }}</div>'
+            }
+          },
+          {
+            label: '学生账号',
+            elements: {
+              eType: 'char',
+              name: 'account',
+              element: '<div class="layui-input-block" style="">{{ matchApply.account }}</div>'
+            }
+          },
+          {
+            label: '学生姓名',
+            elements: {
+              eType: 'char',
+              name: 'name',
+              element: '<div class="layui-input-block" style="">{{ matchApply.name }}</div>'
+            }
+          },
+          {
+            label: '指导老师账号',
+            elements: {
+              eType: 'char',
+              name: 'teacherAccount',
+              element: '<div class="layui-input-block" style="">{{ matchApply.teacherAccount }}</div>'
+            }
+          },
+          {
+            label: '指导老师姓名',
+            elements: {
+              eType: 'char',
+              name: 'teacherName',
+              element: '<div class="layui-input-block" style="">{{ matchApply.teacherName }}</div>'
+            }
+          },
+          {
+            label: '学段',
+            elements: {
+              eType: 'char',
+              name: 'period',
+              element: '<div class="layui-input-block" style="">{{ matchApply.period }}</div>'
+            }
+          },
+          {
+            label: '学生年级',
+            elements: {
+              eType: 'char',
+              name: 'grade',
+              element: '<div class="layui-input-block" style="">{{ matchApply.grade }}</div>'
+            }
+          },
+          {
+            label: '奖品邮寄地址',
+            elements: {
+              eType: 'char',
+              name: 'address',
+              element: '<div class="layui-input-block" style="">{{ matchApply.address }}</div>'
+            }
+          },
+          {
+            label: '照片',
+            elements: {
+              eType: 'char',
+              name: 'photo',
+              element: '<div class="layui-input-block" style=""><img src="{{ matchApply.photo }}" style="max-width: 100px; max-height: 100px;"></div>'
+            }
+          },
+          {
+            label: '状态',
+            elements: {
+              eType: 'char',
+              name: 'status',
+              element: '<div class="layui-input-block" style="">{{ matchApply.status }}</div>'
+            }
+          },
+          {
+            label: '复议理由',
+            elements: {
+              eType: 'char',
+              name: 'reason',
+              element: '<div class="layui-input-block" style="">{{ matchApply.reason }}</div>'
+            }
+          }
+        ]
+      }
+    })
+  })
+</script>
+{% endblock %}

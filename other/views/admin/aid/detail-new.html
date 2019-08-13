@@ -1,0 +1,239 @@
+{% extends "../back.html" %}
+
+{% block css %}
+{{ super() }}
+{% endblock %}
+
+{% block body %}
+  <div class="layui-card myCard">
+    <div class="layui-card-header">新建资助明细</div>
+    <div class="layui-card-body layui-tab layui-tab-brief">
+      <div id="myForm"></div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+  $(function () {
+    newForm({
+      form: {
+        labelWidth: '120',
+        submit: {
+          event: function (data) {
+            $('[lay-filter="myFormSubmit"]').attr('disabled', true)
+            $('[lay-filter="myFormSubmit"]').addClass('layui-btn-disabled')
+            ajax({
+              method: 'POST',
+              url: '/admin/aid/detail/new',
+              data: JSON.stringify(data.field),
+              success: function () {
+                layer.msg('新建成功', {time: 2000, icon:6})
+                window.setTimeout(function () {parent.tableRender();parent.layer.close(parent.layer.getFrameIndex(window.name))}, 2000)
+                // window.setTimeout(function () {window.location.href = '/admin/aid/aid/' + data.field.aidId + '/detail'}, 2000)
+              },
+              fail: function () {
+                $('[lay-filter="myFormSubmit"]').attr('disabled', false)
+                $('[lay-filter="myFormSubmit"]').removeClass('layui-btn-disabled')
+              },
+              error: function () {
+                $('[lay-filter="myFormSubmit"]').attr('disabled', false)
+                $('[lay-filter="myFormSubmit"]').removeClass('layui-btn-disabled')
+              }
+            })
+          }
+        },
+        val: {
+          'aidId': '{{ aidId }}',
+        },
+        items: [
+          {
+            label: '资助单',
+            elements: [
+              {
+                eType: 'char',
+                name: 'aidShow',
+                element: '<div class="layui-input-block" style="">' +
+                  {% if aidId == '' %}
+                  '请选择资助单' +
+                  {% else %}
+                  '{{ aidId }}' +
+                  {% endif %}
+                  '</div>',
+              },
+              // {
+              //   eType: 'char',
+              //   name: 'aid',
+              //   element: '<button type="button" class="inblk layui-btn layui-btn-primary">修改资助单</button>',
+              //   events: [
+              //     {
+              //       type: 'delegate',
+              //       name: 'click',
+              //       query: 'button',
+              //       callback: function (e) {
+              //         layer.closeAll()
+              //         var index = layer.open({
+              //           type: 1,
+              //           title: '选择资助单',
+              //           offset: ['5px', '5px'],
+              //           skin: 'layui-layer-rim',
+              //           area: [(document.body.clientWidth - 20) + 'px', (document.body.clientHeight - 20) + 'px'],
+              //           content: '<div id="chooseAid"></div>',
+              //           maxmin: true
+              //         })
+              //         newTable({
+              //           parent: '#chooseAid',
+              //           btns: {
+              //             items: [
+              //               {
+              //                 layEvent: 'backAid',
+              //                 'class': 'layui-btn-normal',
+              //                 label: '确认选择',
+              //                 event: function (obj, config, render) {
+              //                   var data = table.checkStatus(config.id).data
+              //                   if (data.length === 0) layer.close(index)
+              //                   else if (data.length > 0) {
+              //                     $('[name=aidId]').val(data[0].id)
+              //                     $($('[name=aidShow]').children()[0]).html(data[0].id)
+              //                     layer.close(index)
+              //                   }
+              //                 }
+              //               },
+              //               {
+              //                 layEvent: 'cancelAid',
+              //                 label: '取消',
+              //                 event: function (obj, config, render) {layer.close(index)}
+              //               }
+              //             ]
+              //           },
+              //           search: {
+              //             'class': 'selects',
+              //             labelWidth: '100',
+              //             items: [
+              //               {
+              //                 label: '状态',
+              //                 elements: {
+              //                   eType: 'select',
+              //                   name: 'status',
+              //                   option: [
+              //                     {value: 'all', label: '&nbsp;'},
+              //                     {% for i, j in AidStatus %}
+              //                     {% if j !== AidStatus.end and j !== AidStatus.cancel %}{value: '{{ j }}', label: '{{ j }}'},{% endif %}
+              //                     {% endfor %}
+              //                   ]
+              //                 }
+              //               },
+              //               {
+              //                 label: 'ID',
+              //                 elements: {
+              //                   eType: 'between',
+              //                   name: 'id'
+              //                 }
+              //               },
+              //               {
+              //                 label: '创建时间',
+              //                 elements: {
+              //                   eType: 'date',
+              //                   name: 'createdTime',
+              //                   range: true,
+              //                 }
+              //               }
+              //             ]
+              //           },
+              //           table: {
+              //             checkboxType: 'radio',
+              //             templates: [
+              //               {
+              //                 id: 'nb',
+              //                 content: '[[ d.aidApply.number ]]'
+              //               },
+              //               {
+              //                 id: 'sn',
+              //                 content: '[[ d.aidApply.name ]]'
+              //               },
+              //               {
+              //                 id: 'n',
+              //                 content: '[[ d.member.name ]]'
+              //               },
+              //             ],
+              //             config: {
+              //               elem: '#aid',
+              //               url: encodeURI('/admin/aid/aid/table?notEnd=完结&notCancel=取消'),
+              //               cols: [
+              //                 [
+              //                   {field: 'id', sort: true, title: 'ID', width:100, fixed: 'left'},
+              //                   {field: 'number', sort: true, title: '申请单号', templet: '#nb'},
+              //                   {field: 'stuName', sort: true, title: '学生', templet: '#sn'},
+              //                   {field: 'status', sort: true, title: '状态'},
+              //                   {field: 'whName', sort: true, title: '爱心团体/人士', templet: '#n'},
+              //                 ]
+              //               ]
+              //             }
+              //           }
+              //         })
+              //         return false
+              //       }
+              //     }
+              //   ]
+              // },
+              {
+                eType: 'input',
+                name: 'aidId',
+                show: false,
+                layVerify: 'aidRqd'
+              }
+            ]
+          },
+          {
+            label: '资助金额',
+            elements: {
+              eType: 'input',
+              type: 'number',
+              name: 'money',
+              layVerify: 'required'
+            }
+          },
+          {
+            label: '资助学期',
+            elements: [
+              {
+                eType: 'date',
+                name: 'semester1',
+                layVerify: 'required',
+                type: 'year'
+              },
+              {
+                eType: 'select',
+                name: 'semester2',
+                layVerify: 'select',
+                option: [
+                  {value: 'null', label: '请选择', selected: true},
+                  {value: '0', label: '3月~7月'},
+                  {value: '1', label: '9月~下一年1月'},
+                ]
+              }
+            ]
+          },
+          {
+            label: '汇款时间',
+            elements: {
+              eType: 'date',
+              name: 'payDate',
+              layVerify: 'required',
+            }
+          }
+        ],
+        verify: {
+          select: function (value) {
+            if (value === '' || value === 'null') return '必填项不能为空'
+          },
+          aidRqd: function (value) {
+            if (value === '') return '资助单不能为空'
+          },
+        }
+      }
+    })
+  })
+</script>
+{% endblock %}

@@ -1,0 +1,64 @@
+{% extends "../back.html" %}
+
+{% block css %}
+{{ super() }}
+{% endblock %}
+
+{% block body %}
+  <div class="layui-card myCard">
+    <div class="layui-card-header">资助明细详情</div>
+    <div class="layui-card-body layui-tab layui-tab-brief">
+      <div id="myForm"></div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+  $(function () {
+    newForm({
+      form: {
+        labelWidth: '120',
+        submit: {
+          show: false
+        },
+        items: [
+          {
+            label: '资助单',
+            elements: {
+              eType: 'char',
+              name: 'aid',
+              element: '<div class="layui-input-block" style="">{{ aidDetail.aid.id }}</div>'
+            }
+          },
+          {
+            label: '资助金额',
+            elements: {
+              eType: 'char',
+              name: 'money',
+              element: '<div class="layui-input-block" style="">{{ aidDetail.money }}</div>'
+            }
+          },
+          {
+            label: '申请学期',
+            elements: {
+              eType: 'char',
+              name: 'semester',
+              element: '<div class="layui-input-block" style="">{{ aidDetail.semester|semester }}</div>'
+            }
+          },
+          {
+            label: '汇款时间',
+            elements: {
+              eType: 'char',
+              name: 'payDate',
+              element: '<div class="layui-input-block" style="">{{ aidDetail.payDate|dateE }}</div>'
+            }
+          }
+        ]
+      }
+    })
+  })
+</script>
+{% endblock %}

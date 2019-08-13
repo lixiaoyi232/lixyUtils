@@ -1,0 +1,188 @@
+{% extends "../back.html" %}
+
+{% block css %}
+{{ super() }}
+{% endblock %}
+
+{% block main %}
+  <div class="layui-card myCard">
+    <div class="layui-card-header">学校大赛统计</div>
+    <div class="layui-card-body">
+      <div id="myTable"></div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+  $(function () {
+    newTable({
+      btns: {
+        items: [
+          'setCols'
+        ]
+      },
+      search: {
+        'class': 'selects',
+        labelWidth: '100',
+        items: [
+          {
+            label: '学校编号',
+            elements: {
+              eType: 'input',
+              name: 'memberAccount'
+            }
+          },
+          {
+            label: '学校名称',
+            elements: {
+              eType: 'input',
+              name: 'memberName'
+            }
+          },
+          {
+            label: '大赛',
+            elements: {
+              eType: 'select',
+              name: 'matchId',
+              option: [
+                {value: 'all', label: '&nbsp;'},
+                {% for i in matchs %}
+                {value: '{{ i.id }}', label: '{{ i.name }}'{% if loop.first %}, selected: true{% endif %}},
+                {% endfor %}
+              ]
+            }
+          },
+          {
+            label: '大陆省份',
+            elements: {
+              eType: 'input',
+              name: 'provinceName'
+              // eType: 'select',
+              // name: 'provinceId',
+              // option: [
+              //   {value: 'all', label: '&nbsp;'},
+              //   {% for i in provinces %}
+              //   {value: '{{ i.id }}', label: '{{ i.name }}'},
+              //   {% endfor %}
+              // ]
+            }
+          },
+          {
+            label: '组别',
+            elements: {
+              eType: 'select',
+              name: 'period',
+              option: [
+                {value: 'all', label: '&nbsp;'},
+                {% for i, j in StudentPeriod %}
+                {% if i != 'LiXiao' %}{value: '{{ j }}', label: '{{ j }}'},{% endif %}
+                {% endfor %}
+              ]
+            }
+          },
+          {
+            label: '管理员',
+            elements: {
+              eType: 'select',
+              name: 'adminId',
+              option: [
+                {value: 'all', label: '&nbsp;', selected: true},
+                {% for i in admins %}
+                {value: '{{ i.id }}', label: '{{ i.account }}'},
+                {% endfor %}
+              ]
+            }
+          },
+          {
+            label: '获奖情况',
+            elements: {
+              eType: 'select',
+              name: 'storyMatchsAward',
+              option: [
+                {value: 'all', label: '&nbsp;', selected: true},
+                {value: 'true', label: '获过奖'},
+              ]
+            }
+          },
+          {
+            label: '时间段',
+            elements: {
+              eType: 'date',
+              name: 'storiesPublishTime',
+              range: true
+            }
+          },
+          {
+            label: '国家及地区',
+            elements: {
+              eType: 'input',
+              name: 'countryName'
+            }
+          },
+        ]
+      },
+      table: {
+        checkboxShow: false,
+        templates: [
+          {
+            id: 'tVerifyIn',
+            content: '[[# if (d.verify === \'{{ VerifyStatus.ok }}\') { ]]是[[# } else { ]][[# } ]]'
+          },
+          {
+            id: 'tCountryName',
+            content: '[[ d.member.country.name ]]'
+          },
+          {
+            id: 'tProvinceName',
+            content: '[[# if (d.member.county != null) { ]][[ d.member.county.city.province.name ]][[# } else { ]][[# } ]]'
+          },
+          {
+            id: 'tMemberAccount',
+            content: '[[ d.member.account ]]'
+          },
+          {
+            id: 'tMemberName',
+            content: '[[ d.member.name ]]'
+          },
+          {
+            id: 'tAdminAccount',
+            content: '[[# if (d.admin != null) { ]][[ d.admin.account ]][[# } else { ]][[# } ]]'
+          },
+        ],
+        config: {
+          elem: '#schoolMatch',
+          url: '/admin/count/schoolMatch/table?matchIdInit={{ match.id }}',
+          cols: [
+            [
+              {field: 'id', sort: true, title: 'ID', width:100, align: 'center', fixed: 'left', show: false},
+              {field: 'memberName', sort: true, title: '学校名称', minWidth:250, align: 'center', templet: '#tMemberName'},
+              {field: 'provinceName', sort: true, title: '大陆省份', width:150, align: 'center', show: false, templet: '#tProvinceName'},
+              {field: 'verifyIn', sort: true, title: '会员学校', width:120, align: 'center', show: false, templet: '#tVerifyIn'},
+              {field: 'memberAccount', sort: true, title: '学校编号', minWidth:140, align: 'center', show: false, templet: '#tMemberAccount'},
+              {field: 'applyStudentCount', title: '报名学生数', width:120, align: 'center'},
+              {field: 'joinStudentCount', title: '参赛学生数', width:120, align: 'center'},
+              {field: 'joinStoryCount', title: '参赛故事数', width:120, align: 'center'},
+              {field: 'firstOKStoryCount', title: '一轮已审核故事数', width:160, align: 'center', show: false},
+              {field: 'matchFirstLine', title: '一轮分数线', width:120, align: 'center', show: false},
+              {field: 'adminAccount', sort: true, title: '管理员', width:120, align: 'center', show: false, templet: '#tAdminAccount'},
+              {field: 'secoudStudentCount', title: '二轮人数', width:100, align: 'center', show: false},
+              {field: 'secoudStoryCount', title: '二轮故事数', width:120, align: 'center', show: false},
+              {field: 'finalStudentCount', title: '复赛人数', width:100, align: 'center'},
+              {field: 'finalStoryCount', title: '复赛故事数', width:120, align: 'center'},
+              {field: 'bjStudentCount', title: '白金奖人数', width:120, align: 'center'},
+              {field: 'jStudentCount', title: '金奖人数', width:100, align: 'center'},
+              {field: 'yStudentCount', title: '银奖人数', width:100, align: 'center'},
+              {field: 'tStudentCount', title: '铜奖人数', width:100, align: 'center'},
+              {field: 'tbStudentCount', title: '优秀奖人数', width:120, align: 'center'},
+              {field: 'zhjStudentCount', title: '总获奖人数', width:120, align: 'center'},
+              {field: 'countryName', sort: true, title: '国家及地区', width:190, align: 'center', templet: '#tCountryName'},
+            ]
+          ]
+        }
+      }
+    })
+  })
+</script>
+{% endblock %}

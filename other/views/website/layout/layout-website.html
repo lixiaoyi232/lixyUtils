@@ -1,0 +1,32 @@
+{% extends "../../base.html" %}
+
+{% block css %}
+<link rel="stylesheet" href="/static/css/website/layui-hack.css">
+<link rel="stylesheet" href="/static/css/website/website.css">
+<style>
+  a {
+    color: #2687a7;
+  }
+  body {
+    font-family: "微软雅黑 Light", "黑体 Regular", "Helvetica Neue", Helvetica, "PingFang SC", Tahoma, Arial, sans-serif;
+  }
+</style>
+{% endblock %}
+
+{% block header %}
+  <title>西部故事</title>
+  <meta name="Keywords" Content="西部故事">
+  <meta name="Description" Content="西部故事">
+{% endblock %}
+
+
+{% block script %}
+<script src="/static/js/componentLib.js"></script>
+<script src="/static/js/formComponent.js"></script>
+<script src="/static/js/tableComponent.js"></script>
+<script>
+  // $(function () {
+  //   $('[lay-verify=required]').after('<span style="color: red; font-size: 14px; line-height: 20px; font-weight: bolder;">＊</span>')
+  // })
+</script>
+{% endblock %}

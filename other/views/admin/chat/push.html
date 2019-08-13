@@ -1,0 +1,273 @@
+{% extends "../back.html" %}
+
+{% block css %}
+{{ super() }}
+{% endblock %}
+
+{% block main %}
+  <div class="layui-card myCard">
+    <div class="layui-card-header">推送</div>
+    <div class="layui-card-body layui-tab layui-tab-brief">
+      <div id="myForm"></div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+  $(function () {
+    newForm({
+      form: {
+        labelWidth: '120',
+        submit: {
+          event: function (data) {
+            if (data.field.allSchool == null && data.field.schoolId === ''{% if curAdmin.isSuperUser or curAdmin.permissions.cht_psh_all %}{% for i in admins %} && data.field.admin{{ i.id }} == null{% endfor %}{% endif %}) {
+              layer.msg('推送对象不能为空', {time: 2000, icon:5, anim: 6})
+              return false
+            }
+            if (data.field.wechat == null && data.field.email == null) {
+              layer.msg('推送方式不能为空', {time: 2000, icon:5, anim: 6})
+              return false
+            }
+            $('[lay-filter="myFormSubmit"]').attr('disabled', true)
+            $('[lay-filter="myFormSubmit"]').addClass('layui-btn-disabled')
+
+            var importfIndex = layer.load(0, {shade: [0.4,'#fff']})
+            ajax({
+              method: 'POST',
+              url: '/admin/chat/push',
+              data: JSON.stringify(data.field),
+              success: function () {
+                $('[lay-filter="myFormSubmit"]').attr('disabled', false)
+                $('[lay-filter="myFormSubmit"]').removeClass('layui-btn-disabled')
+                layer.msg('推送成功', {time: 2000, icon:6})
+                layer.close(importfIndex)
+                // window.setTimeout(function () {window.location.reload()}, 2000)
+              },
+              fail: function () {
+                $('[lay-filter="myFormSubmit"]').attr('disabled', false)
+                $('[lay-filter="myFormSubmit"]').removeClass('layui-btn-disabled')
+              },
+              error: function () {
+                $('[lay-filter="myFormSubmit"]').attr('disabled', false)
+                $('[lay-filter="myFormSubmit"]').removeClass('layui-btn-disabled')
+              }
+            })
+          }
+        },
+        items: [
+          {
+            label: '<span style="color: red; font-size: 14px; line-height: 20px;">＊</span>推送对象',
+            elements: [
+              {
+                eType: 'checkbox',
+                name: 'allSchoolItem',
+                display: 'block',
+                children: [
+                  {title: '全部学校', name: 'allSchool'}
+                ]
+              },
+              {% if curAdmin.isSuperUser or curAdmin.permissions.cht_psh_all %}
+              {
+                eType: 'checkbox',
+                name: 'adminsItem',
+                display: 'block',
+                children: [
+                  {% for i in admins %}
+                  {title: '{{ i.account }}', name: 'admin{{ i.id }}'}{% if not loop.last %},{% endif %}
+                  {% endfor %}
+                ]
+              },
+              {% endif %}
+              {
+                eType: 'char',
+                name: 'schoolShow',
+                element: '<div class="layui-form-label"><button type="button" class="inblk layui-btn layui-btn-primary">添加学校</button></div><div class="layui-input-block schools" style="">请选择学校</div>',
+                events: [
+                  {
+                    type: 'delegate',
+                    name: 'click',
+                    query: '.layui-icon-close',
+                    callback: function () {
+                      $(this).parent().remove()
+                      var val = $('[name=schoolId]').val().split(',')
+                      val.splice(val.indexOf($(this).attr('schid')), 1)
+                      $('[name=schoolId]').val(val.join(','))
+                      if (val.length === 0) $('.schools').html('请选择学校')
+                    }
+                  },
+                  {
+                    type: 'delegate',
+                    name: 'click',
+                    query: 'button',
+                    callback: function (e) {
+                      e.preventDefault()
+                      layer.closeAll()
+                      var index = layer.open({
+                        type: 1,
+                        title: '选择学校',
+                        offset: ['5px', '5px'],
+                        skin: 'layui-layer-rim',
+                        area: [(document.body.clientWidth - 20) + 'px', (document.body.clientHeight - 20) + 'px'],
+                        content: '<div id="chooseSch"></div>',
+                        maxmin: true
+                      })
+                      newTable({
+                        parent: '#chooseSch',
+                        btns: {
+                          items: [
+                            {
+                              layEvent: 'backSch',
+                              'class': 'layui-btn-normal',
+                              label: '确认选择',
+                              event: function (obj, config, render) {
+                                var data = table.checkStatus(config.id).data
+                                var val = $('[name=schoolId]').val().split(',')
+                                if (val[0] === '') val.splice(0, 1)
+                                var html = $('.schools').html().split(' ')
+                                if (html[0] === '请选择学校') html.splice(0, 1)
+                                for (var i in data) {
+                                  if (data.hasOwnProperty(i)) {
+                                    val.push(data[i].school.id)
+                                    html.push('<span class="layui-badge layui-bg-blue" style="margin-right: 10px;">ID:' + data[i].school.id + '-' + data[i].name + '<i class="layui-icon layui-icon-close" style="font-size: 12px;" schid="' + data[i].school.id + '"></i></span>')
+                                  }
+                                }
+                                $('[name=schoolId]').val(val.join(','))
+                                $('.schools').html(html.join(' '))
+                                layer.close(index)
+                              }
+                            },
+                            {
+                              layEvent: 'cancelSch',
+                              label: '取消',
+                              event: function (obj, config, render) {layer.close(index)}
+                            }
+                          ]
+                        },
+                        search: {
+                          'class': 'selects',
+                          labelWidth: '100',
+                          items: [
+                            {
+                              label: '学校编号',
+                              elements: {
+                                eType: 'input',
+                                name: 'account'
+                              }
+                            },
+                            {
+                              label: '学校名称',
+                              elements: {
+                                eType: 'input',
+                                name: 'name'
+                              }
+                            },
+                            {
+                              label: '学段',
+                              elements: {
+                                eType: 'select',
+                                name: 'period',
+                                option: [
+                                  {value: 'all', label: '&nbsp;', selected: true},
+                                  {% for i, j in StudentPeriod %}
+                                  {% if i != 'LiXiao' %}{value: '{{ j }}', label: '{{ j }}'},{% endif %}
+                                  {% endfor %}
+                                ]
+                              }
+                            },
+                          ]
+                        },
+                        table: {
+                          templates: [
+                            {
+                              id: 'schId',
+                              content: '[[ d.school.id ]]'
+                            },
+                            {
+                              id: 'n',
+                              content: '<a onClick="openWindow(\'/admin/member/school/[[ d.id ]]/info\')" style="cursor: pointer;">[[ d.name ]]</a>'
+                            },
+                            {
+                              id: 'pv',
+                              content: '[[ d.county.city.province.name ]]'
+                            }
+                          ],
+                          config: {
+                            elem: '#school',
+                            url: '/admin/member/school/table?notId=' + ($('[name=schoolId]').val() !== '' ? $('[name=schoolId]').val() : 'null')
+                            {% if not curAdmin.isSuperUser and not curAdmin.permissions.cht_psh_all and curAdmin.permissions.cht_psh_area %}
+                            + '&adminId={{ curAdmin.id }}'
+                            {% endif %}
+                            ,
+                            cols: [
+                              [
+                                {field: 'id', sort: true, title: 'ID', width:100, fixed: 'left', templet: '#schId', show: false},
+                                {field: 'account', sort: true, title: '学校编号'},
+                                {field: 'name', sort: true, title: '学校名称', templet: '#n'},
+                                {field: 'provinceName', sort: true, title: '所在地区', templet: '#pv'},
+                              ]
+                            ],
+                          }
+                        }
+                      })
+                    }
+                  }
+                ]
+              },
+              {
+                eType: 'input',
+                name: 'schoolId',
+                show: false,
+              }
+            ]
+          },
+          {
+            label: '<span style="color: red; font-size: 14px; line-height: 20px;">＊</span>推送方式',
+            elements: {
+              eType: 'checkbox',
+              name: 'wayItem',
+              display: 'block',
+              children: [
+                {title: '微信号', name: ' wechat'},
+                {title: 'Email', name: ' email'}
+              ]
+            }
+          },
+          {
+            label: '推送主题',
+            elements: {
+              eType: 'input',
+              name: 'subject',
+              display: 'block',
+              layVerify: 'required'
+            }
+          },
+          {
+            label: '推送内容',
+            elements: {
+              eType: 'textarea',
+              name: 'content',
+              display: 'block',
+              layVerify: 'required'
+            }
+          },
+          {
+            label: '附件',
+            elements: {
+              eType: 'file',
+              name: 'files',
+              accept: 'file'
+            }
+          },
+        ],
+        verify: {
+          select: function (value) {
+            if (value === '' || value === 'null') return '必填项不能为空'
+          },
+        }
+      }
+    })
+  })
+</script>
+{% endblock %}

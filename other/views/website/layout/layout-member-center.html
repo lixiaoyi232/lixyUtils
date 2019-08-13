@@ -1,0 +1,322 @@
+{% extends "./layout-headerfooter.html" %}
+
+
+{% block css %}
+{{super()}}
+  <link rel="stylesheet" href="/static/css/admin/back.css">
+  <link rel="stylesheet" href="/static/css/website/member-center.css">
+  <style>
+    .banner {
+      position: relative;
+      height: 438px;
+      background-size: cover;
+      background-position: center center;
+      background-attachment: scroll;
+      background-image: url('{{ webConfig.memberCenterBannerImg }}')
+    }
+    @media only screen and (max-width: 767px) {
+      .banner {
+        height: 300px;
+      }
+    }
+    .mc-info {
+      position: relative;
+      padding-top: 110px;
+      background-color: white;
+      text-align: center;
+    }
+    .photo-background {
+      background-color: white;
+      position: absolute;
+      top: -110px;
+      left: 0;
+      right: 0;
+      margin: 0 auto;
+      width: 220px;
+      height: 220px;
+      border-radius: 110px;
+    }
+    .photo-background img {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      width: 200px;
+      height: 200px;
+      border-radius: 100px;
+    }
+    .mc-info .name {
+      font-size: 32px;
+    }
+    .mc-info .info a {
+      color: #CFCFCF
+    }
+    .mc-info .info a:hover {
+      color: #b0d562
+    }
+    .mc-info .btn {
+      margin-top: 30px;
+    }
+
+    .mc-menu {
+      margin-top: 30px;
+      text-align: center;
+    }
+    .mc-menu li {
+      position: relative;
+      display: inline-block;
+      font-size: 18px;
+      padding: 0 10px 10px 10px;
+    }
+    .mc-menu li a {
+      color: #797979;
+    }
+    .mc-menu .selected a {
+      color: #CFCFCF;
+    }
+    .mc-menu .bar {
+      position: absolute;
+      left: 0;
+      right: 0;
+      margin: 0 auto;
+      bottom: 0;
+      background-color: black;
+      width: 20px;
+      height: 3px;
+    }
+    .mc-submenu {
+      border-top: thin solid #eeeeee;
+      text-align: center;
+      position: absolute;
+      width: 100%;
+      background-color: #FAFAFA;
+      z-index: 100;
+      /* height: 50px; */
+      padding: 10px 0;
+    }
+    .mc-submenu li {
+      display: inline-block;
+      margin: 0 20px;
+      font-size: 15px;
+      padding: 10px 0;
+    }
+    .mc-submenu li a {
+      color: #797979;
+    }
+    .mc-submenu .selected a {
+      color: #CFCFCF;
+    }
+    .mc-submenu li a:hover{
+      color: #7DC434;
+    }
+
+    .mc-mainbg {
+      background-color: #F4F4F4;
+      padding: 20px 0;
+    }
+    .mc-main {
+      min-height: 400px;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 10px;
+      position: relative;
+      /* background-color: white; */
+    }
+    @media only screen and (max-width: 991px) {
+      .mc-main {
+        max-width: 600px;
+      }
+    }
+    @media only screen and (max-width: 767px) {
+      .mc-main {
+        max-width: 400px;
+      }
+    }
+
+  </style>
+{% endblock %}
+
+{% block main %}
+  <div class="banner">
+  </div>
+  <div class="mc-info">
+    <div class="photo-background">
+      <a name="photo"></a>
+      <img src="{% if curMember.avatar %}{{curMember.avatar}}{% else %}
+      {% if curMember.type === MemberType.student %}
+      /static/images/website/face1.jpg
+      {% elseif curMember.type === MemberType.teacher %}
+      /static/images/website/face2.jpg
+      {% elseif curMember.type === MemberType.school %}
+      /static/images/website/face3.jpg
+      {% elseif curMember.type === MemberType.whPerson or curMember.type === MemberType.whGroup %}
+      /static/images/website/face4.jpg
+      {% else %}
+      /static/images/website/face.jpg
+      {% endif %}
+      {% endif %}">
+    </div>
+    <div class="name">{{curMember.nickName}}</div>
+    {% if curMember.type === MemberType.student %}
+    <div class="info"><a href="/member/{{curMember.student.school.member.id}}">{{curMember.student.school.member.nickName}}</a></div>
+    {% elseif curMember.type === MemberType.teacher %}
+    <div class="info"><a href="/member/{{curMember.teacher.school.member.id}}">{{curMember.teacher.school.member.nickName}}</a></div>
+    {% elseif curMember.type === MemberType.whPerson %}
+    <div class="info"><a href="/member/{{curMember.whPerson.group.member.id}}">{{curMember.whPerson.group.member.nickName}}</a></div>
+    {% elseif curMember.type === MemberType.school or curMember.type === MemberType.whGroup%}
+    <div class="info"><a href="/member/{{curMember.id}}">{{curMember.nickName}}</a></div>
+    {% endif %}
+    <a href="/member-center/story/new?_next={{encodedUrl}}" class="btn-green btn">创作故事</a>
+  </div>
+  <ul class="mc-menu">
+    <li data-name="info" class="{% if mcMenu == 'info'%}selected{% endif %}">
+      <a href="javascript:;">用户中心{% if curMember.notReadNoti > 0 %}<span class="layui-badge-dot"></span>{% endif %}</a>
+      <div class="bar" style="display: none" m-if="menuName === 'info'"></div>
+    </li>
+
+    {% if curMember.type != MemberType.other %}
+    <li data-name="story" class="{% if mcMenu == 'story'%}selected{% endif %}">
+      <a href="javascript:;">故事</a>
+      <div class="bar" style="display: none" m-if="menuName === 'story'"></div>
+    </li>
+    {% endif %}
+
+    {% if curMember.type == MemberType.student or curMember.type == MemberType.teacher or curMember.type == MemberType.school %}
+    <li data-name="match" class="{% if mcMenu == 'project'%}selected{% endif %}">
+      <a href="/member-center/match-apply#photo">征文大赛</a>
+      <div class="bar" style="display: none" m-if="menuName === 'match'"></div>
+    </li>
+    {% endif %}
+
+    {% if curMember.type == MemberType.whGroup or curMember.type == MemberType.whPerson %}
+    <li data-name="aid" class="{% if mcMenu == 'aid'%}selected{% endif %}">
+      <a href="javascript:;">助学项目</a>
+      <div class="bar" style="display: none" m-if="menuName === 'aid'"></div>
+    </li>
+    {% endif %}
+
+    {% if (curMember.type == MemberType.school and curMember.school.verify == VerifyStatus.ok) or (curMember.type == MemberType.student and curMember.student.aidApplies.length > 0) %}
+    <li data-name="aid" class="{% if mcMenu == 'aid'%}selected{% endif %}">
+      <a href="/member-center/aid-apply#photo">助学项目</a>
+      <div class="bar" style="display: none" m-if="menuName === 'aid'"></div>
+    </li>
+    {% endif %}
+
+    {% if curMember.type == MemberType.school %}
+    <li data-name="management" class="{% if mcMenu == 'management'%}selected{% endif %}">
+      <a href="javascript:;">用户管理</a>
+      <div class="bar" style="display: none" m-if="menuName === 'management'"></div>
+    </li>
+    {% endif %}
+
+    {% if curMember.type == MemberType.whGroup %}
+    <li data-name="groupManagement" class="{% if mcMenu == 'management'%}selected{% endif %}">
+      <a href="/member-center/management/whPerson#photo">团体用户管理</a>
+      <div class="bar" style="display: none" m-if="menuName === 'groupManagement'"></div>
+    </li>
+    {% endif %}
+
+    {% if curMember.type == MemberType.school %}
+    <li data-name="daily" class="{% if mcMenu == 'daily'%}selected{% endif %}">
+      <a href="javascript:;">日常事务</a>
+      <div class="bar" style="display: none" m-if="menuName === 'daily'"></div>
+    </li>
+    {% endif %}
+
+    <!-- <li>本校故事</li> -->
+
+    {% if curMember.type == MemberType.school %}
+    <li data-name="kwt" class="{% if mcMenu == 'chat'%}selected{% endif %}">
+      <a href="/member-center/a-chat#photo">跨网通{% if curMember.notReadChat > 0 %}<span class="layui-badge-dot"></span>{% endif %}</a>
+      <div class="bar" style="display: none" m-if="menuName === 'kwt'"></div>
+    </li>
+    {% endif %}
+  </ul>
+
+  <!-- 用户中心 -->
+  <ul class="mc-submenu" data-name="info" style="display: none" m-if="menuName === 'info'">
+    <li class="{% if mcSubMenu == 'info'%}selected{% endif %}"><a href="/member-center/info#photo">个人设置</a></li>
+    <li class="{% if mcSubMenu == 'follow'%}selected{% endif %}"><a href="/member-center/info-follow#photo">我的关注</a></li>
+    <li class="{% if mcSubMenu == 'followed'%}selected{% endif %}"><a href="/member-center/info-followed#photo">关注我的</a></li>
+    <li class="{% if mcSubMenu == 'notification'%}selected{% endif %}"><a href="/member-center/notification#photo">系统消息{% if curMember.notReadNoti > 0 %}<span class="layui-badge">{{ curMember.notReadNoti if curMember.notReadNoti < 100 else "99+" }}</span>{% endif %}</a></li>
+    <li class="{% if mcSubMenu == 'message'%}selected{% endif %}"><a href="/member-center/message#photo">私信</a></li>
+  </ul>
+  <!-- 故事 -->
+  <ul class="mc-submenu" data-name="story" style="display: none" m-if="menuName === 'story'">
+    <li class="{% if mcSubMenu == 'story'%}selected{% endif %}"><a href="/member-center/story#photo">我的故事</a></li>
+    <li class="{% if mcSubMenu == 'comment'%}selected{% endif %}"><a href="/member-center/story-comment#photo">我的评论</a></li>
+    <li class="{% if mcSubMenu == 'commented'%}selected{% endif %}"><a href="/member-center/story-commented#photo">收到的评论</a></li>
+    <li class="{% if mcSubMenu == 'favorite'%}selected{% endif %}"><a href="/member-center/story-favorite#photo">我的收藏</a></li>
+    <li class="{% if mcSubMenu == 'praise'%}selected{% endif %}"><a href="/member-center/story-praise#photo">我的赞</a></li>
+  </ul>
+  <!-- 助学项目 -->
+  <ul class="mc-submenu" data-name="aid" style="display: none" m-if="menuName === 'aid'">
+    <!-- <li class="{% if mcSubMenu == 'aidApply'%}selected{% endif %}"><a href="/member-center/aid-apply#photo">助学申请</a></li> -->
+    {% if curMember.type == MemberType.whPerson or curMember.type == MemberType.whGroup %}
+    <li class="{% if mcSubMenu == 'aidApply'%}selected{% endif %}"><a href="/member-center/aid-apply#photo">待助申请</a></li>
+    <li class="{% if mcSubMenu == 'aid'%}selected{% endif %}"><a href="/member-center/aid#photo">资助进展</a></li>
+    {% if curMember.type == MemberType.whGroup %}
+    <li class="{% if mcSubMenu == 'aidp'%}selected{% endif %}"><a href="/member-center/people-aids#photo">成员进展</a></li>
+    {% endif %}
+    {% endif %}
+  </ul>
+  <!-- 用户管理 -->
+  <ul class="mc-submenu" data-name="management" style="display: none" m-if="menuName === 'management'">
+    <li class="{% if mcSubMenu == 'student'%}selected{% endif %}"><a href="/member-center/management/student#photo">学生</a></li>
+    <li class="{% if mcSubMenu == 'teacher'%}selected{% endif %}"><a href="/member-center/management/teacher#photo">老师</a></li>
+  </ul>
+  <!-- 日常事务 -->
+  <ul class="mc-submenu" data-name="daily" style="display: none" m-if="menuName === 'daily'">
+    {% if curMember.school.verify == VerifyStatus.ok %}
+    <li class="{% if mcSubMenu == 'annunciate'%}selected{% endif %}"><a href="/member-center/daily/annunciate#photo">通告栏</a></li>
+    {% endif %}
+    <li class="{% if mcSubMenu == 'survey'%}selected{% endif %}"><a href="/member-center/survey#photo">问卷调查</a></li>
+    <li class="{% if mcSubMenu == 'dfile'%}selected{% endif %}"><a href="/member-center/daily/dfile#photo">文件下载</a></li>
+  </ul>
+  <!-- 跨网通 -->
+  <ul class="mc-submenu" data-name="kwt" style="display: none" m-if="menuName === 'kwt'">
+    <li class="{% if mcSubMenu == 'chat'%}selected{% endif %}"><a href="/member-center/chat#photo">群聊</a></li>
+    <li class="{% if mcSubMenu == 'aChat'%}selected{% endif %}"><a href="/member-center/a-chat#photo">单聊{% if curMember.notReadChat > 0 %}<span class="layui-badge">{{ curMember.notReadChat if curMember.notReadChat < 100 else "99+" }}</span>{% endif %}</a></li>
+  </ul>
+
+  <div class="mc-mainbg">
+    <div class="mc-main">
+      {% block member_center_main %}
+      {% endblock %}
+    </div>
+  </div>
+
+
+{% endblock %}
+
+{% block script %}
+{{super()}}
+<script>
+  var menuName = null
+  $(function() {
+    $('.mc-menu>li').hover(
+      function() {
+        var $mcmli = $(this)
+        $mcmli.addClass('hovered')
+        menuName = $mcmli.data('name')
+        mIfRender()
+      },
+      function() {
+        var $mcmli = $(this)
+        $mcmli.removeClass('hovered')
+        menuName = null
+        mIfRender()
+      }
+    )
+    $('.mc-submenu').hover(
+      function() {
+        menuName = $(this).data('name')
+        mIfRender()
+      },
+      function() {
+        menuName = null
+        mIfRender()
+      }
+    )
+  })
+</script>
+{% endblock %}

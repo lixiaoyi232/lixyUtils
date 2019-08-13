@@ -1,0 +1,180 @@
+{% extends "../back.html" %}
+
+{% block css %}
+{{ super() }}
+{% endblock %}
+
+{% block body %}
+  <div class="layui-card myCard">
+    <div class="layui-card-header">{{ match.name }}</div>
+    <div class="layui-card-body layui-tab layui-tab-brief">
+      <div id="myForm"></div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+  $(function () {
+    newForm({
+      form: {
+        labelWidth: '140',
+        submit: {
+          event: function (data) {
+            $('[lay-filter="myFormSubmit"]').attr('disabled', true)
+            $('[lay-filter="myFormSubmit"]').addClass('layui-btn-disabled')
+            ajax({
+              method: 'POST',
+              url: '/admin/match/match/{{ match.id }}',
+              data: JSON.stringify(data.field),
+              success: function () {
+                layer.msg('修改成功', {time: 2000, icon:6})
+                parent.tableRender()
+                window.setTimeout(function () {parent.layer.close(parent.layer.getFrameIndex(window.name))}, 2000)
+                // window.setTimeout(function () {window.location.href = '/admin/match/match'}, 2000)
+              },
+              fail: function () {
+                $('[lay-filter="myFormSubmit"]').attr('disabled', false)
+                $('[lay-filter="myFormSubmit"]').removeClass('layui-btn-disabled')
+              },
+              error: function () {
+                $('[lay-filter="myFormSubmit"]').attr('disabled', false)
+                $('[lay-filter="myFormSubmit"]').removeClass('layui-btn-disabled')
+              }
+            })
+          }
+        },
+        val: {
+          'name': '{{ match.name }}',
+          'info': '{{ match.info }}',
+          'number': '{{ match.number }}',
+          'matchApply': '{{ match.matchApplyStart|dateE }} - {{ match.matchApplyEnd|dateE(-24*3600*1000) }}',
+          'story': '{{ match.storyStart|dateE }} - {{ match.storyEnd|dateE(-24*3600*1000) }}',
+          'firstVerify': '{{ match.firstVerifyStart|dateE }} - {{ match.firstVerifyEnd|dateE(-24*3600*1000) }}',
+          'secondVerify': '{{ match.secondVerifyStart|dateE }} - {{ match.secondVerifyEnd|dateE(-24*3600*1000) }}',
+          'finalStory': '{{ match.finalStoryStart|dateE }} - {{ match.finalStoryEnd|dateE(-24*3600*1000)}}',
+          'finalVerify': '{{ match.finalVerifyStart|dateE }} - {{ match.finalVerifyEnd|dateE(-24*3600*1000) }}',
+          'matchEnd': '{{ match.matchEnd|dateE }}',
+          'firstLine': '{{ match.firstLine }}',
+          'secondLine': '{{ match.secondLine }}',
+        },
+        items: [
+          {
+            label: '大赛名称',
+            elements: {
+              eType: 'input',
+              name: 'name',
+              layVerify: 'required'
+            }
+          },
+          {
+            label: '大赛说明',
+            elements: {
+              eType: 'input',
+              name: 'info',
+              display: 'block',
+              layVerify: 'required'
+            }
+          },
+          {
+            label: '大赛届数',
+            elements: {
+              eType: 'input',
+              name: 'number',
+              layVerify: 'required',
+              type: 'number'
+            }
+          },
+          {
+            label: '报名时间',
+            elements: {
+              eType: 'date',
+              name: 'matchApply',
+              layVerify: 'required',
+              range: true
+            }
+          },
+          {
+            label: '创作初赛故事时间',
+            elements: {
+              eType: 'date',
+              name: 'story',
+              layVerify: 'required',
+              range: true
+            }
+          },
+          {
+            label: '一审时间',
+            elements: {
+              eType: 'date',
+              name: 'firstVerify',
+              layVerify: 'required',
+              range: true
+            }
+          },
+          {
+            label: '二审时间',
+            elements: {
+              eType: 'date',
+              name: 'secondVerify',
+              layVerify: 'required',
+              range: true
+            }
+          },
+          {
+            label: '创作复赛故事时间',
+            elements: {
+              eType: 'date',
+              name: 'finalStory',
+              layVerify: 'required',
+              range: true
+            }
+          },
+          {
+            label: '复赛审核时间',
+            elements: {
+              eType: 'date',
+              name: 'finalVerify',
+              layVerify: 'required',
+              range: true
+            }
+          },
+          {
+            label: '大赛结束时间',
+            elements: {
+              eType: 'date',
+              name: 'matchEnd',
+              layVerify: 'required',
+            }
+          },
+          {
+            label: '二审分数线',
+            elements: {
+              eType: 'input',
+              name: 'firstLine',
+              type: 'number',
+              layVerify: 'required'
+            }
+          },
+          {
+            label: '复赛分数线',
+            elements: {
+              eType: 'input',
+              name: 'secondLine',
+              type: 'number',
+              layVerify: 'required'
+            }
+          },
+        ],
+        verify: {
+          // dateRange: function (value) {
+          //   var arr = value.split(' - ')
+          //   if ((new Date(arr[0])).valueOf() > (new Date(arr[1])).valueOf()) return '日期范围不正确'
+          // }
+        }
+      }
+    })
+  })
+</script>
+{% endblock %}

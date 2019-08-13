@@ -1,0 +1,274 @@
+{% extends "../back.html" %}
+
+{% block css %}
+{{ super() }}
+<style>
+  html {
+    overflow: hidden;
+  }
+</style>
+{% endblock %}
+
+{% block main %}
+  <div class="layui-card myCard">
+    <div class="layui-card-header">前台学校用户管理</div>
+    <div class="layui-card-body">
+      <div id="myTable"></div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+  $(function () {
+    newTable({
+      btns: {
+        items: [
+          {% if curAdmin.isSuperUser or curAdmin.permissions.mem_sch_a %}
+          'new',
+          {% endif %}
+          {% if curAdmin.isSuperUser or curAdmin.permissions.mem_sch_d %}
+          'dels',
+          {% endif %}
+          'setCols'
+        ]
+      },
+      search: {
+        'class': 'selects',
+        labelWidth: '100',
+        items: [
+          {
+            label: '会员学校',
+            elements: {
+              eType: 'select',
+              name: 'schoolVerifyIn',
+              option: [
+                {value: 'all', label: '&nbsp;', selected: true},
+                {value: '{{ VerifyStatus.ok }}', label: '是'},
+                {value: '{{ VerifyStatus.wait }},{{ VerifyStatus.no }}', label: '否'},
+              ]
+            }
+          },
+          {
+            label: '学校类型',
+            elements: {
+              eType: 'select',
+              name: 'schoolType',
+              option: [
+                {value: 'all', label: '&nbsp;', selected: true},
+                {% for i, j in SchoolType %}
+                {value: '{{ j }}', label: '{{ j }}'},
+                {% endfor %}
+              ]
+            }
+          },
+          {
+            label: '学校编号',
+            elements: {
+              eType: 'input',
+              name: 'account'
+            }
+          },
+          {
+            label: '学校名称',
+            elements: {
+              eType: 'input',
+              name: 'name'
+            }
+          },
+          {
+            label: '联系人姓名',
+            elements: {
+              eType: 'input',
+              name: 'contactName'
+            }
+          },
+          {
+            label: '联系手机',
+            elements: {
+              eType: 'input',
+              name: 'phoneNumber'
+            }
+          },
+          {
+            label: '管理员',
+            elements: {
+              eType: 'select',
+              name: 'adminId',
+              option: [
+                {value: 'all', label: '&nbsp;', selected: true},
+                {% for i in admins %}
+                {value: '{{ i.id }}', label: '{{ i.account }}'},
+                {% endfor %}
+              ]
+            }
+          },
+          {
+            label: '大陆省份',
+            elements: {
+              eType: 'input',
+              name: 'provinceName'
+            }
+          },
+          {
+            label: '城市',
+            elements: {
+              eType: 'input',
+              name: 'cityName'
+            }
+          },
+          {
+            label: '区县',
+            elements: {
+              eType: 'input',
+              name: 'countyName'
+            }
+          },
+          {
+            label: '注册时间',
+            elements: {
+              eType: 'date',
+              name: 'createdTime',
+              range: true
+            }
+          }
+          // {
+          //   label: 'ID',
+          //   elements: {
+          //     eType: 'between',
+          //     name: 'id'
+          //   }
+          // },
+        ]
+      },
+      table: {
+        tool: {
+          items: [
+            {% if curAdmin.isSuperUser or curAdmin.permissions.mem_sch_old %}
+            {
+              layEvent: 'old',
+              label: '往期',
+              event: function (obj, config, render) {
+                // window.location.href = '/admin/member/school/' + obj.data.school.id + '/old'
+                window.tableRender = render
+                layer.open({
+                  type: 2,
+                  title: '往期学生',
+                  shade: 0.8,
+                  area: ['90%', '90%'],
+                  content: '/admin/member/school/' + obj.data.school.id + '/old'
+                })
+              }
+            },
+            {% endif %}
+            {% if curAdmin.isSuperUser or curAdmin.permissions.mem_sch_g %}
+            'info',
+            {% endif %}
+            {% if curAdmin.isSuperUser or curAdmin.permissions.mem_sch_u %}
+            'edit',
+            {% endif %}
+            {% if curAdmin.isSuperUser or curAdmin.permissions.mem_sch_d %}
+            'del',
+            {% endif %}
+            {% if curAdmin.isSuperUser %}
+            {
+              layEvent: 'verify',
+              label: '审核',
+              'class': '[[# if(d.school.verify === \'{{ VerifyStatus.ok }}\'){ ]] none[[#  } ]]',
+              event: function (obj, config, render) {
+                // window.location.href = window.location.pathname + '/' + obj.data.id + '/verify'
+                var path = config.url.split('?')[0]
+                path = (path[path.length - 1] === '/' ? path.slice(0, path.length - 6) : (path.slice(0, path.length - 5)))
+                window.tableRender = render
+                layer.open({
+                  type: 2,
+                  title: '审核',
+                  shade: 0.8,
+                  area: ['90%', '90%'],
+                  content: path + obj.data.id + '/verify'
+                })
+              }
+            }
+            {% endif %}
+          ]
+        },
+        // lineStyle: [
+        //   {
+        //     condition: 'd.school.verify === \'{{ VerifyStatus.wait }}\'',  // res: table请求的返回值，curr:当前页码，count:数据总数，d:当前行数据
+        //     style: {
+        //       color: 'red',
+        //       backgroundColor: '#dff',
+        //       height: 200
+        //     }
+        //   }
+        // ],
+        templates: [
+          {
+            id: 'tSchoolVerifyIn',
+            content: '[[ d.school.verify === \'{{ VerifyStatus.ok }}\' ? \'是\' : \'否\' ]]'
+          },
+          {
+            id: 'tSchoolType',
+            content: '[[ d.school.type != null ? d.school.type : \'\' ]]'
+          },
+          {
+            id: 'tAdminAccount',
+            content: '[[ d.school.admin != null ? d.school.admin.account : \'\' ]]'
+          },
+          {
+            id: 'tProvinceName',
+            content: '[[ d.county.city.province.name ]]'
+          },
+          {
+            id: 'tCityName',
+            content: '[[ d.county.city.name ]]'
+          },
+          {
+            id: 'tCountyName',
+            content: '[[ d.county.name ]]'
+          },
+          {
+            id: 'tAvatar',
+            content: '[[# if (d.avatar) { ]]<a href="[[ d.avatar ]]" style="cursor: pointer;" target="_blank"><img class="tableImg" src="[[ d.avatar ]]"></a>[[# } ]]'
+          },
+          {
+            id: 'tIsComplemented',
+            content: '[[# if (d.isComplemented) { ]]是[[# } else { ]]否[[# } ]]'
+          },
+          {
+            id: 'tCreatedTime',
+            content: '[[ dateFormat(d.createdTime, \'YYYY-MM-DD HH:mm:ss\') ]]'
+          }
+        ],
+        config: {
+          elem: '#school',
+          url: '/admin/member/school/table',
+          cols: [
+            [
+              {field: 'id', title: 'ID', align: 'center', show: false, sort: true, width: 100, fixed: 'left'},
+              {field: 'name', title: '学校名称', align: 'center', sort: true, minWidth: 250, fixed: 'left'},
+              {field: 'account', title: '学校编号', align: 'center', sort: true, minWidth: 140},
+              {field: 'schoolType', sort: true, title: '学校类型', width:100, align: 'center', templet: '#tSchoolType'},
+              {field: 'adminAccount', title: '管理员', align: 'center', sort: true, minWidth: 100, templet: '#tAdminAccount'},
+              {field: 'contactName', title: '联系人', align: 'center', sort: true, minWidth: 140},
+              {field: 'phoneNumber', title: '联系手机', align: 'center', sort: true, width: 120},
+              {field: 'email', title: 'Email', align: 'center', sort: true, minWidth: 180},
+              {field: 'createdTime', title: '注册时间', align: 'center', sort: true, width: 180, templet: '#tCreatedTime'},
+              {field: 'wechat', title: '微信号', align: 'center', sort: true, minWidth: 140},
+              {field: 'qq', title: 'QQ', align: 'center', sort: true, minWidth: 140},
+              {field: 'provinceName', title: '大陆省份', align: 'center', sort: true, minWidth: 150, templet: '#tProvinceName'},
+              {field: 'cityName', title: '城市', align: 'center', sort: true, minWidth: 190, templet: '#tCityName'},
+              {field: 'countyName', title: '区县', align: 'center', sort: true, minWidth: 250, templet: '#tCountyName'},
+              {field: 'schoolVerifyIn', sort: true, title: '会员学校', width:100, align: 'center', templet: '#tSchoolVerifyIn'},
+              {field: 'avatar', title: '头像', align: 'center', show: false, sort: true, width: 80, templet: '#tAvatar'},
+              {field: 'isComplemented', title: '完善信息', align: 'center', show: false, sort: true, width: 100, templet: '#tIsComplemented'},
+              {align: 'center', width: 210, fixed: 'right', toolbar: '#operation'}
+            ]
+          ]
+        }
+      }
+    })
+  })
+</script>
+{% endblock %}

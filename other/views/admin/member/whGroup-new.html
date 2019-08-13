@@ -1,0 +1,278 @@
+{% extends "../back.html" %}
+
+{% block css %}
+{{ super() }}
+{% endblock %}
+
+{% block body %}
+  <div class="layui-card myCard">
+    <div class="layui-card-header">新建爱心团体</div>
+    <div class="layui-card-body layui-tab layui-tab-brief">
+        <div id="myForm"></div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+  $(function () {
+    newForm({
+      form: {
+        labelWidth: '100',
+        submit: {
+          event: function (data) {
+            $('[lay-filter="myFormSubmit"]').attr('disabled', true)
+            $('[lay-filter="myFormSubmit"]').addClass('layui-btn-disabled')
+            data.field.intro = encodeURIComponent(data.field.intro)
+            ajax({
+              method: 'POST',
+              url: '/admin/member/whGroup/new',
+              data: JSON.stringify(data.field),
+              success: function () {
+                layer.msg('新建爱心团体成功', {time: 2000, icon:6})
+                parent.tableRender()
+                window.setTimeout(function () {parent.layer.close(parent.layer.getFrameIndex(window.name))}, 2000)
+                // window.setTimeout(function () {window.location.href = '/admin/member/whGroup'}, 2000)
+              },
+              fail: function () {
+                $('[lay-filter="myFormSubmit"]').attr('disabled', false)
+                $('[lay-filter="myFormSubmit"]').removeClass('layui-btn-disabled')
+              },
+              error: function () {
+                $('[lay-filter="myFormSubmit"]').attr('disabled', false)
+                $('[lay-filter="myFormSubmit"]').removeClass('layui-btn-disabled')
+              }
+            })
+          }
+        },
+        val: {
+          'country': '1'
+        },
+        items: [
+          {
+            label: '用户名',
+            elements: {
+              eType: 'input',
+              name: 'account',
+              layVerify: 'required'
+            }
+          },
+          {
+            label: '用户类型',
+            elements: {
+              eType: 'char',
+              name: 'type',
+              element: '<div class="layui-input-block" style="">爱心团体</div>'
+            }
+          },
+          {
+            label: '密码',
+            elements: {
+              eType: 'input',
+              type: 'password',
+              name: 'password',
+              layVerify: 'required|pass'
+            }
+          },
+          {
+            label: '确认密码',
+            elements: {
+              eType: 'input',
+              type: 'password',
+              name: 'confirmPassword',
+              layVerify: 'same'
+            }
+          },
+          {
+            label: '团体名称',
+            elements: {
+              eType: 'input',
+              name: 'name',
+              layVerify: 'required'
+            }
+          },
+          {
+            label: '联系人姓名',
+            elements: {
+              eType: 'input',
+              name: 'contactName',
+              layVerify: 'required'
+            }
+          },
+          {
+            label: '联系手机',
+            elements: {
+              eType: 'input',
+              name: 'phoneNumber',
+              layVerify: 'required|phone'
+            }
+          },
+          {
+            label: 'Email',
+            elements: {
+              eType: 'input',
+              name: 'email',
+              layVerify: 'required|email'
+            }
+          },
+          {
+            label: '联系人微信号',
+            elements: {
+              eType: 'input',
+              name: 'wechat',
+              layVerify: ''
+            }
+          },
+          {
+            label: '联系人QQ',
+            elements: {
+              eType: 'input',
+              name: 'qq',
+              layVerify: ''
+            }
+          },
+          {
+            label: '头像',
+            elements: {
+              eType: 'file',
+              name: 'avatar',
+              layVerify: ''
+            }
+          },
+          {
+            label: '简介',
+            elements: {
+              eType: 'textarea',
+              name: 'intro',
+              layVerify: ''
+            }
+          },
+          {
+            label: '国家及地区',
+            elements: {
+              eType: 'select',
+              name: 'country',
+              layVerify: 'select',
+              laySearch: true,
+              option: [
+                {value: 'null', label: '请选择', selected: true},
+                {% for country in countries %}
+                {value: '{{ country.number }}', label: '{{ country.name }}'},
+                {% endfor %}
+              ],
+              events: [
+                {
+                  name: 'laySelect',
+                  callback: function (data) {
+                    if (data.value === '1') {
+                      $('[name=province]').parents('[m-if]').attr('m-if', 'true')
+                      $('[name=areaDetail]').parents('[m-if]').attr('m-if', 'false')
+                      mIfRender()
+                    } else {
+                      $('[name=province]').parents('[m-if]').attr('m-if', 'false')
+                      $('[name=areaDetail]').parents('[m-if]').attr('m-if', 'true')
+                      mIfRender()
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          {
+            label: '地址',
+            elements: [
+              {
+                eType: 'select',
+                name: 'province',
+                layVerify: 'place',
+                option: [
+                  {value: 'null', label: '请选择', selected: true},
+                  {% for province in provinces %}
+                  {value: '{{ province.id }}', label: '{{ province.name }}'},
+                  {% endfor %}
+                ],
+                events: [
+                  {
+                    name: 'laySelect',
+                    callback: function (data) {
+                      if (data.value !== '' && data.value !== 'null') ajax({
+                        method: 'GET',
+                        url: '/shared/city/json?provinceId=' + data.value,
+                        success: function (res) {
+                          var opts = '<option value="null" selected>请选择</option>'
+                          for (var i in res) if (res.hasOwnProperty(i)) opts += '<option value="' + res[i].id + '">' + res[i].name + '</option>'
+                          $('[name=city]').html(opts)
+                          $('[name=county]').html('<option value="null" selected>请选择</option>')
+                          form.render('select')
+                        }
+                      })
+                    }
+                  }
+                ]
+              },
+              {
+                eType: 'select',
+                name: 'city',
+                layVerify: 'place',
+                option: [
+                  {value: 'null', label: '请选择', selected: true},
+                ],
+                events: [
+                  {
+                    name: 'laySelect',
+                    callback: function (data) {
+                      if (data.value !== '' && data.value !== 'null') ajax({
+                        method: 'GET',
+                        url: '/shared/county/json?cityId=' + data.value,
+                        success: function (res) {
+                          var opts = '<option value="null" selected>请选择</option>'
+                          for (var i in res) if (res.hasOwnProperty(i)) opts += '<option value="' + res[i].id + '">' + res[i].name + '</option>'
+                          $('[name=county]').html(opts)
+                          form.render('select')
+                        }
+                      })
+                    }
+                  }
+                ]
+              },
+              {
+                eType: 'select',
+                name: 'county',
+                layVerify: 'place',
+                option: [
+                  {value: 'null', label: '请选择', selected: true},
+                ],
+              }
+            ]
+          },
+          {
+            label: '地区',
+            show: false,
+            elements: {
+              eType: 'input',
+              name: 'areaDetail',
+              layVerify: 'areaDetail'
+            }
+          },
+        ],
+        verify: {
+          pass: [/(.+){6,20}$/, '密码必须6到20位'],
+          same: function (value) {
+            if (value !== $('[name=password]').val()) return '确认密码必须和密码一致'
+          },
+          select: function (value) {
+            if (value === '' || value === 'null') return '国家及地区不能为空'
+          },
+          place: function (value) {
+            if ($('[name=country]').val() === '1' && (value === '' || value === 'null' || value == null)) return '地址不能为空'
+          },
+          areaDetail: function (value) {
+            if ($('[name=country]').val() !== '1' && value === '') return '地区不能为空'
+          }
+        }
+      }
+    })
+  })
+</script>
+{% endblock %}

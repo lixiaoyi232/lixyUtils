@@ -1,0 +1,100 @@
+{% extends "../back.html" %}
+
+{% block css %}
+{{ super() }}
+<style>
+  html {
+    overflow: hidden;
+  }
+</style>
+{% endblock %}
+
+{% block body %}
+  <div class="layui-card myCard">
+    <div class="layui-card-header">往期学校</div>
+    <div class="layui-card-body">
+      <div id="myTable"></div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+  $(function () {
+    newTable({
+      btns: {
+        items: [
+          {% if curAdmin.isSuperUser or curAdmin.permissions.mem_std_old_a %}
+          {
+            layEvent: 'new',
+            event: function (obj, config, render) {
+              var path = config.url.split('?')[0]
+              path = (path[path.length - 1] === '/' ? path.slice(0, path.length - 6) : (path.slice(0, path.length - 5)))
+              // window.location.href = path + 'new'
+              window.tableRender = render
+              layer.open({
+                type: 2,
+                title: '新建',
+                shade: 0.8,
+                area: ['90%', '90%'],
+                content: path + 'new?studentId={{ studentId }}'
+              })
+            }
+          },
+          {% endif %}
+          {% if curAdmin.isSuperUser or curAdmin.permissions.mem_std_old_d %}
+          'dels',
+          {% endif %}
+          'setCols'
+        ]
+      },
+      table: {
+        tool: {
+          items: [
+            {% if curAdmin.isSuperUser or curAdmin.permissions.mem_std_old_u %}
+            'edit',
+            {% endif %}
+            {% if curAdmin.isSuperUser or curAdmin.permissions.mem_std_old_d %}
+            'del',
+            {% endif %}
+          ]
+        },
+        templates: [
+          {
+            id: 'tSchoolAccount',
+            content: '[[ d.school != null ? d.school.member.account : \'\' ]]'
+          },
+          {
+            id: 'tSchoolName',
+            content: '[[ d.school != null ? d.school.member.name : \'\' ]]'
+          },
+          {
+            id: 'tStudentAccount',
+            content: '[[ d.student.member.account ]]'
+          },
+          {
+            id: 'tStudentName',
+            content: '[[ d.student.member.name ]]'
+          },
+        ],
+        config: {
+          elem: '#old',
+          url: '/admin/member/old/table?studentId={{ studentId }}',
+          cols: [
+            [
+              {field: 'id', title: 'ID', align: 'center', show: false, sort: true, width: 100, fixed: 'left'},
+              {field: 'schoolName', title: '学校名称', align: 'center', sort: true, minWidth: 250, templet: '#tSchoolName'},
+              {field: 'studentName', title: '学生姓名', align: 'center', sort: true, minWidth: 140, templet: '#tStudentName'},
+              {field: 'yearOfEnrollment', title: '入学年份', align: 'center', sort: true, width: 100},
+              {field: 'period', title: '学段', align: 'center', sort: true, width: 100},
+              {field: 'class', title: '班级', align: 'center', sort: true, width: 100},
+              {align: 'center', width: 120, fixed: 'right', toolbar: '#operation'}
+            ]
+          ]
+        }
+      }
+    })
+  })
+</script>
+{% endblock %}

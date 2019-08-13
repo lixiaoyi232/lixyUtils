@@ -1,0 +1,246 @@
+{% extends "../back.html" %}
+
+{% block css %}
+{{ super() }}
+<style>
+  html {
+    overflow: hidden;
+  }
+</style>
+{% endblock %}
+
+{% block main %}
+  <div class="layui-card myCard">
+    <div class="layui-card-header">学生钱款类查询</div>
+    <div class="layui-card-body">
+      <div id="myTable"></div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+  $(function () {
+    newTable({
+      btns: {
+        items: [
+          {
+            layEvent: 'export',
+            'class': 'layui-btn-normal',
+            label: '导出',
+            event: function (obj, config, render) {
+              layer.confirm('确认导出吗？', function(index){
+                window.location = '/admin/count/money/export' + (config.url.split('?')[1] != null ? '?' + config.url.split('?')[1] : '')
+                layer.close(index)
+              })
+            }
+          },
+          'setCols',
+        ]
+      },
+      search: {
+        'class': 'selects',
+        labelWidth: '100',
+        submit: {
+          event: function (data, config, render) {
+            var queryObj = {aidDetails_semester: '', own_semesterDate: ''}
+            if (data.field.semesterDate !== '') {
+              var semesterArr = data.field.semesterDate.split('___')
+              semesterArr[0] = new Date(semesterArr[0] * 1)
+              semesterArr[1] = new Date(semesterArr[1] * 1)
+              queryObj.aidDetails_semester = ((semesterArr[0].getMonth() ? semesterArr[0].getFullYear() : (semesterArr[0].getFullYear() - 1)) * 2 + (semesterArr[0].getMonth() >= 1 && semesterArr[0].getMonth() <= 6 ? 0 : 1)) + '*' + ((semesterArr[1].getMonth() ? semesterArr[1].getFullYear() : (semesterArr[1].getFullYear() - 1)) * 2 + (semesterArr[1].getMonth() >= 1 && semesterArr[1].getMonth() <= 6 ? 0 : 1))
+            }
+            if (data.field.own_semesterDate !== '') {
+              var apsemesterArr = data.field.own_semesterDate.split('___')
+              apsemesterArr[0] = new Date(apsemesterArr[0] * 1)
+              apsemesterArr[1] = new Date(apsemesterArr[1] * 1)
+              queryObj.own_semester = ((apsemesterArr[0].getMonth() ? apsemesterArr[0].getFullYear() : (apsemesterArr[0].getFullYear() - 1)) * 2 + (apsemesterArr[0].getMonth() >= 1 && apsemesterArr[0].getMonth() <= 6 ? 0 : 1)) + '*' + ((apsemesterArr[1].getMonth() ? apsemesterArr[1].getFullYear() : (apsemesterArr[1].getFullYear() - 1)) * 2 + (apsemesterArr[1].getMonth() >= 1 && apsemesterArr[1].getMonth() <= 6 ? 0 : 1))
+            }
+            config.url = setQuery(config.url, queryObj)
+            render(config)
+          }
+        },
+        items: [
+          {
+            label: '大陆省份',
+            elements: {
+              eType: 'input',
+              name: 'own_provinceName'
+            }
+          },
+          {
+            label: '学校名称',
+            elements: {
+              eType: 'input',
+              name: 'own_schoolName'
+            }
+          },
+          {
+            label: '学生姓名',
+            elements: {
+              eType: 'input',
+              name: 'own_name'
+            }
+          },
+          {
+            label: '申请学期',
+            elements: {
+              eType: 'date',
+              name: 'own_semesterDate',
+              type: 'month',
+              range: true,
+            }
+          },
+          {
+            label: '申请单状态',
+            elements: {
+              eType: 'select',
+              name: 'own_status',
+              option: [
+                {value: 'all', label: '&nbsp;'},
+                {% for i, j in AidApplyStatus %}
+                {value: '{{ j }}', label: '{{ j }}'},
+                {% endfor %}
+              ]
+            }
+          },
+          {
+            label: '年级',
+            elements: {
+              eType: 'input',
+              name: 'own_grade'
+            }
+          },
+          {
+            label: '开户人',
+            elements: {
+              eType: 'input',
+              name: 'own_bankUser'
+            }
+          },
+          {
+            label: '开户行',
+            elements: {
+              eType: 'input',
+              name: 'own_bank'
+            }
+          },
+          {
+            label: '开户账号',
+            elements: {
+              eType: 'input',
+              name: 'own_bankNumber'
+            }
+          },
+          {
+            label: '资助人姓名',
+            elements: {
+              eType: 'input',
+              name: 'member_name'
+            }
+          },
+          {
+            label: '资助人账号',
+            elements: {
+              eType: 'input',
+              name: 'member_account'
+            }
+          },
+          {
+            label: '资助金额',
+            elements: {
+              eType: 'between',
+              name: 'aidDetails_money'
+            }
+          },
+          {
+            label: '资助学期',
+            elements: {
+              eType: 'date',
+              name: 'semesterDate',
+              type: 'month',
+              range: true,
+            }
+          },
+          {
+            label: '资助状态',
+            elements: {
+              eType: 'select',
+              name: 'aids_status',
+              option: [
+                {value: 'all', label: '&nbsp;'},
+                {% for i, j in AidStatus %}
+                {value: '{{ j }}', label: '{{ j }}'},
+                {% endfor %}
+              ]
+            }
+          },
+          {
+            label: '学校编号',
+            elements: {
+              eType: 'input',
+              name: 'own_schoolAccount'
+            }
+          },
+          {
+            label: '学生账号',
+            elements: {
+              eType: 'input',
+              name: 'own_account'
+            }
+          },
+        ]
+      },
+      table: {
+        // tool: {
+        //   items: [
+        //   ]
+        // },
+        templates: [
+          {
+            id: 'tAidDetails_semester',
+            content: '[[ semester(d.aidDetails_semester) ]]'
+          },
+          {
+            id: 'tOwn_semester',
+            content: '[[ semester(d.own_semester) ]]'
+          },
+        ],
+        config: {
+          elem: '#aidDetail',
+          url: '/admin/count/money/table',
+          cols: [
+            [
+              {field: 'own_id', title: 'ID', align: 'center', show: false, sort: true, width: 100, fixed: 'left'},
+              {field: 'own_provinceName', title: '大陆省份', align: 'center', sort: true, minWidth: 150},
+              {field: 'own_schoolName', title: '学校名称', align: 'center', sort: true, minWidth: 250},
+              {field: 'own_name', title: '学生姓名', align: 'center', sort: true, minWidth: 140},
+              {field: 'own_semester', title: '申请学期', align: 'center', sort: true, minWidth: 180, templet: '#tOwn_semester'},
+              {field: 'own_status', title: '申请单状态', align: 'center', sort: true, width: 120},
+              {field: 'own_grade', title: '年级', align: 'center', sort: true, width: 80},
+              {field: 'own_birthday', title: '生日', align: 'center', sort: true, width: 120},
+              {field: 'own_bankUser', title: '开户人', align: 'center', sort: true, minWidth: 140},
+              {field: 'own_bank', title: '开户行', align: 'center', sort: true, minWidth: 140},
+              {field: 'own_bankNumber', title: '开户账号', align: 'center', sort: true, minWidth: 160},
+              {field: 'member_name', title: '资助人姓名', align: 'center', sort: true, minWidth: 140},
+              {field: 'aidDetails_money', title: '资助金额', align: 'center', sort: true, minWidth: 100},
+              {field: 'aidDetails_semester', title: '资助学期', align: 'center', sort: true, minWidth: 180, templet: '#tAidDetails_semester'},
+              {field: 'aids_status', title: '资助状态', align: 'center', sort: true, width: 120},
+              {field: 'member_account', title: '资助人账号', align: 'center', sort: true, minWidth: 140},
+              {field: 'own_schoolAccount', title: '学校编号', align: 'center', sort: true, minWidth: 140},
+              {field: 'own_account', title: '学生账号', align: 'center', sort: true, minWidth: 140},
+              {field: 'own_gender', title: '性别', align: 'center', sort: true, width: 80},
+
+
+
+
+              // {align: 'center', width: 180, fixed: 'right', toolbar: '#operation'}
+            ]
+          ]
+        }
+      }
+    })
+  })
+</script>
+{% endblock %}

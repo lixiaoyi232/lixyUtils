@@ -1,0 +1,184 @@
+{% extends "../back.html" %}
+
+{% block css %}
+{{ super() }}
+<style>
+  html {
+    overflow: hidden;
+  }
+</style>
+{% endblock %}
+
+{% block main %}
+  <div class="layui-card myCard">
+    <div class="layui-card-header">前台老师用户管理</div>
+    <div class="layui-card-body">
+      <div id="myTable"></div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+  $(function () {
+    newTable({
+      btns: {
+        items: [
+          {% if curAdmin.isSuperUser or curAdmin.permissions.mem_tch_a %}
+          'new',
+          {% endif %}
+          {% if curAdmin.isSuperUser or curAdmin.permissions.mem_tch_d %}
+          'dels',
+          {% endif %}
+          'setCols'
+        ]
+      },
+      search: {
+        'class': 'selects',
+        labelWidth: '100',
+        items: [
+          {
+            label: '大陆省份',
+            elements: {
+              eType: 'input',
+              name: 'provinceName',
+            }
+          },
+          {
+            label: '会员学校',
+            elements: {
+              eType: 'select',
+              name: 'schoolVerifyIn',
+              option: [
+                {value: 'all', label: '&nbsp;', selected: true},
+                {value: '{{ VerifyStatus.ok }}', label: '是'},
+                {value: '{{ VerifyStatus.wait }},{{ VerifyStatus.no }}', label: '否'},
+              ]
+            }
+          },
+          {
+            label: '老师账号',
+            elements: {
+              eType: 'input',
+              name: 'account'
+            }
+          },
+          {
+            label: '老师姓名',
+            elements: {
+              eType: 'input',
+              name: 'name'
+            }
+          },
+          {
+            label: '身份证号',
+            elements: {
+              eType: 'input',
+              name: 'idCard'
+            }
+          },
+          {
+            label: '学校编号',
+            elements: {
+              eType: 'input',
+              name: 'schoolAccount'
+            }
+          },
+          {
+            label: '学校名称',
+            elements: {
+              eType: 'input',
+              name: 'schoolName'
+            }
+          },
+          {
+            label: '联系手机',
+            elements: {
+              eType: 'input',
+              name: 'phoneNumber'
+            }
+          },
+        ]
+      },
+      table: {
+        tool: {
+          items: [
+            {% if curAdmin.isSuperUser or curAdmin.permissions.mem_tch_g %}
+            'info',
+            {% endif %}
+            {% if curAdmin.isSuperUser or curAdmin.permissions.mem_tch_u %}
+            'edit',
+            {% endif %}
+            {% if curAdmin.isSuperUser or curAdmin.permissions.mem_tch_d %}
+            'del'
+            {% endif %}
+          ]
+        },
+        templates: [
+          {
+            id: 'tProvinceName',
+            content: '[[ d.county.city.province.name ]]'
+          },
+          {
+            id: 'tSchoolVerifyIn',
+            content: '[[# if (d.teacher.school.verify === \'{{ VerifyStatus.ok }}\') { ]]是[[# } else { ]]否[[# } ]]'
+          },
+          {
+            id: 'tSchoolAccount',
+            content: '[[ d.teacher.school.member.account ]]'
+          },
+          {
+            id: 'tSchoolName',
+            content: '[[ d.teacher.school.member.name ]]'
+          },
+          {
+            id: 'tAvatar',
+            content: '[[# if (d.avatar) { ]]<a href="[[ d.avatar ]]" style="cursor: pointer;" target="_blank"><img class="tableImg" src="[[ d.avatar ]]"></a>[[# } ]]'
+          },
+          {
+            id: 'tIsComplemented',
+            content: '[[# if (d.isComplemented) { ]]是[[# } else { ]]否[[# } ]]'
+          },
+          {
+            id: 'tTeacherAddress',
+            content: '[[ d.teacher.address != null ? d.teacher.address : \'\' ]]'
+          },
+          {
+            id: 'tCreatedTime',
+            content: '[[ dateFormat(d.createdTime, \'YYYY-MM-DD HH:mm:ss\') ]]'
+          },
+        ],
+        config: {
+          elem: '#teacher',
+          url: '/admin/member/teacher/table',
+          cols: [
+            [
+              {field: 'id', title: 'ID', align: 'center', show: false, sort: true, width: 100, fixed: 'left'},
+              {field: 'name', title: '老师姓名', align: 'center', sort: true, minWidth: 140, fixed: 'left'},
+              {field: 'account', title: '老师账号', align: 'center', sort: true, minWidth: 140},
+              {field: 'nickName', title: '老师昵称', align: 'center', sort: true, minWidth: 140},
+              {field: 'schoolName', title: '学校名称', align: 'center', sort: true, minWidth: 250, templet: '#tSchoolName'},
+              {field: 'phoneNumber', title: '联系手机', align: 'center', sort: true, width: 140},
+              {field: 'createdTime', title: '注册时间', align: 'center', sort: true, width: 180, templet: '#tCreatedTime'},
+              {field: 'schoolAccount', title: '学校编号', align: 'center', sort: true, minWidth: 140, templet: '#tSchoolAccount'},
+              {field: 'email', title: 'Email', align: 'center', sort: true, minWidth: 180},
+              {field: 'qq', title: 'QQ', align: 'center', sort: true, minWidth: 140},
+              {field: 'wechat', title: '微信号', align: 'center', sort: true, minWidth: 140},
+              {field: 'gender', title: '性别', align: 'center', sort: true, width: 80},
+              {field: 'provinceName', title: '大陆省份', align: 'center', sort: true, minWidth: 150, templet: '#tProvinceName'},
+              {field: 'nation', title: '民族', align: 'center', sort: true, width: 80},
+              {field: 'avatar', title: '头像', align: 'center', sort: true, width: 80, templet: '#tAvatar'},
+              {field: 'teacherAddress', title: '地址', align: 'center', sort: true, minWidth: 120, templet: '#tTeacherAddress'},
+              {field: 'schoolVerifyIn', title: '会员学校', align: 'center', show: false, sort: true, width:100, templet: '#tSchoolVerifyIn'},
+              {field: 'idCard', title: '身份证号', align: 'center', show: false, sort: true, width: 180},
+              {field: 'isComplemented', title: '完善信息', align: 'center', show: false, sort: true, width: 100, templet: '#tIsComplemented'},
+              {align: 'center', width: 150, fixed: 'right', toolbar: '#operation'}
+            ]
+          ]
+        }
+      }
+    })
+  })
+</script>
+{% endblock %}

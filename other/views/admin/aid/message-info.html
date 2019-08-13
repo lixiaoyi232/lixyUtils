@@ -1,0 +1,97 @@
+{% extends "../back.html" %}
+
+{% block css %}
+{{ super() }}
+{% endblock %}
+
+{% block body %}
+  <div class="layui-card myCard">
+    <div class="layui-card-header">资助留言详情</div>
+    <div class="layui-card-body layui-tab layui-tab-brief">
+      <div id="myForm"></div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+  $(function () {
+    newForm({
+      form: {
+        labelWidth: '120',
+        submit: {
+          show: false
+        },
+        items: [
+          {
+            label: '资助明细',
+            elements: {
+              eType: 'char',
+              name: 'aidId',
+              element: '<div class="layui-input-block" style="">{{ aidMessage.aidDetail.id }}</div>'
+            }
+          },
+          {
+            label: '回复人',
+            elements: {
+              eType: 'char',
+              name: 'memberId',
+              element: '<div class="layui-input-block" style="">{{ aidMessage.member.name }}</div>'
+            }
+          },
+          {
+            label: '回复类型',
+            elements: {
+              eType: 'char',
+              name: 'type',
+              element: '<div class="layui-input-block" style="">{{ aidMessage.type }}</div>'
+            }
+          },
+          {
+            label: '主题',
+            elements: {
+              eType: 'char',
+              name: 'subject',
+              element: '<div class="layui-input-block" style="">{{ aidMessage.subject }}</div>'
+            }
+          },
+          {
+            label: '内容',
+            elements: {
+              eType: 'char',
+              name: 'content',
+              diaplay: 'block',
+              element: '<div class="layui-input-block" style=""><pre>' + decodeURIComponent('{{ aidMessage.content }}') + '</pre></div>'
+            }
+          },
+          {
+            label: '图片1',
+            elements: {
+              eType: 'char',
+              name: 'img1',
+              element: '<div class="layui-input-block" style=""><img src="{{ aidMessage.img1 }}" style="max-width: 400px; max-height: 300px;"></div>'
+            }
+          },
+          {
+            label: '图片2',
+            elements: {
+              eType: 'char',
+              name: 'img2',
+              element: '<div class="layui-input-block" style=""><img src="{{ aidMessage.img2 }}" style="max-width: 400px; max-height: 300px;"></div>'
+            }
+          },
+          {
+            label: '图片3',
+            elements: {
+              eType: 'char',
+              name: 'img3',
+              element: '<div class="layui-input-block" style=""><img src="{{ aidMessage.img3 }}" style="max-width: 400px; max-height: 300px;"></div>'
+            }
+          },
+        ]
+      }
+    })
+  })
+</script>
+{% endblock %}

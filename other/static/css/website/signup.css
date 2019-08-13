@@ -1,0 +1,55 @@
+.layui-nav-tree .layui-this, .layui-nav-tree .layui-this>a, .layui-nav-tree .layui-nav-child dd.layui-this, .layui-nav-tree .layui-nav-child dd.layui-this a, .layui-form-select .layui-this, .layui-laypage-curr .layui-laypage-em {
+  background-color: #7DC434!important;
+}
+.layui-laypage a:hover, .layui-btn-group .layui-btn-primary:hover {
+  color: #7DC434!important;
+}
+.layui-laypage input:focus, .layui-laypage select:focus, .layui-input:hover, .layui-textarea:hover, .layui-btn-primary:hover {
+  border-color: #7DC434!important;
+}
+.bd {
+  border: solid 1px black;
+}
+.signup-body {
+  width: 100%;
+  min-height: 100%;
+}
+.signup-block {
+  width: 300px;
+  margin: 0 auto;
+}
+.signup-title {
+  line-height: 20px;
+  font-size: 14px;
+  color: #1c2438;
+  padding: 20px 0px;
+  vertical-align: middle;
+}
+.back-home, .signup-name, .back-login {
+  display: inline-block;
+  margin: 0;
+  width: 32%;
+}
+.signup-name {
+  text-align: center;
+}
+.back-home, .back-login {
+  color: #999;
+  font-size: 12px;
+}
+.back-login {
+  text-align: right;
+}
+#signup-from {
+  padding: 20px;
+}
+.form-item {
+  margin: 20px 0px;
+}
+.form-item .layui-input, .form-item .layui-select {
+  border-radius: 5px;
+}
+.signup-form-button button {
+  border-radius: 5px;
+  background-color: #7DC434;
+}

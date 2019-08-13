@@ -1,0 +1,491 @@
+{% extends "../back.html" %}
+
+{% block css %}
+{{ super() }}
+{% endblock %}
+
+{% block body %}
+  <div class="layui-card myCard">
+    <div class="layui-card-header">新建学生</div>
+    <div class="layui-card-body layui-tab layui-tab-brief">
+      <div id="myForm"></div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+  $(function () {
+    newForm({
+      form: {
+        labelWidth: '100',
+        submit: {
+          event: function (data) {
+            $('[lay-filter="myFormSubmit"]').attr('disabled', true)
+            $('[lay-filter="myFormSubmit"]').addClass('layui-btn-disabled')
+            data.field.intro = encodeURI(data.field.intro)
+            ajax({
+              method: 'POST',
+              url: '/admin/member/student/new',
+              data: JSON.stringify(data.field),
+              success: function () {
+                layer.msg('新建学生成功', {time: 2000, icon:6})
+                parent.tableRender()
+                window.setTimeout(function () {parent.layer.close(parent.layer.getFrameIndex(window.name))}, 2000)
+                // window.setTimeout(function () {window.location.href = '/admin/member/student'}, 2000)
+              },
+              fail: function () {
+                $('[lay-filter="myFormSubmit"]').attr('disabled', false)
+                $('[lay-filter="myFormSubmit"]').removeClass('layui-btn-disabled')
+              },
+              error: function () {
+                $('[lay-filter="myFormSubmit"]').attr('disabled', false)
+                $('[lay-filter="myFormSubmit"]').removeClass('layui-btn-disabled')
+              }
+            })
+          }
+        },
+        val: {
+          'class': '1',
+          'grade': '1'
+        },
+        items: [
+          {
+            label: '用户名',
+            elements: {
+              eType: 'input',
+              name: 'account',
+              layVerify: 'required'
+            }
+          },
+          {
+            label: '用户类型',
+            elements: {
+              eType: 'char',
+              name: 'type',
+              element: '<div class="layui-input-block" style="">学生</div>'
+            }
+          },
+          {
+            label: '密码',
+            elements: {
+              eType: 'input',
+              type: 'password',
+              name: 'password',
+              layVerify: 'required|pass'
+            }
+          },
+          {
+            label: '确认密码',
+            elements: {
+              eType: 'input',
+              type: 'password',
+              name: 'confirmPassword',
+              layVerify: 'same'
+            }
+          },
+          {
+            label: '真实姓名',
+            elements: {
+              eType: 'input',
+              name: 'name',
+              layVerify: 'required'
+            }
+          },
+          // {
+          //   label: '昵称',
+          //   elements: {
+          //     eType: 'input',
+          //     name: 'nickName',
+          //     layVerify: 'required'
+          //   }
+          // },
+          {
+            label: '性别',
+            elements: {
+              eType: 'select',
+              name: 'gender',
+              layVerify: 'select',
+              option: [
+                {value: 'null', label: '请选择', selected: true},
+                {% for i, j in Gender %}
+                {value: '{{ j }}', label: '{{ j }}'},
+                {% endfor %}
+              ],
+            }
+          },
+          {
+            label: '民族',
+            elements: {
+              eType: 'input',
+              name: 'nation',
+              layVerify: ''
+            }
+          },
+          {
+            label: '简介',
+            elements: {
+              eType: 'textarea',
+              name: 'intro',
+              layVerify: ''
+            }
+          },
+          {
+            label: '联系手机',
+            elements: {
+              eType: 'input',
+              name: 'phoneNumber',
+              layVerify: 'required|phone'
+            }
+          },
+          {
+            label: 'Email',
+            elements: {
+              eType: 'input',
+              name: 'email',
+              layVerify: ''
+            }
+          },
+          {
+            label: '微信号',
+            elements: {
+              eType: 'input',
+              name: 'wechat',
+              layVerify: ''
+            }
+          },
+          {
+            label: 'QQ',
+            elements: {
+              eType: 'input',
+              name: 'qq',
+              layVerify: ''
+            }
+          },
+          {
+            label: '头像',
+            elements: {
+              eType: 'file',
+              name: 'avatar',
+              layVerify: ''
+            }
+          },
+          {
+            label: '身份证号',
+            elements: {
+              eType: 'input',
+              name: 'idCard',
+              layVerify: 'required'
+            }
+          },
+          {
+            label: '学校',
+            elements: [
+              {
+                eType: 'char',
+                name: 'schoolShow',
+                element: '<div class="layui-form-label"><button type="button" class="inblk layui-btn layui-btn-primary">修改学校</button></div><div class="layui-input-block schools" style="">选择学校</div>',
+                events: [
+                  {
+                    type: 'delegate',
+                    name: 'click',
+                    query: 'button',
+                    callback: function (e) {
+                      var index = layer.open({
+                        type: 1,
+                        title: '选择学校',
+                        offset: ['5px', '5px'],
+                        skin: 'layui-layer-rim',
+                        area: [(document.body.clientWidth - 20) + 'px', (document.body.clientHeight - 20) + 'px'],
+                        content: '<div id="chooseSch"></div>',
+                        maxmin: true
+                      })
+                      newTable({
+                        parent: '#chooseSch',
+                        btns: {
+                          items: [
+                            {
+                              layEvent: 'backSch',
+                              'class': 'layui-btn-normal',
+                              label: '确认选择',
+                              event: function (obj, config, render) {
+                                var data = table.checkStatus(config.id).data
+                                if (data.length === 0) layer.close(index)
+                                else if (data.length > 0) {
+                                  $('[name=schoolId]').val(data[0].school.id)
+                                  $('.schools').html(data[0].name)
+                                  layer.close(index)
+                                }
+                              }
+                            },
+                            {
+                              layEvent: 'cancelSch',
+                              label: '取消',
+                              event: function (obj, config, render) {layer.close(index)}
+                            }
+                          ]
+                        },
+                        search: {
+                          'class': 'selects',
+                          labelWidth: '100',
+                          items: [
+                            {
+                              label: '会员学校',
+                              elements: {
+                                eType: 'select',
+                                name: 'schoolVerifyIn',
+                                option: [
+                                  {value: 'all', label: '&nbsp;', selected: true},
+                                  {value: '{{ VerifyStatus.ok }}', label: '是'},
+                                  {value: '{{ VerifyStatus.wait }},{{ VerifyStatus.no }}', label: '否'},
+                                ]
+                              }
+                            },
+                            {
+                              label: '学校编号',
+                              elements: {
+                                eType: 'input',
+                                name: 'account'
+                              }
+                            },
+                            {
+                              label: '学校名称',
+                              elements: {
+                                eType: 'input',
+                                name: 'name'
+                              }
+                            },
+                            {
+                              label: '联系人姓名',
+                              elements: {
+                                eType: 'input',
+                                name: 'contactName'
+                              }
+                            },
+                            {
+                              label: '联系手机',
+                              elements: {
+                                eType: 'input',
+                                name: 'phoneNumber'
+                              }
+                            },
+                            {
+                              label: '管理员',
+                              elements: {
+                                eType: 'select',
+                                name: 'adminId',
+                                option: [
+                                  {value: 'all', label: '&nbsp;', selected: true},
+                                  {% for i in admins %}
+                                  {value: '{{ i.id }}', label: '{{ i.account }}'},
+                                  {% endfor %}
+                                ]
+                              }
+                            },
+                          ]
+                        },
+                        table: {
+                          checkboxType: 'radio',
+                          templates: [
+                            {
+                              id: 'tSchoolVerifyIn',
+                              content: '[[ d.school.verify === \'{{ VerifyStatus.ok }}\' ? \'是\' : \'否\' ]]'
+                            },
+                            {
+                              id: 'tAdminAccount',
+                              content: '[[ d.school.admin != null ? d.school.admin.account : \'\' ]]'
+                            },
+                            {
+                              id: 'tProvinceName',
+                              content: '[[ d.county.city.province.name ]]'
+                            },
+                            {
+                              id: 'tAvatar',
+                              content: '[[# if (d.avatar) { ]]<a href="[[ d.avatar ]]" style="cursor: pointer;" target="_blank"><img class="tableImg" src="[[ d.avatar ]]"></a>[[# } ]]'
+                            },
+                            {
+                              id: 'tIsComplemented',
+                              content: '[[# if (d.isComplemented) { ]]是[[# } else { ]]否[[# } ]]'
+                            },
+                          ],
+                          config: {
+                            elem: '#school',
+                            url: '/admin/member/school/table',
+                            cols: [
+                              [
+                                {field: 'id', title: 'ID', align: 'center', show: false, sort: true, width: 100, fixed: 'left'},
+                                {field: 'account', title: '学校编号', align: 'center', sort: true, minWidth: 140, fixed: 'left'},
+                                {field: 'name', title: '学校名称', align: 'center', sort: true, minWidth: 250},
+                                {field: 'schoolVerifyIn', sort: true, title: '会员学校', width:100, align: 'center', templet: '#tSchoolVerifyIn'},
+                                {field: 'adminAccount', title: '管理员', align: 'center', sort: true, minWidth: 100, templet: '#tAdminAccount'},
+                                {field: 'provinceName', title: '大陆省份', align: 'center', sort: true, minWidth: 150, templet: '#tProvinceName'},
+                                {field: 'contactName', title: '联系人姓名', align: 'center', sort: true, minWidth: 140},
+                                {field: 'phoneNumber', title: '联系手机', align: 'center', sort: true, width: 120},
+                                {field: 'email', title: 'Email', align: 'center', sort: true, minWidth: 100},
+                                {field: 'wechat', title: '微信号', align: 'center', show: false, sort: true, minWidth: 100},
+                                {field: 'qq', title: 'QQ', align: 'center', show: false, sort: true, minWidth: 100},
+                                {field: 'avatar', title: '头像', align: 'center', show: false, sort: true, width: 80, templet: '#tAvatar'},
+                                {field: 'isComplemented', title: '完善信息', align: 'center', show: false, sort: true, width: 100, templet: '#tIsComplemented'},
+                              ]
+                            ],
+                          }
+                        }
+                      })
+                    }
+                  }
+                ]
+              },
+              {
+                eType: 'input',
+                name: 'schoolId',
+                show: false,
+                layVerify: 'schRqd|required'
+              }
+            ]
+          },
+          {
+            label: '入学年份',
+            elements: {
+              eType: 'date',
+              name: 'yearOfEnrollment',
+              layVerify: 'required',
+              type: 'year'
+            }
+          },
+          {
+            label: '学段',
+            elements: {
+              eType: 'select',
+              name: 'period',
+              layVerify: 'select',
+              laySearch: true,
+              option: [
+                {value: 'null', label: '请选择', selected: true},
+                {% for i, j in StudentPeriod %}
+                {% if i != 'LiXiao' %}{value: '{{ j }}', label: '{{ j }}'},{% endif %}
+                {% endfor %}
+              ],
+              events: [
+                {
+                  name: 'laySelect',
+                  callback: function (data) {
+                    if (data.value === '{{ StudentPeriod.XiaoXue }}') {
+                      var grade = $('[name=grade]').val() * 1
+                      var opts = '<option value="null">请选择</option>'
+                      for (var i in [1, 2, 3, 4, 5, 6]) if ([1, 2, 3, 4, 5, 6].hasOwnProperty(i)) {
+                        if (i * 1 + 1 === grade) opts += '<option value="' + (i * 1 + 1) + '" selected>' + (i * 1 + 1)+ '</option>'
+                        else opts += '<option value="' + (i * 1 + 1) + '">' + (i * 1 + 1)+ '</option>'
+                      }
+                      $('[name=grade]').html(opts)
+                      form.render('select')
+                    } else {
+                      var grade = $('[name=grade]').val() * 1
+                      if (grade <= 3) {
+                        var opts = '<option value="null">请选择</option>'
+                        for (var i in [1, 2, 3]) if ([1, 2, 3].hasOwnProperty(i)) {
+                          if (i * 1 + 1 === grade) opts += '<option value="' + (i * 1 + 1) + '" selected>' + (i * 1 + 1)+ '</option>'
+                          else opts += '<option value="' + (i * 1 + 1) + '">' + (i * 1 + 1)+ '</option>'
+                        }
+                        $('[name=grade]').html(opts)
+                        form.render('select')
+                      } else {
+                        var opts = '<option value="null" selected>请选择</option>'
+                        for (var i in [1, 2, 3]) if ([1, 2, 3].hasOwnProperty(i)) {
+                          opts += '<option value="' + (i * 1 + 1) + '">' + (i * 1 + 1)+ '</option>'
+                        }
+                        $('[name=grade]').html(opts)
+                        form.render('select')
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          {
+            label: '班级',
+            elements: {
+              eType: 'input',
+              name: 'class',
+              layVerify: 'required'
+            }
+          },
+          {
+            label: '年级',
+            elements: {
+              eType: 'select',
+              name: 'grade',
+              layVerify: 'select',
+              option: [
+                {value: 'null', label: '请选择'},
+                {% if matchApply.period == StudentPeriod.XiaoXue %}
+                {value: '1', label: '1'},
+                {value: '2', label: '2'},
+                {value: '3', label: '3'},
+                {value: '4', label: '4'},
+                {value: '5', label: '5'},
+                {value: '6', label: '6'},
+                {% else %}
+                {value: '1', label: '1'},
+                {value: '2', label: '2'},
+                {value: '3', label: '3'},
+                {% endif %}
+              ]
+            }
+          },
+          {
+            label: '照片',
+            elements: {
+              eType: 'file',
+              name: 'photo',
+              layVerify: ''
+            }
+          },
+          {
+            label: '住址',
+            elements: {
+              eType: 'input',
+              name: 'address',
+              layVerify: '',
+            }
+          },
+          {
+            label: '家庭情况简述',
+            elements: {
+              eType: 'textarea',
+              display: 'block',
+              name: 'familyInfo',
+            }
+          },
+          {
+            label: '贫困状态',
+            elements: {
+              eType: 'checkbox',
+              name: 'poverty',
+              display: 'block',
+              children: [
+                {% for i,j in Poverty %}
+                {title: '{{ j }}', name: '{{ j }}'}{% if not loop.last %},{% endif %}
+                {% endfor %}
+              ]
+            }
+          },
+        ],
+        verify: {
+          pass: [/(.+){6,20}$/, '密码必须6到20位'],
+          same: function (value) {
+            if (value !== $('[name=password]').val()) return '确认密码必须和密码一致'
+          },
+          select: function (value) {
+            if (value === '' || value === 'null') return '必填项不能为空'
+          },
+          schRqd: function (value) {
+            if (value === '') return '学校不能为空'
+          },
+        }
+      }
+    })
+  })
+</script>
+{% endblock %}

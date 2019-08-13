@@ -1,0 +1,486 @@
+{% extends "../layout/layout-member-center.html" %}
+
+{% block css %}
+{{ super() }}
+<style>
+  .changeBtn {
+    margin: 20px 0px;
+  }
+  .pwLabel {
+    display: inline-block;
+    width: 100px;
+  }
+</style>
+{% endblock %}
+
+{% block member_center_main %}
+<div class="layui-card myCard">
+  <div class="layui-card-header">个人设置</div>
+  <div class="layui-card-body layui-tab layui-tab-brief">
+
+  <div class="memberInfo">
+  <div class="changeBtn">
+    <a href="javascript:;" id="btn-change-password" class="layui-btn brownBtn">修改密码</a>
+    {% if curMember.isComplemented%}
+    <a href="/member-center/info-edit" class="layui-btn brownBtn">修改信息</a>
+    {% if curMember.type == MemberType.student %}
+    <a href="/member-center/info-transfer" class="layui-btn brownBtn">学校变更</a>
+    {% endif %}
+    {% else %}
+    <a href="/member-center/info-complement" class="layui-btn brownBtn">完善信息</a>
+    {% endif %}
+  </div>
+  {% if curMember.type == MemberType.student %}
+    <!-- 学生 -->
+    <div class="infoItem">
+      <span>用户名：</span>
+      <span class="infoItemValue">{{curMember.account}}</span>
+    </div>
+    <div class="infoItem">
+      <span>类型：</span>
+      <span class="infoItemValue">{{curMember.type}}</span>
+    </div>
+    <div class="infoItem">
+      <span>学校名称：</span>
+      <span class="infoItemValue">{{curMember.student.school.member.nickName}}</span>
+    </div>
+    <div class="infoItem">
+      <span>真实姓名：</span>
+      <span class="infoItemValue">{{curMember.name}}</span>
+    </div>
+    <div class="infoItem">
+      <span>昵称：</span>
+      <span class="infoItemValue">{{curMember.nickName}}</span>
+    </div>
+    <div class="infoItem">
+      <span>性别：</span>
+      <span class="infoItemValue">{{curMember.gender}}</span>
+    </div>
+    <div class="infoItem">
+      <span>民族：</span>
+      <span class="infoItemValue">{{curMember.nation}}</span>
+    </div>
+    <div class="infoItem">
+      <span>身份证号：</span>
+      <span class="infoItemValue">{{curMember.idCard}}</span>
+    </div>
+    <div class="infoItem">
+      <span>联系手机：</span>
+      <span class="infoItemValue">{{curMember.phoneNumber}}</span>
+    </div>
+    <div class="infoItem">
+      <span>Email：</span>
+      <span class="infoItemValue">{{curMember.email}}</span>
+    </div>
+    <div class="infoItem">
+      <span>微信号：</span>
+      <span class="infoItemValue">{{curMember.wechat}}</span>
+    </div>
+    <div class="infoItem">
+      <span>qq：</span>
+      <span class="infoItemValue">{{curMember.qq}}</span>
+    </div>
+    <div class="infoItem">
+      <span>学段：</span>
+      <span class="infoItemValue">{{curMember.student.period}}</span>
+    </div>
+    <div class="infoItem">
+      <span>入学年份：</span>
+      <span class="infoItemValue">{{curMember.student.yearOfEnrollment}}</span>
+    </div>
+    <div class="infoItem">
+      <span>年级：</span>
+      <span class="infoItemValue">{{curMember.student.grade}}</span>
+    </div>
+    <div class="infoItem">
+      <span>班级：</span>
+      <span class="infoItemValue">{{curMember.student.class}}</span>
+    </div>
+    <div class="infoItem">
+      <span>住址：</span>
+      <span class="infoItemValue">{{curMember.student.address}}</span>
+    </div>
+    <div class="infoItem">
+      <span>本人照片：</span>
+      <a href="{{curMember.student.photo}}" target="_blank"><img class="infoItemImg" src="{{curMember.student.photo}}" alt=""></a>
+    </div>
+    <div class="infoItem">
+      <span>头像：</span>
+      <a href="{{curMember.avatar}}" target="_blank"><img class="infoItemImg" src="{{curMember.avatar}}" alt=""></a>
+    </div>
+    <div class="infoItem">
+      <span>简介：</span>
+      <div class="infoItemValue">{{curMember.intro}}</div>
+    </div>
+    <div class="infoItem">
+      <span>往昔学校：</span>
+      <div class="infoItemValue">
+        {% for oldSSR in oldSSRs %}
+        {% if oldSSR.school %}
+        &nbsp;&nbsp;&nbsp;&nbsp;<a href="/member/{{oldSSR.school.member.id}}">{{oldSSR.school.member.nickName}}</a><br>
+        {% else %}
+        &nbsp;&nbsp;&nbsp;&nbsp;非会员学校<br>
+        {% endif %}
+        {% endfor %}
+      </div>
+    </div>
+  {% elseif curMember.type == '老师' %}
+    <!-- 老师 -->
+    <div class="infoItem">
+      <span>用户名：</span>
+      <span class="infoItemValue">{{curMember.account}}</span>
+    </div>
+    <div class="infoItem">
+      <span>类型：</span>
+      <span class="infoItemValue">{{curMember.type}}</span>
+    </div>
+    <div class="infoItem">
+      <span>学校名称：</span>
+      <span class="infoItemValue">{{curMember.teacher.school.member.name}}</span>
+    </div>
+    <div class="infoItem">
+      <span>真实姓名：</span>
+      <span class="infoItemValue">{{curMember.name}}</span>
+    </div>
+    <div class="infoItem">
+      <span>昵称：</span>
+      <span class="infoItemValue">{{curMember.nickName}}</span>
+    </div>
+    <div class="infoItem">
+      <span>性别：</span>
+      <span class="infoItemValue">{{curMember.gender}}</span>
+    </div>
+    <div class="infoItem">
+      <span>民族：</span>
+      <span class="infoItemValue">{{curMember.nation}}</span>
+    </div>
+    <div class="infoItem">
+      <span>身份证号：</span>
+      <span class="infoItemValue">{{curMember.idCard}}</span>
+    </div>
+    <div class="infoItem">
+      <span>银行账号：</span>
+      <span class="infoItemValue">{{curMember.teacher.bankNumber}}</span>
+    </div>
+    <div class="infoItem">
+      <span>开户行名称：</span>
+      <span class="infoItemValue">{{curMember.teacher.bank}}</span>
+    </div>
+    <div class="infoItem">
+      <span>开户人姓名：</span>
+      <span class="infoItemValue">{{curMember.teacher.bankUser}}</span>
+    </div>
+    <div class="infoItem">
+      <span>联系手机：</span>
+      <span class="infoItemValue">{{curMember.phoneNumber}}</span>
+    </div>
+    <div class="infoItem">
+      <span>Email：</span>
+      <span class="infoItemValue">{{curMember.email}}</span>
+    </div>
+    <div class="infoItem">
+      <span>微信号：</span>
+      <span class="infoItemValue">{{curMember.wechat}}</span>
+    </div>
+    <div class="infoItem">
+      <span>qq：</span>
+      <span class="infoItemValue">{{curMember.qq}}</span>
+    </div>
+    <div class="infoItem">
+      <span>住址：</span>
+      <span class="infoItemValue">{{curMember.teacher.address}}</span>
+    </div>
+    <div class="infoItem">
+      <span>头像：</span>
+      <a href="{{curMember.avatar}}" target="_blank"><img class="infoItemImg" src="{{curMember.avatar}}" alt=""></a>
+    </div>
+    <div class="infoItem">
+      <span>简介：</span>
+      <div class="infoItemValue">{{curMember.intro}}</div>
+    </div>
+  {% elseif curMember.type == '学校' %}
+    <!-- 学校 -->
+    <div class="infoItem">
+      <span>用户名：</span>
+      <span class="infoItemValue">{{curMember.account}}</span>
+    </div>
+    <div class="infoItem">
+      <span>类型：</span>
+      <span class="infoItemValue">{{curMember.type}}</span>
+    </div>
+    <div class="infoItem">
+      <span>学校名称：</span>
+      <span class="infoItemValue">{{curMember.name}}</span>
+    </div>
+    <div class="infoItem">
+      <span>联系人姓名：</span>
+      <span class="infoItemValue">{{curMember.contactName}}</span>
+    </div>
+    <div class="infoItem">
+      <span>联系手机：</span>
+      <span class="infoItemValue">{{curMember.phoneNumber}}</span>
+    </div>
+    <div class="infoItem">
+      <span>Email：</span>
+      <span class="infoItemValue">{{curMember.email}}</span>
+    </div>
+    <div class="infoItem">
+      <span>微信号：</span>
+      <span class="infoItemValue">{{curMember.wechat}}</span>
+    </div>
+    <div class="infoItem">
+      <span>qq：</span>
+      <span class="infoItemValue">{{curMember.qq}}</span>
+    </div>
+    <div class="infoItem">
+      <span>头像：</span>
+      <a href="{{curMember.avatar}}" target="_blank"><img class="infoItemImg" src="{{curMember.avatar}}" alt=""></a>
+    </div>
+    <div class="infoItem">
+      <span>简介：</span>
+      <div class="infoItemValue">{{curMember.intro}}</div>
+    </div>
+    <div class="infoItem">
+      <span>地区：</span>
+      <span class="infoItemValue">
+        {{curMember.country.name}}
+        {%- if curMember.country.number == 1 -%}
+          {{curMember.county | area}}
+        {%- else -%}
+          {{curMember.areaDetail}}
+        {% endif %}
+      </span>
+    </div>
+    <div style="margin-top: 30px;">
+      <div style="display: inline-block; margin: 0 100px 100px 0;">
+        <img src="/static/images/fuwuhao.jpg" alt="" style="width: 128px;">
+        <div style="text-align: center;">接收微信通知</div>
+      </div>
+      <div style="display: inline-block;">
+        <img src="/static/images/dingyuehao.jpg" alt="" style="width: 128px;">
+        <div style="text-align: center;">微信公众号</div>
+      </div>
+    </div>
+  {% elseif curMember.type == '爱心人士' %}
+    <!-- 爱心人士 -->
+    <div class="infoItem">
+      <span>用户名：</span>
+      <span class="infoItemValue">{{curMember.account}}</span>
+    </div>
+    <div class="infoItem">
+      <span>类型：</span>
+      <span class="infoItemValue">{{curMember.type}}</span>
+    </div>
+    <div class="infoItem">
+      <span>团体名称：</span>
+      <span class="infoItemValue">{{curMember.whPerson.whGroup.member.name}}</span>
+    </div>
+    <div class="infoItem">
+      <span>真实姓名：</span>
+      <span class="infoItemValue">{{curMember.name}}</span>
+    </div>
+    <div class="infoItem">
+      <span>昵称：</span>
+      <span class="infoItemValue">{{curMember.nickName}}</span>
+    </div>
+    <div class="infoItem">
+      <span>性别：</span>
+      <span class="infoItemValue">{{curMember.gender}}</span>
+    </div>
+    <div class="infoItem">
+      <span>身份证号：</span>
+      <span class="infoItemValue">{{curMember.idCard}}</span>
+    </div>
+    <div class="infoItem">
+      <span>联系手机：</span>
+      <span class="infoItemValue">{{curMember.phoneNumber}}</span>
+    </div>
+    <div class="infoItem">
+      <span>Email：</span>
+      <span class="infoItemValue">{{curMember.email}}</span>
+    </div>
+    <div class="infoItem">
+      <span>微信号：</span>
+      <span class="infoItemValue">{{curMember.wechat}}</span>
+    </div>
+    <div class="infoItem">
+      <span>qq：</span>
+      <span class="infoItemValue">{{curMember.qq}}</span>
+    </div>
+    <div class="infoItem">
+      <span>头像：</span>
+      <a href="{{curMember.avatar}}" target="_blank"><img class="infoItemImg" src="{{curMember.avatar}}" alt=""></a>
+    </div>
+    <div class="infoItem">
+      <span>简介：</span>
+      <div class="infoItemValue">{{curMember.intro}}</div>
+    </div>
+    <div class="infoItem">
+      <span>地区：</span>
+      <span class="infoItemValue">
+        {{curMember.country.name}}
+        {%- if curMember.country.number == 1 -%}
+          {{curMember.county | area}}
+        {%- else -%}
+          {{curMember.areaDetail}}
+        {% endif %}
+      </span>
+    </div>
+  {% elseif curMember.type == '爱心团体' %}
+    <!-- 爱心团体 -->
+    <div class="infoItem">
+      <span>用户名：</span>
+      <span class="infoItemValue">{{curMember.account}}</span>
+    </div>
+    <div class="infoItem">
+      <span>类型：</span>
+      <span class="infoItemValue">{{curMember.type}}</span>
+    </div>
+    <div class="infoItem">
+      <span>团体名称：</span>
+      <span class="infoItemValue">{{curMember.name}}</span>
+    </div>
+    <div class="infoItem">
+      <span>联系人姓名：</span>
+      <span class="infoItemValue">{{curMember.contactName}}</span>
+    </div>
+    <div class="infoItem">
+      <span>联系手机：</span>
+      <span class="infoItemValue">{{curMember.phoneNumber}}</span>
+    </div>
+    <div class="infoItem">
+      <span>Email：</span>
+      <span class="infoItemValue">{{curMember.email}}</span>
+    </div>
+    <div class="infoItem">
+      <span>微信号：</span>
+      <span class="infoItemValue">{{curMember.wechat}}</span>
+    </div>
+    <div class="infoItem">
+      <span>qq：</span>
+      <span class="infoItemValue">{{curMember.qq}}</span>
+    </div>
+    <div class="infoItem">
+      <span>头像：</span>
+      <a href="{{curMember.avatar}}" target="_blank"><img class="infoItemImg" src="{{curMember.avatar}}" alt=""></a>
+    </div>
+    <div class="infoItem">
+      <span>简介：</span>
+      <div class="infoItemValue">{{curMember.intro}}</div>
+    </div>
+    <div class="infoItem">
+      <span>地区：</span>
+      <span class="infoItemValue">
+        {{curMember.country.name}}
+        {%- if curMember.country.number == 1 -%}
+          {{curMember.county | area}}
+        {%- else -%}
+          {{curMember.areaDetail}}
+        {% endif %}
+      </span>
+    </div>
+  {% elseif curMember.type == '其他人士' %}
+    <!-- 其他人士 -->
+    <div class="infoItem">
+      <span>用户名：</span>
+      <span class="infoItemValue">{{curMember.account}}</span>
+    </div>
+    <div class="infoItem">
+      <span>类型：</span>
+      <span class="infoItemValue">{{curMember.type}}</span>
+    </div>
+    <div class="infoItem">
+      <span>真实姓名：</span>
+      <span class="infoItemValue">{{curMember.name}}</span>
+    </div>
+    <div class="infoItem">
+      <span>昵称：</span>
+      <span class="infoItemValue">{{curMember.nickName}}</span>
+    </div>
+    <div class="infoItem">
+      <span>联系手机：</span>
+      <span class="infoItemValue">{{curMember.phoneNumber}}</span>
+    </div>
+    <div class="infoItem">
+      <span>Email：</span>
+      <span class="infoItemValue">{{curMember.email}}</span>
+    </div>
+    <div class="infoItem">
+      <span>头像：</span>
+      <a href="{{curMember.avatar}}" target="_blank"><img class="infoItemImg" src="{{curMember.avatar}}" alt=""></a>
+    </div>
+    <div class="infoItem">
+      <span>简介：</span>
+      <div class="infoItemValue">{{curMember.intro}}</div>
+    </div>
+    <div class="infoItem">
+      <span>地区：</span>
+      <span class="infoItemValue">
+        {{curMember.country.name}}
+        {%- if curMember.country.number == 1 -%}
+          {{curMember.county | area}}
+        {%- else -%}
+          {{curMember.areaDetail}}
+        {% endif %}
+      </span>
+    </div>
+  {% endif %}
+  </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block dialog %}
+{{super()}}
+<form id="form-change-password" style="display: none; padding: 20px;">
+  <div class="infoItem">
+    <span class="pwLabel">旧密码：</span><input type="password" name="oldPassword">
+  </div>
+  <div class="infoItem">
+    <span class="pwLabel">新密码：</span><input type="password" name="newPassword">
+  </div>
+  <div class="infoItem">
+    <span class="pwLabel">重复新密码：</span><input type="password" name="confirmNewPassword">
+  </div>
+  <div class="infoItem" style="margin: 10px 0px 40px;"><button id="form-change-password-submit" type="submit" class="layui-btn brownBtn" style="float: right;">修改密码</button></div>
+</form>
+{% endblock %}
+
+{% block script %}
+  {{ super() }}
+  <script>
+    $(function () {
+      $('#btn-change-password').on('click', function() {
+        layui.layer.open({
+          type: 1,
+          title: '修改密码',
+          content: $('#form-change-password')
+        })
+      })
+
+      $('#form-change-password').on('submit', function(e) {
+        if (e.target !== this) {
+          return true
+        }
+        e.preventDefault()
+        $('#form-change-password-submit').attr('disabled', true)
+        var self = this
+        ajax({
+          method: 'POST',
+          url: '/member-center/info/change-password',
+          data: JSON.stringify(getFormData('#form-change-password')),
+          success: function () {
+            $('#form-change-password-submit').attr('disabled', false)
+            layui.layer.closeAll()
+            self.reset()
+            layui.layer.msg('修改成功',{ time: 1000 })
+          },
+          fail: function () {
+            $('#form-change-password-submit').attr('disabled', false)
+          }
+        })
+
+      })
+    })
+  </script>
+{% endblock %}

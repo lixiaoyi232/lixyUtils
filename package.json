@@ -10,9 +10,11 @@
   "license": "ISC",
   "dependencies": {
     "axios": "^0.18.1",
+    "crypto": "^1.0.1",
     "fs-extra": "^8.1.0",
     "moment": "^2.24.0",
     "request": "^2.88.0",
-    "wget": "0.0.1"
+    "wget": "0.0.1",
+    "xlsx": "^0.15.0"
   }
 }

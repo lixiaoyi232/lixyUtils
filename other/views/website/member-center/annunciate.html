@@ -1,0 +1,110 @@
+{% extends "../layout/layout-member-center.html" %}
+
+{% block css %}
+{{ super() }}
+<link rel="stylesheet" href="/static/css/website/mytable.css">
+{% endblock %}
+
+{% block member_center_main %}
+<!-- <br>
+<br>
+<div id="table-annunciate"></div> -->
+<div class="layui-card">
+  <div class="layui-card-header">通告栏</div>
+  <div class="layui-card-body">
+    <div id="myTable"></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script src="/static/js/mytable.js"></script>
+<script>
+  // $(function () {
+  //   var table = new MyTable({
+  //     el: '#table-annunciate',
+  //     url: '/member-center/daily/annunciate/table',
+  //     limit: 10,
+  //     cols: [
+  //       {
+  //         title: 'id',
+  //         html: function(annunciate) {
+  //           return annunciate.id
+  //         }
+  //       },
+  //       {
+  //         title: '标题',
+  //         html: function(annunciate) {
+  //           return '<a onClick="openWindow(\'/article/' + annunciate.id + '\')">' + annunciate.title + '</a>'
+  //         }
+  //       },
+  //       {
+  //         title: '发布时间',
+  //         html: function(annunciate) {
+  //           return dateFormat(new Date(annunciate.createdTime), 'YYYY-MM-DD HH:mm:ss')
+  //         }
+  //       }
+  //     ]
+  //   })
+  //   table.fetch()
+  //   var downloadTemplate = function(filePath){
+  //     window.location.href=filePath
+  //   }
+  // })
+  $(function () {
+    newTable({
+      btns: {
+        items: [
+          // 'setCols'
+        ]
+      },
+      search: {
+        'class': 'selects',
+        labelWidth: '100',
+        submit: {
+          'class': 'layui-btn greenBtn'
+        },
+        items: [
+          {
+            label: '标题',
+            elements: {
+              eType: 'input',
+              name: 'title'
+            }
+          },
+        ]
+      },
+      table: {
+        checkboxType: 'none',
+        // tool: {
+        //   items: [
+        //   ]
+        // },
+        templates: [
+          {
+            id: 'tTitle',
+            content: '<a onClick="openWindow(\'/article/[[ d.id ]]\')">[[ d.title ]]</a>'
+          },
+          {
+            id: 'tCreatedTime',
+            content: '[[ dateFormat(d.createdTime, \'YYYY-MM-DD HH:mm:ss\') ]]'
+          }
+        ],
+        config: {
+          elem: '#annunciate',
+          url: '/member-center/daily/annunciate/table',
+          cols: [
+            [
+              {field: 'id', title: 'ID', align: 'center', show: false, sort: true, width: 100},
+              {field: 'title', title: '标题', align: 'left', sort: true, minWidth: 180, templet: '#tTitle'},
+              {field: 'createdTime', title: '时间', align: 'center', sort: true, width: 180, templet: '#tCreatedTime'},
+              // {width:140, align: 'center', toolbar: '#operation'}
+            ]
+          ]
+        }
+      }
+    })
+  })
+</script>
+{% endblock %}

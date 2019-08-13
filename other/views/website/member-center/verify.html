@@ -1,0 +1,65 @@
+{% extends "../layout/layout-member-center.html" %}
+
+{% block css %}
+{{ super() }}
+{% endblock %}
+
+{% block member_center_main %}
+
+  <div class="layui-card myCard">
+    <div class="layui-card-header">认证</div>
+    <div class="layui-card-body layui-tab layui-tab-brief">
+      <div id="myForm"></div>
+    </div>
+  </div>
+
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+  $(function () {
+    {% if curMember.type == MemberTypeObj.whGroup or curMember.type == MemberTypeObj.school %}
+    newForm({
+      form: {
+        labelWidth: '120',
+        submit: {
+          label: '申请认证',
+          show: {{ member.school.verify == VerifyStatusObj.no if member.type == MemberTypeObj.school else (member.whGroup.verify == VerifyStatusObj.no if member.type == MemberTypeObj.whGroup else false) }},
+          event: function (data) {
+            $('[lay-filter="myFormSubmit"]').attr('disabled', true)
+            $('[lay-filter="myFormSubmit"]').addClass('layui-btn-disabled')
+            ajax({
+              method: 'POST',
+              url: '/member-center/verify',
+              success: function () {
+                layer.msg('申请成功', {time: 2000, icon:6})
+                window.setTimeout(function () {window.location.reload()}, 2000)
+              },
+              fail: function () {
+                $('[lay-filter="myFormSubmit"]').attr('disabled', false)
+                $('[lay-filter="myFormSubmit"]').removeClass('layui-btn-disabled')
+              },
+              error: function () {
+                $('[lay-filter="myFormSubmit"]').attr('disabled', false)
+                $('[lay-filter="myFormSubmit"]').removeClass('layui-btn-disabled')
+              }
+            })
+          }
+        },
+        items: [
+          {
+            label: '认证状态',
+            elements: {
+              eType: 'char',
+              name: 'verify',
+              element: '<div class="layui-input-block" style="">{{ member.school.verify if member.type == MemberTypeObj.school else (member.whGroup.verify if member.type == MemberTypeObj.whGroup else \'\') }}</div>'
+            }
+          }
+        ]
+      }
+    })
+    {% endif %}
+  })
+</script>
+{% endblock %}

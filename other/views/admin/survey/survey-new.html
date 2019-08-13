@@ -1,0 +1,330 @@
+{% extends "../back.html" %}
+
+{% block css %}
+{{ super() }}
+{% endblock %}
+
+{% block body %}
+  <div class="layui-card myCard">
+    <div class="layui-card-header">新建调查问卷</div>
+    <div class="layui-card-body layui-tab layui-tab-brief">
+      <div id="myForm"></div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+  $(function () {
+    var types = {
+      radio: '单选题',
+      radio2: '单选题(填)',
+      checkbox: '多选题',
+      checkbox2: '多选题(填)',
+      short: '简答题',
+    }
+    var content = []
+    var items = [
+      {
+        label: '调查范围',
+        show: false,
+        elements: {
+          eType: 'checkbox',
+          name: 'memberType',
+          children: [
+            {% for i, j in MemberType %}
+            {% if j == MemberType.school %}{title: '{{ j }}', name: '{{ j }}'}{% if not loop.last %},{% endif %}{% endif %}
+            {% endfor %}
+          ]
+        }
+      },
+      {
+        label: '标题',
+        elements: {
+          eType: 'input',
+          name: 'title',
+          display: 'block',
+          layVerify: 'required'
+        }
+      },
+      {
+        label: '',
+        elements: [
+          {
+            eType: 'char',
+            name: 'add',
+            element: '<div class="layui-btn-group"><button type="button" id="addRadio" class="inblk layui-btn layui-btn-warm">插入单选题</button><button type="button" id="addCheckbox" class="inblk layui-btn layui-btn-warm">插入多选题</button><button type="button" id="addRadio2" class="inblk layui-btn layui-btn-warm">插入单选题(填)</button><button type="button" id="addCheckbox2" class="inblk layui-btn layui-btn-warm">插入多选题(填)</button><button type="button" id="addShort" class="inblk layui-btn layui-btn-warm">插入简答题</button></div>',
+            events: [
+              {
+                type: 'delegate',
+                name: 'click',
+                query: '#addRadio',
+                callback: function (e, config) {
+                  content.push({
+                    index: content.length,
+                    type: 'radio',
+                    question: '',
+                    options: []
+                  })
+                  myRender(config)
+                }
+              },
+              {
+                type: 'delegate',
+                name: 'click',
+                query: '#addCheckbox',
+                callback: function (e, config) {
+                  content.push({
+                    index: content.length,
+                    type: 'checkbox',
+                    question: '',
+                    options: []
+                  })
+                  myRender(config)
+                }
+              },
+              {
+                type: 'delegate',
+                name: 'click',
+                query: '#addRadio2',
+                callback: function (e, config) {
+                  content.push({
+                    index: content.length,
+                    type: 'radio2',
+                    question: '',
+                    options: [],
+                    fillOptLab: ''
+                  })
+                  myRender(config)
+                }
+              },
+              {
+                type: 'delegate',
+                name: 'click',
+                query: '#addCheckbox2',
+                callback: function (e, config) {
+                  content.push({
+                    index: content.length,
+                    type: 'checkbox2',
+                    question: '',
+                    options: [],
+                    fillOptLab: ''
+                  })
+                  myRender(config)
+                }
+              },
+              {
+                type: 'delegate',
+                name: 'click',
+                query: '#addShort',
+                callback: function (e, config) {
+                  content.push({
+                    index: content.length,
+                    type: 'short',
+                    question: '',
+                  })
+                  myRender(config)
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+    var formCfg = {
+      form: {
+        labelWidth: '120',
+        submit: {
+          event: function (data) {
+            if ({% for i, j in MemberType %}data.field['{{ j }}'] == null{% if not loop.last %} && {% endif %}{% endfor %}) {
+              layer.msg('调查范围不能为空', {time: 2000, icon:5, anim: 6})
+              return
+            }
+            if (!(content.length > 0)) {
+              layer.msg('至少要有一个问题', {time: 2000, icon:5, anim: 6})
+              return
+            }
+            for (var i in content) {
+              if (content.hasOwnProperty(i)) {
+                if ((content[i].type === 'radio' || content[i].type === 'checkbox' || content[i].type === 'radio2' || content[i].type === 'checkbox2') && content[i].options.length === 0) {
+                  layer.msg('问题' + (content[i].index + 1) + '选项不能为空', {time: 200000, icon:5, anim: 6})
+                  return
+                }
+              }
+            }
+            data.field.content = content
+            $('[lay-filter="myFormSubmit"]').attr('disabled', true)
+            $('[lay-filter="myFormSubmit"]').addClass('layui-btn-disabled')
+            ajax({
+              method: 'POST',
+              url: '/admin/survey/survey/new',
+              data: JSON.stringify(data.field),
+              success: function () {
+                layer.msg('新建成功', {time: 2000, icon:6})
+                parent.tableRender()
+                window.setTimeout(function () {parent.layer.close(parent.layer.getFrameIndex(window.name))}, 2000)
+                // window.setTimeout(function () {window.location.href = '/admin/survey/survey'}, 2000)
+              },
+              fail: function () {
+                $('[lay-filter="myFormSubmit"]').attr('disabled', false)
+                $('[lay-filter="myFormSubmit"]').removeClass('layui-btn-disabled')
+              },
+              error: function () {
+                $('[lay-filter="myFormSubmit"]').attr('disabled', false)
+                $('[lay-filter="myFormSubmit"]').removeClass('layui-btn-disabled')
+              }
+            })
+          }
+        },
+        val: {
+          {% for i, j in MemberType %}{{ j }}: true,{% endfor %}
+        },
+        items: items,
+        verify: {
+          notNum: function (value) {
+            if (/^\d*$/.test(value)) return '不能全部为数字'
+          },
+        }
+      }
+    }
+    function myRender(config) {
+      formCfg.form.val = getFormData('[lay-filter=' + config.layFilter + ']')
+      formCfg.form.items = []
+      formCfg.form.items.push(items[0])
+      formCfg.form.items.push(items[1])
+      for (var i in content) if (content.hasOwnProperty(i)) {
+        content[i].index = parseInt(i)
+        ;(function () {
+          var item = content[i]
+            formCfg.form.items.push({
+              label: parseInt(i) + 1 + '、' + types[item.type],
+              elements: [
+                {
+                  eType: 'char',
+                  name: i + 'q_out',
+                  'class': 'leaveBtm',
+                  element: '<div class="layui-form-label">问题：</div><div class="layui-input-block"><input type="text" id="' + i + 'q" lay-verify="required" class="layui-input" value="' + item.question + '"></div>',
+                  events: [
+                    {
+                      type: 'delegate',
+                      name: 'change',
+                      query: '#' + i + 'q',
+                      callback: function (e) {
+                        item.question = $('#' + item.index + 'q').val()
+                      }
+                    }
+                  ]
+                }
+              ]
+            })
+          if (content[i].type === 'radio' || content[i].type === 'checkbox' || content[i].type === 'radio2' || content[i].type === 'checkbox2') {
+            formCfg.form.items[formCfg.form.items.length - 1].elements.push({
+              eType: 'char',
+              name: i + 'o_out',
+              'class': 'leaveBtm',
+              element: '<div class="layui-form-label">选项：</div><div class="layui-input-block"><div id="' + i + 'o" class="inblk" style="">' +
+              (content[i].options.length !== 0 ? '<span class="layui-badge layui-bg-blue" style="margin-right: 10px;">' + content[i].options.join('<i class="layui-icon layui-icon-close" style="font-size: 12px;"></i></span><span class="layui-badge layui-bg-blue" style="margin-right: 10px;">') + '<i class="layui-icon layui-icon-close" style="font-size: 12px;"></i></span>' : '') +
+              '</div><button type="button" id="' + i + 'b" class="inblk layui-btn layui-btn-primary">新增选项</button></div>',
+              events: [
+                {
+                  type: 'delegate',
+                  name: 'click',
+                  query: '#' + i + 'b',
+                  callback: function (e) {
+                    layer.closeAll()
+                    var index = layer.open({
+                      type: 1,
+                      title: '新增选项',
+                      offset: '100px',
+                      skin: 'layui-layer-rim',
+                      area: ['360px', '240px'],
+                      content: '<div id="newOpt"></div>'
+                    })
+                    newForm({
+                      parent: '#newOpt',
+                      form: {
+                        done: function () {$('[name=optName]').focus()},
+                        submit: {
+                          event: function (data) {
+                            $('#' + item.index + 'o').html($('#' + item.index + 'o').html() + '<span class="layui-badge layui-bg-blue" style="margin-right: 10px;">' + data.field.optName + '<i class="layui-icon layui-icon-close" style="font-size: 12px;"></i></span>')
+                            item.options.push(data.field.optName)
+                            layer.close(index)
+                            return false
+                          }
+                        },
+                        items: [
+                          {
+                            label: '选项',
+                            elements: {
+                              eType: 'input',
+                              name: 'optName',
+                              layVerify: 'required'
+                            }
+                          }
+                        ]
+                      }
+                    })
+                  }
+                },
+                {
+                  type: 'delegate',
+                  name: 'click',
+                  query: '.layui-icon-close',
+                  callback: function (e) {
+                    layer.closeAll()
+                    item.options.splice($('#' + item.index + 'o .layui-icon-close').index(this), 1)
+                    myRender(config)
+                  }
+                }
+              ]
+            })
+          }
+          if (content[i].type === 'radio2' || content[i].type === 'checkbox2') {
+            formCfg.form.items[formCfg.form.items.length - 1].elements.push({
+              eType: 'char',
+              name: i + 'q_out',
+              'class': 'leaveBtm',
+              element: '<div class="layui-form-label" style="">填空选项标签：</div><div class="layui-input-inline"><input type="text" id="' + i + 'f" lay-verify="required|notNum" class="layui-input" value="' + item.fillOptLab + '"></div>',
+              events: [
+                {
+                  type: 'delegate',
+                  name: 'input',
+                  query: '#' + i + 'f',
+                  callback: function (e) {
+                    item.fillOptLab = $('#' + item.index + 'f').val()
+                  }
+                }
+              ]
+            })
+          }
+          formCfg.form.items[formCfg.form.items.length - 1].elements.push({
+            eType: 'char',
+            name: i + 'opt_out',
+            'class': 'leaveBtm',
+            element: '<div class="layui-input-block"><button type="button" class="layui-btn layui-btn-danger" id="' + i + 'del">删除</button></div>',
+            events: [
+              {
+                type: 'delegate',
+                name: 'click',
+                query: '#' + i + 'del',
+                callback: function (e) {
+                  layer.closeAll()
+                  layer.confirm('真的删除行么', function(index){
+                    content.splice(item.index, 1)
+                    layer.close(index)
+                    myRender(config)
+                  })
+                }
+              }
+            ]
+          })
+        })()
+      }
+      formCfg.form.items.push(items[2])
+      newForm(formCfg)
+    }
+    newForm(formCfg)
+  })
+</script>
+{% endblock %}

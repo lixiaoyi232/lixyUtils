@@ -1,0 +1,125 @@
+{% extends "../layout/layout-member-center.html" %}
+
+{% block css %}
+{{ super() }}
+<link rel="stylesheet" href="/static/css/website/mytable.css">
+{% endblock %}
+
+{% block member_center_main %}
+<!-- <div id="table-message"></div> -->
+<div class="layui-card">
+  <div class="layui-card-header">私信</div>
+  <div class="layui-card-body">
+    <div id="myTable"></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script src="/static/js/mytable.js"></script>
+<script>
+  // $(function() {
+  //   var table = new MyTable({
+  //     el: '#table-message',
+  //     url: '/member-center/message/table',
+  //     limit: 10,
+  //     cols: [
+  //       {
+  //         title: '发送者',
+  //         html: function(rowdata, $td, $tr) {
+  //           var name = rowdata.sender.nickName
+  //           if (rowdata.sender.id == {{curMember.id}}) {
+  //             name = '你'
+  //           }
+  //           return $('<a href="/member/' + rowdata.sender.id + '">' + name + '</a>')
+  //         }
+  //       },
+  //       {
+  //         title: '接收者',
+  //         html: function(rowdata, $td, $tr) {
+  //           var name = rowdata.receiver.nickName
+  //           if (rowdata.receiver.id == {{curMember.id}}) {
+  //             name = '你'
+  //           }
+  //           return $('<a href="/member/' + rowdata.receiver.id + '">' + name + '</a>')
+  //         }
+  //       },
+  //       {
+  //         title: '内容',
+  //         html: function(rowdata, $td, $tr) {
+  //           return $('<span>' + rowdata.message + '</span>')
+  //         }
+  //       },
+  //       {
+  //         title: '发送时间',
+  //         html: function(rowdata, $td, $tr) {
+  //           return $('<span>' + dateFormat(rowdata.createdTime, 'YYYY-MM-DD HH:mm:ss') + '</span>')
+  //         }
+  //       }
+  //     ]
+  //   })
+  //   table.fetch(1)
+  // })
+  $(function () {
+    newTable({
+      btns: {
+        items: [
+          // 'setCols'
+        ]
+      },
+      search: {
+        'class': 'selects',
+        labelWidth: '100',
+        submit: {
+          'class': 'layui-btn greenBtn'
+        },
+        items: [
+          {
+            label: '内容',
+            elements: {
+              eType: 'input',
+              name: 'message'
+            }
+          },
+        ]
+      },
+      table: {
+        checkboxType: 'none',
+        // tool: {
+        //   items: [
+        //   ]
+        // },
+        templates: [
+          {
+            id: 'tSenderNickName',
+            content: '<a href="/member/[[ d.sender.id ]]" target="_blank" style="cursor: pointer;">[[ d.sender.id === {{ curMember.id }} ? \'你\' : d.sender.nickName ]]</a>'
+          },
+          {
+            id: 'tReceiverNickName',
+            content: '<a href="/member/[[ d.receiver.id ]]" target="_blank" style="cursor: pointer;">[[ d.receiver.id === {{ curMember.id }} ? \'你\' : d.receiver.nickName ]]</a>'
+          },
+          {
+            id: 'tCreatedTime',
+            content: '[[ dateFormat(d.createdTime, \'YYYY-MM-DD HH:mm:ss\') ]]'
+          }
+        ],
+        config: {
+          elem: '#mmessage',
+          url: '/member-center/message/table',
+          cols: [
+            [
+              {field: 'id', title: 'ID', align: 'center', show: false, sort: true, width: 100},
+              {field: 'senderNickName', title: '发送者', align: 'center', sort: true, minWidth: 180, templet: '#tSenderNickName'},
+              {field: 'receiverNickName', title: '接收者', align: 'center', sort: true, minWidth: 180, templet: '#tReceiverNickName'},
+              {field: 'message', title: '内容', align: 'center', sort: true, minWidth: 180},
+              {field: 'createdTime', title: '时间', align: 'center', sort: true, minWidth: 180, templet: '#tCreatedTime'},
+              // {width:140, align: 'center', toolbar: '#operation'}
+            ]
+          ]
+        }
+      }
+    })
+  })
+</script>
+{% endblock %}

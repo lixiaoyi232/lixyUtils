@@ -1,0 +1,223 @@
+{% extends "../layout/layout-member-center.html" %}
+
+{% block css %}
+{{ super() }}
+{% endblock %}
+
+{% block member_center_main %}
+
+<div class="layui-card">
+  <div class="layui-card-header">大赛报名</div>
+  <div class="layui-card-body">
+    <div id="myTable"></div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+  $(function () {
+    newTable({
+      btns: {
+        items: [
+          {% if curMember.type == MemberType.student or curMember.type == MemberType.school %}
+          {
+            layEvent: 'new',
+            'class': 'layui-btn brownBtn'
+          },
+          {% endif %}
+          // 'setCols'
+        ]
+      },
+      search: {
+        'class': 'selects',
+        labelWidth: '100',
+        submit: {
+          'class': 'layui-btn greenBtn'
+        },
+        items: [
+          {
+            label: '大赛',
+            elements: {
+              eType: 'select',
+              name: 'matchId',
+              option: [
+                {value: 'all', label: '&nbsp;', selected: true},
+                {% for match in matchs %}
+                {value: '{{ match.id }}', label: '{{ match.name }}'},
+                {% endfor %}
+              ]
+            }
+          },
+          {
+            label: '有无故事',
+            elements: {
+              eType: 'select',
+              name: 'haveStory',
+              option: [
+                {value: 'all', label: '&nbsp;'},
+                {value: 'true', label: '有'},
+                {value: 'false', label: '无'},
+              ]
+            }
+          },
+          {
+            label: '学生账号',
+            elements: {
+              eType: 'input',
+              name: 'account'
+            }
+          },
+          {
+            label: '学生姓名',
+            elements: {
+              eType: 'input',
+              name: 'name'
+            }
+          },
+          {
+            label: '指导老师',
+            elements: {
+              eType: 'input',
+              name: 'teacherName'
+            }
+          },
+          {
+            label: '报名时间',
+            elements: {
+              eType: 'date',
+              name: 'createdTime',
+              range: true
+            }
+          },
+          {
+            label: '审核状态',
+            elements: {
+              eType: 'select',
+              name: 'status',
+              option: [
+                {value: 'all', label: '&nbsp;'},
+                {% for i, j in MatchApplyStatus %}
+                {% if j !== MatchApplyStatus.draft %}{value: '{{ j }}', label: '{{ j }}'},{% endif %}
+                {% endfor %}
+              ]
+            }
+          },
+          {
+            label: '学段',
+            elements: {
+              eType: 'select',
+              name: 'period',
+              option: [
+                {value: 'all', label: '&nbsp;'},
+                {% for i, j in StudentPeriod %}
+                {% if i != 'LiXiao' %}{value: '{{ j }}', label: '{{ j }}'},{% endif %}
+                {% endfor %}
+              ]
+            }
+          }
+        ]
+      },
+      table: {
+        checkboxType: 'none',
+        tool: {
+          items: [
+            // 'info',
+            {% if curMember.type == MemberType.school or curMember.type == MemberType.student %}
+            {
+              layEvent: 'edit',
+              'class': 'layui-btn-primary [[# if (((new Date(d.match.matchApplyStart)) > (new Date()) || (new Date()) > (new Date(d.match.matchEnd))) || d.status !== \'{{ MatchApplyStatus.draft }}\' && d.status !== \'{{ MatchApplyStatus.revamp }}\') { ]]none[[# } ]]'
+            },
+            {% endif %}
+            {
+              layEvent: 'stories',
+              label: '参赛故事',
+              'class': 'layui-btn-primary [[# if (d.status !== \'{{ MatchApplyStatus.ok }}\') { ]]none[[# } ]]',
+              event: function (obj, config, render) {
+                // window.location.href = '/story/story/table?matchApplyId=' + obj.data.id
+                window.location.href = '/match/apply/' + obj.data.id + '/stories#photo'
+              }
+            },
+            {% if curMember.type == MemberType.school or curMember.type == MemberType.student %}
+            // {
+            //   layEvent: 'del',
+            //   'class': 'layui-btn-danger [[# if (d.status !== \'{{ MatchApplyStatus.draft }}\' && d.status !== \'{{ MatchApplyStatus.revamp }}\') { ]]none[[# } ]]'
+            // }
+            {% endif %}
+          ]
+        },
+        templates: [
+          {
+            id: 'tMatchName',
+            content: '[[ d.match.name ]]'
+          },
+          {
+            id: 'tSchoolVerifyIn',
+            content: '[[# if (d.student.school.verify === \'{{ VerifyStatus.ok }}\') { ]]是[[# } else { ]]否[[# } ]]'
+          },
+          {
+            id: 'tBirthday',
+            content: '[[ getBirthdayByIdCard(d.student.member.idCard) ]]'
+          },
+          {
+            id: 'tStudentIdCard',
+            content: '[[ d.student.member.idCard ]]'
+          },
+          {
+            id: 'tPhoto',
+            content: '[[# if (d.photo) { ]]<a href="[[ d.photo ]]" style="cursor: pointer;" target="_blank"><img class="tableImg" src="[[ d.photo ]]"></a>[[# } ]]'
+          },
+          {
+            id: 'tSchoolAccount',
+            content: '[[ d.student.school.member.account ]]'
+          },
+          {
+            id: 'tSchoolName',
+            content: '[[ d.student.school.member.name ]]'
+          },
+          {
+            id: 'tStudentPhone',
+            content: '[[ d.student.member.phoneNumber ]]'
+          },
+          {
+            id: 'tCreatedTime',
+            content: '[[ dateFormat(d.createdTime, \'YYYY-MM-DD HH:mm:ss\') ]]'
+          }
+        ],
+        config: {
+          elem: '#matchApply',
+          url: '/match/apply/table',
+          cols: [
+            [
+              {field: 'id', sort: true, title: 'ID', width:100, align: 'center', show: false},
+              {width:100, align: 'center', toolbar: '#operation'},
+              {field: 'matchName', sort: true, title: '大赛', minWidth:100, templet: '#tMatchName'},
+              {field: 'status', sort: true, title: '报名状态', width:100, align: 'center'},
+              {field: 'storyMatchCount', title: '已审故事', width:100, align: 'center'},
+              {field: 'name', sort: true, title: '学生姓名', minWidth:140, align: 'center'},
+              {field: 'period', sort: true, title: '学段', align: 'center'},
+              {field: 'grade', sort: true, title: '年级', align: 'center'},
+              {field: 'photo', title: '照片', align: 'center', templet: '#tPhoto'},
+              {% if curMember.type == MemberType.school %}
+              {field: 'teacherName', sort: true, title: '指导教师', minWidth:140, align: 'center'},
+              {% endif %}
+              {field: 'age', sort: true, title: '年龄', align: 'center'},
+              {field: 'idCard', title: '身份证号', width:180, align: 'center', sort: true},
+              {field: 'phoneNumber', sort: true, title: '手机', width:120, align: 'center'},
+              {% if curMember.type == MemberType.student %}
+              {field: 'schoolVerifyIn', sort: true, title: '会员学校', width:110, align: 'center', templet: '#tSchoolVerifyIn'},
+              {% endif %}
+              // {field: 'birthday', title: '出生日期', width:120, align: 'center', templet: '#tBirthday'},
+              {field: 'address', sort: true, title: '邮寄地址', minWidth:140},
+              {field: 'createdTime', sort: true, title: '报名时间', width:180, align: 'center', templet: '#tCreatedTime'},
+              {field: 'account', sort: true, title: '学生账号', minWidth:140, align: 'center'},
+            ]
+          ]
+        }
+      }
+    })
+  })
+</script>
+{% endblock %}

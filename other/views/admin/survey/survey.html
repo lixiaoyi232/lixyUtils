@@ -1,0 +1,167 @@
+{% extends "../back.html" %}
+
+{% block css %}
+{{ super() }}
+<style>
+  html {
+    overflow: hidden;
+  }
+</style>
+{% endblock %}
+
+{% block main %}
+  <div class="layui-card myCard">
+    <div class="layui-card-header">调查问卷</div>
+    <div class="layui-card-body">
+      <div id="myTable"></div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+  $(function () {
+    newTable({
+      btns: {
+        items: [
+          {% if curAdmin.isSuperUser or curAdmin.permissions.svy_svy_a %}
+          'new',
+          {% endif %}
+          {% if curAdmin.isSuperUser or curAdmin.permissions.svy_svy_d %}
+          'dels',
+          {% endif %}
+          'setCols'
+        ]
+      },
+      search: {
+        'class': 'selects',
+        labelWidth: '100',
+        items: [
+          {
+            label: '状态',
+            elements: {
+              eType: 'select',
+              name: 'status',
+              option: [
+                {value: 'all', label: '&nbsp;'},
+                {% for i, j in SurveyStatus %}
+                {value: '{{ j }}', label: '{{ j }}'},
+                {% endfor %}
+              ]
+            }
+          },
+          {
+            label: 'ID',
+            elements: {
+              eType: 'between',
+              name: 'id'
+            }
+          },
+          {
+            label: '创建时间',
+            elements: {
+              eType: 'date',
+              name: 'createdTime',
+              range: true
+            }
+          }
+        ]
+      },
+      table: {
+        tool: {
+          items: [
+            {% if curAdmin.isSuperUser or curAdmin.permissions.svy_svy_ok %}
+            {
+              layEvent: 'toOk',
+              label: '发布',
+              'class': 'layui-btn-primary[[# if(d.status !== \'{{SurveyStatus.draft}}\'){ ]] none[[#  } ]]',
+              event: function (obj, config, render) {
+                var path = config.url.split('?')[0]
+                path = (path[path.length - 1] === '/' ? path.slice(0, path.length - 6) : (path.slice(0, path.length - 5)))
+                layer.confirm('真的发布行么', function(index){
+                  ajax({
+                    method: 'POST',
+                    url: path + obj.data.id + '/toOk',
+                    success: function () {
+                      layer.msg('发布成功', {time: 2000, icon:6})
+                      render()
+                      layer.close(index)
+                    }
+                  })
+                })
+              }
+            },
+            {% endif %}
+            {% if curAdmin.isSuperUser or curAdmin.permissions.svy_svy_end %}
+            {
+              layEvent: 'toEnd',
+              label: '完结',
+              'class': 'layui-btn-primary[[# if(d.status !== \'{{SurveyStatus.ok}}\'){ ]] none[[#  } ]]',
+              event: function (obj, config, render) {
+                var path = config.url.split('?')[0]
+                path = (path[path.length - 1] === '/' ? path.slice(0, path.length - 6) : (path.slice(0, path.length - 5)))
+                layer.confirm('真的完结行么', function(index){
+                  ajax({
+                    method: 'POST',
+                    url: path + obj.data.id + '/toEnd',
+                    success: function () {
+                      layer.msg('完结成功', {time: 2000, icon:6})
+                      render()
+                      layer.close(index)
+                    }
+                  })
+                })
+              }
+            },
+            {% endif %}
+            {% if curAdmin.isSuperUser or curAdmin.permissions.svy_svy_g %}
+            {
+              layEvent: 'answer',
+              label: '回答',
+              'class': 'layui-btn-primary',
+              event: function (obj, config, render) {
+                var path = config.url.split('?')[0]
+                path = (path[path.length - 1] === '/' ? path.slice(0, path.length - 6) : (path.slice(0, path.length - 5)))
+                // openWindow(path + obj.data.id + '/info')
+                layer.open({
+                  type: 2,
+                  title: '回答',
+                  shade: 0.8,
+                  area: ['90%', '90%'],
+                  content: path + obj.data.id + '/answer'
+                })
+              }
+            },
+            'info',
+            {% endif %}
+            {% if curAdmin.isSuperUser or curAdmin.permissions.svy_svy_u %}
+            {
+              layEvent: 'edit',
+              'class': 'layui-btn-primary[[# if(d.status !== \'{{SurveyStatus.draft}}\'){ ]] none[[#  } ]]',
+            },
+            {% endif %}
+            {% if curAdmin.isSuperUser or curAdmin.permissions.svy_svy_d %}
+            'del',
+            {% endif %}
+          ]
+        },
+        templates: [
+        ],
+        config: {
+          elem: '#survey',
+          url: '/admin/survey/survey/table',
+          cols: [
+            [
+              {field: 'id', sort: true, title: 'ID', width:100, fixed: 'left', show: false},
+              {field: 'title', sort: true, title: '标题'},
+              {field: 'status', sort: true, title: '状态'},
+              {fixed: 'right', width:220, align: 'center', toolbar: '#operation'}
+            ]
+          ]
+        }
+      }
+    })
+  })
+</script>
+{% endblock %}

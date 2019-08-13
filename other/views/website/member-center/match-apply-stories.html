@@ -1,0 +1,212 @@
+{% extends "../layout/layout-member-center.html" %}
+
+{% block css %}
+{{ super() }}
+{% endblock %}
+
+{% block member_center_main %}
+
+<div class="layui-card">
+  <div class="layui-card-header">故事列表</div>
+  <div class="layui-card-body">
+    <div id="myTable"></div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+  $(function () {
+    newTable({
+      btns: {
+        items: [
+          {% if curMember.type == MemberType.student %}
+          // {
+          //   layEvent: 'new',
+          //   'class': 'layui-btn brownBtn',
+          //   label: '写故事',
+          //   event: function () {
+          //     window.location.href = '/member-center/story/new'
+          //   }
+          // },
+          {% endif %}
+          // 'setCols'
+        ]
+      },
+      // search: {
+      //   'class': 'selects',
+      //   labelWidth: '100',
+      //   submit: {
+      //     'class': 'layui-btn greenBtn'
+      //   },
+      //   items: [
+      //     {
+      //       label: '标题',
+      //       elements: {
+      //         eType: 'input',
+      //         name: 'title'
+      //       }
+      //     },
+      //     {
+      //       label: '类别',
+      //       elements: {
+      //         eType: 'select',
+      //         name: 'typeId',
+      //         option: [
+      //           {value: 'all', label: '&nbsp;', selected: true},
+      //           {% for type in types %}
+      //           {value: '{{ type.id }}', label: '{{ type.name }}'},
+      //           {% endfor %}
+      //         ]
+      //       }
+      //     },
+      //     {
+      //       label: '浏览量',
+      //       elements: {
+      //         eType: 'between',
+      //         name: 'pageViews',
+      //       }
+      //     },
+      //     {
+      //       label: '标签',
+      //       elements: {
+      //         eType: 'input',
+      //         name: 'tag',
+      //       }
+      //     },
+      //     {
+      //       label: '提交时间',
+      //       elements: {
+      //         eType: 'date',
+      //         name: 'publishTime',
+      //         range: true
+      //       }
+      //     },
+      //     {
+      //       label: '作品类别',
+      //       elements: {
+      //         eType: 'select',
+      //         name: 'storyMatchStage',
+      //         option: [
+      //           {value: 'all', label: '&nbsp;', selected: true},
+      //           {% for i, j in StoryStage %}
+      //           {value: '{{ j }}', label: '{{ j }}'},
+      //           {% endfor %}
+      //         ]
+      //       }
+      //     },
+      //     {
+      //       label: '奖项',
+      //       elements: {
+      //         eType: 'select',
+      //         name: 'storyMatchAward',
+      //         option: [
+      //           {value: 'all', label: '&nbsp;', selected: true},
+      //           {% for i, j in Award %}
+      //           {value: '{{ j }}', label: '{{ j }}'},
+      //           {% endfor %}
+      //         ]
+      //       }
+      //     },
+      //   ]
+      // },
+      table: {
+        checkboxType: 'none',
+        tool: {
+          items: [
+            {
+              layEvent: 'info',
+              event: function (obj, config, render) {
+                openWindow('/story/' + obj.data.id)
+              }
+            },
+            {% if curMember.type == MemberType.student %}
+            {
+              layEvent: 'edit',
+              'class': 'layui-btn-primary [[# if ((d.status === \'{{ StoryStatus.wait }}\' || d.status === \'{{ StoryStatus.published }}\' || ((d.storyMatch.stage === \'{{ StoryStage.first }}\' && ((new Date(d.storyMatch.matchApply.match.storyStart)) > (new Date()) || (new Date()) > (new Date(d.storyMatch.matchApply.match.storyEnd)))) || (d.storyMatch.stage === \'{{ StoryStage.second }}\' && ((new Date(d.storyMatch.matchApply.match.finalStoryStart)) > (new Date()) || (new Date()) > (new Date(d.storyMatch.matchApply.match.finalStoryEnd)))) || (d.storyMatch.stage === \'{{ StoryStage.third }}\' && (new Date(d.storyMatch.matchApply.match.matchEnd)) > (new Date()))))) { ]]none[[# } ]]',
+              event: function (obj) {
+                window.location.href = '/member-center/story/' + obj.data.id + '/edit?_next={{encodedUrl}}'
+              }
+            },
+            {% endif %}
+            {% if curMember.type == MemberType.school or curMember.type == MemberType.student %}
+            // {
+            //   layEvent: 'del',
+            //   'class': 'layui-btn-danger [[# if (d.status !== \'{{ StoryStatus.draft }}\' && d.status !== \'{{ StoryStatus.revamp }}\') { ]]none[[# } ]]'
+            // }
+            {% endif %}
+          ]
+        },
+        templates: [
+          {
+            id: 'tTitle',
+            content: '<a href="/story/[[ d.id ]]" target="_blank" style="cursor: pointer;">[[ d.title ]]</a>'
+          },
+          {
+            id: 'tTypeName',
+            content: '[[ d.type.name ]]'
+          },
+          {
+            id: 'tPublishTime',
+            content: '[[ dateFormat(d.publishTime, \'YYYY-MM-DD HH:mm:ss\') ]]'
+          },
+          {
+            id: 'tAuthorAccount',
+            content: '[[ d.author.account ]]'
+          },
+          {
+            id: 'tAuthorName',
+            content: '[[ d.author.name ]]'
+          },
+          {
+            id: 'tAuthorType',
+            content: '[[ d.author.type ]]'
+          },
+          {
+            id: 'tStoryMatchStage',
+            content: '[[ d.storyMatch != null ? d.storyMatch.stage : \'\' ]]'
+          },
+          {
+            id: 'tStoryMatchAward',
+            content: '[[ d.storyMatch != null && d.storyMatch.award != null ? d.storyMatch.award : \'\' ]]'
+          },
+        ],
+        config: {
+          elem: '#story',
+          url: '/story/story/table?matchApplyId={{ matchApply.id }}',
+          cols: [
+            [
+              {field: 'id', title: 'ID', align: 'center', show: false, sort: true, width: 100},
+              {align: 'center', width: 140, toolbar: '#operation'},
+              {% if curMember.type == MemberType.school or curMember.type == MemberType.teacher %}
+              {field: 'authorName', title: '学生姓名', align: 'center', sort: true, minWidth: 140, templet: '#tAuthorName'},
+              {field: 'title', title: '故事标题', align: 'center', sort: true, minWidth: 200, templet: '#tTitle'},
+              {field: 'typeName', title: '故事类别', align: 'center', sort: true, minWidth: 150, templet: '#tTypeName'},
+              {field: 'status', title: '状态', align: 'center', sort: true, width: 120},
+              {field: 'publishTime', title: '提交时间', align: 'center', sort: true, width: 180, templet: '#tPublishTime'},
+              {field: 'storyMatchStage', title: '作品类别', align: 'center', sort: true, width: 100, templet: '#tStoryMatchStage'},
+              {field: 'storyMatchAward', title: '奖项', align: 'center', sort: true, width: 100, templet: '#tStoryMatchAward'},
+              {field: 'authorAccount', title: '学生账号', align: 'center', sort: true, minWidth: 140, templet: '#tAuthorAccount'},
+              {field: 'pageViews', title: '访问量', align: 'center', sort: true, width: 100},
+              {% endif %}
+              {% if curMember.type == MemberType.student %}
+              {field: 'title', title: '故事标题', align: 'center', sort: true, minWidth: 200, templet: '#tTitle'},
+              {field: 'typeName', title: '故事类别', align: 'center', sort: true, minWidth: 150, templet: '#tTypeName'},
+              {field: 'status', title: '状态', align: 'center', sort: true, width: 120},
+              {field: 'publishTime', title: '提交时间', align: 'center', sort: true, width: 180, templet: '#tPublishTime'},
+              {field: 'storyMatchStage', title: '作品类别', align: 'center', sort: true, width: 100, templet: '#tStoryMatchStage'},
+              {field: 'storyMatchAward', title: '奖项', align: 'center', sort: true, width: 100, templet: '#tStoryMatchAward'},
+              {field: 'pageViews', title: '访问量', align: 'center', sort: true, width: 100},
+              {field: 'authorName', title: '学生姓名', align: 'center', sort: true, minWidth: 140, templet: '#tAuthorName'},
+              {field: 'authorAccount', title: '学生账号', align: 'center', sort: true, minWidth: 140, templet: '#tAuthorAccount'},
+              {% endif %}
+            ]
+          ]
+        }
+      }
+    })
+  })
+</script>
+{% endblock %}

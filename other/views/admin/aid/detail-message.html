@@ -1,0 +1,133 @@
+{% extends "../back.html" %}
+
+{% block css %}
+{{ super() }}
+<style>
+  html {
+    overflow: hidden;
+  }
+</style>
+{% endblock %}
+
+{% block body %}
+  <div class="layui-card myCard">
+    <div class="layui-card-header">资助留言</div>
+    <div class="layui-card-body">
+      <div id="myTable"></div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+  $(function () {
+    newTable({
+      btns: {
+        items: [
+          {% if curAdmin.isSuperUser or curAdmin.permissions.aid_msg_d %}
+          'dels',
+          {% endif %}
+          'setCols',
+        ]
+      },
+      search: {
+        'class': 'selects',
+        labelWidth: '100',
+        items: [
+          {
+            label: '回复人',
+            elements: {
+              eType: 'input',
+              name: 'memberName'
+            }
+          },
+          {
+            label: '回复类型',
+            elements: {
+              eType: 'select',
+              name: 'type',
+              option: [
+                {value: 'all', label: '&nbsp;', selected: true},
+                {% for i, j in AidMessageType %}
+                {value: '{{ j }}', label: '{{ j }}'},
+                {% endfor %}
+              ]
+            }
+          },
+          {
+            label: '主题',
+            elements: {
+              eType: 'input',
+              name: 'subject'
+            }
+          },
+          {
+            label: '内容',
+            elements: {
+              eType: 'input',
+              name: 'content'
+            }
+          },
+        ]
+      },
+      table: {
+        tool: {
+          items: [
+            {% if curAdmin.isSuperUser or curAdmin.permissions.aid_msg_g %}
+            'info',
+            {% endif %}
+            {% if curAdmin.isSuperUser or curAdmin.permissions.aid_msg_d %}
+            'del',
+            {% endif %}
+          ]
+        },
+        templates: [
+          {
+            id: 'mn',
+            content: '[[ d.member.name ]]'
+          },
+          {
+            id: 'c',
+            content: '<pre>[[ decodeURIComponent(d.content) ]]</pre>'
+          },
+          {
+            id: 'i1',
+            content: '[[# if (d.img1) { ]]<a href="[[ d.img1 ]]" style="cursor: pointer;" target="_blank"><img class="tableImg" src="[[ d.img1 ]]"></a>[[# } ]]'
+          },
+          {
+            id: 'i2',
+            content: '[[# if (d.img2) { ]]<a href="[[ d.img2 ]]" style="cursor: pointer;" target="_blank"><img class="tableImg" src="[[ d.img2 ]]"></a>[[# } ]]'
+          },
+          {
+            id: 'i3',
+            content: '[[# if (d.img3) { ]]<a href="[[ d.img3 ]]" style="cursor: pointer;" target="_blank"><img class="tableImg" src="[[ d.img3 ]]"></a>[[# } ]]'
+          },
+          {
+            id: 'tCreatedTime',
+            content: '[[ dateFormat(d.createdTime, \'YYYY-MM-DD HH:mm:ss\') ]]'
+          },
+        ],
+        config: {
+          elem: '#aidMessage',
+          url: '/admin/aid/message/table?detailId={{ detailId }}',
+          cols: [
+            [
+                {field: 'id', sort: true, title: 'ID', width:100, show: false},
+                {field: 'memberName', sort: true, title: '回复人', templet: '#mn'},
+                {field: 'type', sort: true, title: '回复类型'},
+                {field: 'subject', sort: true, title: '主题'},
+                {field: 'content', sort: true, title: '内容', templet: '#c'},
+                {field: 'img1', sort: true, title: '图片1', templet: '#i1'},
+                {field: 'img2', sort: true, title: '图片2', templet: '#i2'},
+                {field: 'img3', sort: true, title: '图片3', templet: '#i3'},
+                {field: 'createdTime', sort: true, title: '提交时间', width:180, align: 'center', templet: '#tCreatedTime'},
+                {width:160, align: 'center', toolbar: '#operation'}
+            ]
+          ]
+        }
+      }
+    })
+  })
+</script>
+{% endblock %}

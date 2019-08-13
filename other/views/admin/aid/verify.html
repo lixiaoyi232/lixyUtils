@@ -1,0 +1,362 @@
+{% extends "../back.html" %}
+
+{% block css %}
+{{ super() }}
+<style>
+  html {
+    overflow: hidden;
+  }
+</style>
+{% endblock %}
+
+{% block main %}
+  <div class="layui-card myCard">
+    <div class="layui-card-header">资助故事审核</div>
+    <div class="layui-card-body">
+      <div id="myTable"></div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+  $(function () {
+    newTable({
+      btns: {
+        items: [
+          'setCols',
+          {% if curAdmin.isSuperUser or curAdmin.permissions.sty_sty_ad %}
+          {
+            layEvent: 'addToDigest',
+            'class': 'layui-btn-normal',
+            label: '精选',
+            event: function (obj, config, render) {
+              var data = table.checkStatus(config.id).data
+              var items = []
+              for (var i in data) if (data.hasOwnProperty(i)) items.push(data[i].id)
+              ajax({
+                method: 'POST',
+                url: '/admin/story/story/digest',
+                data: JSON.stringify({isDigest: true, data: items}),
+                success: function () {
+                  layer.msg('精选成功', {time: 2000, icon:6})
+                  render()
+                },
+              })
+            }
+          },
+          {
+            layEvent: 'removeToDigest',
+            'class': 'layui-btn-normal',
+            label: '去精',
+            event: function (obj, config, render) {
+              var data = table.checkStatus(config.id).data
+              var items = []
+              for (var i in data) if (data.hasOwnProperty(i)) items.push(data[i].id)
+              ajax({
+                method: 'POST',
+                url: '/admin/story/story/digest',
+                data: JSON.stringify({isDigest: false, data: items}),
+                success: function () {
+                  layer.msg('精选成功', {time: 2000, icon:6})
+                  render()
+                },
+              })
+            }
+          },
+          {
+            layEvent: 'addToImgDigest',
+            'class': 'layui-btn-normal',
+            label: '星图',
+            event: function (obj, config, render) {
+              var data = table.checkStatus(config.id).data
+              var items = []
+              for (var i in data) if (data.hasOwnProperty(i)) items.push(data[i].id)
+              ajax({
+                method: 'POST',
+                url: '/admin/story/story/imgDigest',
+                data: JSON.stringify({imgIsDigest: true, data: items}),
+                success: function () {
+                  layer.msg('星图成功', {time: 2000, icon:6})
+                  render()
+                },
+              })
+            }
+          },
+          {
+            layEvent: 'removeToImgDigest',
+            'class': 'layui-btn-normal',
+            label: '去星',
+            event: function (obj, config, render) {
+              var data = table.checkStatus(config.id).data
+              var items = []
+              for (var i in data) if (data.hasOwnProperty(i)) items.push(data[i].id)
+              ajax({
+                method: 'POST',
+                url: '/admin/story/story/imgDigest',
+                data: JSON.stringify({imgIsDigest: false, data: items}),
+                success: function () {
+                  layer.msg('去星成功', {time: 2000, icon:6})
+                  render()
+                },
+              })
+            }
+          },
+          {% endif %}
+        ]
+      },
+      search: {
+        'class': 'selects',
+        labelWidth: '100',
+        items: [
+          {
+            label: '标题',
+            elements: {
+              eType: 'input',
+              name: 'title'
+            }
+          },
+          {
+            label: '类别',
+            elements: {
+              eType: 'select',
+              name: 'typeId',
+              option: [
+                {value: 'all', label: '&nbsp;', selected: true},
+                {% for type in types %}
+                {value: '{{ type.id }}', label: '{{ type.name }}'},
+                {% endfor %}
+              ]
+            }
+          },
+          {
+            label: '浏览量',
+            elements: {
+              eType: 'between',
+              name: 'pageViews',
+            }
+          },
+          {
+            label: '标签',
+            elements: {
+              eType: 'input',
+              name: 'tag',
+            }
+          },
+          {
+            label: '精华',
+            elements: {
+              eType: 'select',
+              name: 'isDigest',
+              option: [
+                {value: 'all', label: '&nbsp;', selected: true},
+                {value: 'true', label: '是'},
+                {value: 'false', label: '否'},
+              ]
+            }
+          },
+          {
+            label: '星图',
+            elements: {
+              eType: 'select',
+              name: 'imgIsDigest',
+              option: [
+                {value: 'all', label: '&nbsp;', selected: true},
+                {value: 'true', label: '是'},
+                {value: 'false', label: '否'},
+              ]
+            }
+          },
+          {
+            label: '提交时间',
+            elements: {
+              eType: 'date',
+              name: 'publishTime',
+              range: true
+            }
+          },
+          {
+            label: '大陆省份',
+            elements: {
+              eType: 'input',
+              name: 'provinceName',
+            }
+          },
+          {
+            label: '作者账号',
+            elements: {
+              eType: 'input',
+              name: 'authorAccount',
+            }
+          },
+          {
+            label: '作者姓名',
+            elements: {
+              eType: 'input',
+              name: 'authorName',
+            }
+          },
+          {
+            label: '学校编号',
+            elements: {
+              eType: 'input',
+              name: 'schoolAccount',
+            }
+          },
+          {
+            label: '学校名称',
+            elements: {
+              eType: 'input',
+              name: 'schoolName',
+            }
+          },
+        ]
+      },
+      table: {
+        tool: {
+          items: [
+            {% if curAdmin.isSuperUser or curAdmin.permissions.aid_sav_v %}
+            {
+              layEvent: 'edit',
+              label: '审核',
+              'class': 'layui-btn-primary [[# if(d.status !== \'{{ StoryStatus.wait }}\'){ ]] none[[#  } ]]',
+            },
+            {% endif %}
+            {% if curAdmin.isSuperUser or curAdmin.permissions.sty_sty_ad %}
+            {
+              layEvent: 'addDigest',
+              label: '精选',
+              'class': 'layui-btn-primary [[# if(d.isDigest){ ]] none[[#  } ]]',
+              event: function (obj, config, render) {
+                ajax({
+                  method: 'POST',
+                  url: '/admin/story/story/digest',
+                  data: JSON.stringify({isDigest: true, data: [obj.data.id]}),
+                  success: function () {
+                    layer.msg('精选成功', {time: 2000, icon:6})
+                    render()
+                  },
+                })
+              }
+            },
+            {
+              layEvent: 'removeDigest',
+              label: '去精',
+              'class': 'layui-btn-primary [[# if(!d.isDigest){ ]] none[[#  } ]]',
+              event: function (obj, config, render) {
+                ajax({
+                  method: 'POST',
+                  url: '/admin/story/story/digest',
+                  data: JSON.stringify({isDigest: false, data: [obj.data.id]}),
+                  success: function () {
+                    layer.msg('去精成功', {time: 2000, icon:6})
+                    render()
+                  },
+                })
+              }
+            },
+            {
+              layEvent: 'addImgDigest',
+              label: '星图',
+              'class': 'layui-btn-primary [[# if(d.imgIsDigest){ ]] none[[#  } ]]',
+              event: function (obj, config, render) {
+                ajax({
+                  method: 'POST',
+                  url: '/admin/story/story/imgDigest',
+                  data: JSON.stringify({imgIsDigest: true, data: [obj.data.id]}),
+                  success: function () {
+                    layer.msg('星图成功', {time: 2000, icon:6})
+                    render()
+                  },
+                })
+              }
+            },
+            {
+              layEvent: 'removeImgDigest',
+              label: '去星',
+              'class': 'layui-btn-primary [[# if(!d.imgIsDigest){ ]] none[[#  } ]]',
+              event: function (obj, config, render) {
+                ajax({
+                  method: 'POST',
+                  url: '/admin/story/story/imgDigest',
+                  data: JSON.stringify({imgIsDigest: false, data: [obj.data.id]}),
+                  success: function () {
+                    layer.msg('去星成功', {time: 2000, icon:6})
+                    render()
+                  },
+                })
+              }
+            },
+            {% endif %}
+          ]
+        },
+        templates: [
+          {
+            id: 'tTitle',
+            content: '<a href="/story/[[ d.id ]]" target="_blank" style="cursor: pointer;">[[ d.title ]]</a>'
+          },
+          {
+            id: 'tTypeName',
+            content: '[[ d.type.name ]]'
+          },
+          {
+            id: 'tIsDigest',
+            content: '[[ d.isDigest ? \'是\' : \'否\' ]]'
+          },
+          {
+            id: 'tImgIsDigest',
+            content: '[[ d.imgIsDigest ? \'是\' : \'否\' ]]'
+          },
+          {
+            id: 'tPublishTime',
+            content: '[[ dateFormat(d.publishTime, \'YYYY-MM-DD HH:mm:ss\') ]]'
+          },
+          {
+            id: 'tProvinceName',
+            content: '[[ d.school.member.county.city.province.name ]]'
+          },
+          {
+            id: 'tAuthorAccount',
+            content: '[[ d.author.account ]]'
+          },
+          {
+            id: 'tAuthorName',
+            content: '[[ d.author.name ]]'
+          },
+          {
+            id: 'tSchoolAccount',
+            content: '[[ d.school.member.account ]]'
+          },
+          {
+            id: 'tSchoolName',
+            content: '[[ d.school.member.name ]]'
+          },
+        ],
+        config: {
+          elem: '#verify',
+          url: '/admin/aid/verify/table',
+          cols: [
+            [
+              {field: 'id', title: 'ID', align: 'center', show: false, sort: true, width: 100, fixed: 'left'},
+              {field: 'title', title: '标题', align: 'center', sort: true, minWidth: 200, fixed: 'left', templet: '#tTitle'},
+              {field: 'authorAccount', title: '学生账号', align: 'center', sort: true, minWidth: 140, templet: '#tAuthorAccount'},
+              {field: 'authorName', title: '学生姓名', align: 'center', sort: true, minWidth: 140, templet: '#tAuthorName'},
+              {field: 'schoolName', title: '学校名称', align: 'center', sort: true, minWidth: 140, templet: '#tSchoolName'},
+              {field: 'schoolAccount', title: '学校编号', align: 'center', sort: true, minWidth: 140, templet: '#tSchoolAccount'},
+              {field: 'publishTime', title: '提交时间', align: 'center', sort: true, width: 180, templet: '#tPublishTime'},
+              {field: 'isDigest', title: '精华', align: 'center', sort: true, minWidth: 80, templet: '#tIsDigest'},
+              {field: 'imgIsDigest', title: '星图', align: 'center', sort: true, width: 80, templet: '#tImgIsDigest'},
+              {field: 'provinceName', title: '大陆省份', align: 'center', sort: true, minWidth: 150, templet: '#tProvinceName'},
+              {field: 'typeName', title: '类别', align: 'center', sort: true, minWidth: 150, templet: '#tTypeName'},
+              {field: 'tag', title: '标签', align: 'center', sort: true, minWidth: 100},
+              {field: 'pageViews', title: '访问量', align: 'center', sort: true, width: 100},
+              {align: 'center', width: 140, fixed: 'right', toolbar: '#operation'}
+            ]
+          ]
+        }
+      }
+    })
+  })
+</script>
+{% endblock %}

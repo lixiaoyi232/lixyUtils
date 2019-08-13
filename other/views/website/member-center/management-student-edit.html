@@ -1,0 +1,325 @@
+{% extends "../layout/layout-website.html" %}
+
+{% block css %}
+{{ super() }}
+<link rel="stylesheet" href="/static/css/admin/back.css">
+<link rel="stylesheet" href="/static/css/website/member-center.css">
+{% endblock %}
+
+{% block body %}
+
+<div class="layui-card myCard">
+  <div class="layui-card-header">修改信息</div>
+  <div class="layui-card-body layui-tab layui-tab-brief">
+    <div id="myForm1"></div>
+  </div>
+</div>
+
+<!-- <form id="info-edit-form" autocomplete="off">
+  <div>姓名：{{studentMember.name}} &nbsp;&nbsp;&nbsp; 注意： 如果需要修改，请联系网站管理员。</div>
+  <div>身份证号：{{studentMember.idCard}} &nbsp;&nbsp;&nbsp; 注意： 如果需要修改，请联系网站管理员。</div>
+  <div>昵称：<input type="text" name="nickName" value={{studentMember.nickName}}></div>
+  <div>
+    性别：
+    <select name="gender">
+      <option disabled selected>请选择</option>
+      {% for i, gender in Gender %}
+      <option value="{{gender}}" {% if studentMember.gender == gender %}selected{% endif %}>{{gender}}</option>
+      {% endfor%}
+    </select>
+  </div>
+  <div>民族：<input type="text" name="nation" value="{{studentMember.nation}}"></div>
+  <div>联系手机：<input type="text" name="phoneNumber" value="{{studentMember.phoneNumber}}"></div>
+  <div>住址：<input type="text" name="address" value={{studentMember.student.address}}></div>
+  <div>
+    照片（选填）：
+    <button type="button" id="btn-photo">上传</button>
+    <img src="{{studentMember.student.photo}}" alt="" id="img-photo" style="display: block;">
+    <input type="hidden" name="photo" value="{{studentMember.student.photo}}">
+  </div>
+  <div>
+    头像（选填）：
+    <button type="button" id="btn-avatar">上传</button>
+    <img src="{{studentMember.avatar}}" alt="" id="img-avatar" style="display: block;">
+    <input type="hidden" name="avatar" value="{{studentMember.avatar}}">
+  </div>
+  <div>Email（选填）：<input type="text" name="email" value="{{studentMember.email}}"></div>
+  <div>微信号（选填）：<input type="text" name="wechat" value="{{studentMember.wechat}}"></div>
+  <div>qq（选填）：<input type="text" name="qq" value="{{studentMember.qq}}"></div>
+  <div>简介： <textarea name="intro" id="" cols="80" rows="5">{{studentMember.intro}}</textarea></div>
+  <div>班级：<input type="number" name="class" value="{{studentMember.student.class}}"></div>
+  <div>
+    年级：
+    <select name="grade">
+      <option {% if studentMember.student.grade == null %}selected{% endif %}>请选择</option>
+      <option value="1" {% if studentMember.student.grade === 1 %}selected{% endif %}>1</option>
+      <option value="2" {% if studentMember.student.grade === 2 %}selected{% endif %}>2</option>
+      <option value="3" {% if studentMember.student.grade === 3 %}selected{% endif %}>3</option>
+      {% if studentMember.student.period === StudentPeriod.XiaoXue %}
+      <option value="4" {% if studentMember.student.grade === 4 %}selected{% endif %}>4</option>
+      <option value="5" {% if studentMember.student.grade === 5 %}selected{% endif %}>5</option>
+      <option value="6" {% if studentMember.student.grade === 6 %}selected{% endif %}>6</option>
+      {% endif %}
+    </select>
+  </div>
+
+  <div>
+    <button id="info-edit-form-submit" type="submit">提交</button>
+  </div>
+</form> -->
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+  $(function () {
+    newForm({
+      parent: '#myForm1',
+      form: {
+        labelWidth: '120',
+        done: function () {
+          $('[lay-filter="myForm1Submit"]').css('marginTop', 30)
+        },
+        submit: {
+          'class': 'layui-btn brownBtn layui-btn-lg lgWidth',
+          event: function (data) {
+            $('[lay-filter="myForm1Submit"]').attr('disabled', true)
+            $('[lay-filter="myForm1Submit"]').addClass('layui-btn-disabled')
+            ajax({
+              method: 'POST',
+              url: '/member-center/management/student/{{studentMember.id}}/edit',
+              data: JSON.stringify(data.field),
+              success: function () {
+                layer.msg('操作成功',{time: 2000, icon:6})
+                parent.tableRender()
+                window.setTimeout(function () {parent.layer.close(parent.layer.getFrameIndex(window.name))}, 2000)
+                // layer.msg('修改成功', {time: 2000, icon:6})
+                // parent.tableRender()
+                // window.setTimeout(function () {parent.layer.close(parent.layer.getFrameIndex(window.name))}, 2000)
+              },
+              fail: function () {
+                $('[lay-filter="myForm1Submit"]').attr('disabled', false)
+                $('[lay-filter="myForm1Submit"]').removeClass('layui-btn-disabled')
+              },
+              error: function () {
+                $('[lay-filter="myForm1Submit"]').attr('disabled', false)
+                $('[lay-filter="myForm1Submit"]').removeClass('layui-btn-disabled')
+              }
+            })
+          }
+        },
+        val: {
+          'nickName': '{{ studentMember.nickName }}',
+          'gender': '{{ studentMember.gender }}',
+          'nation': '{{ studentMember.nation }}',
+          'phoneNumber': '{{ studentMember.phoneNumber }}',
+          'address': '{{ studentMember.student.address }}',
+          'photo': '{{ studentMember.student.photo }}',
+          'avatar': '{{ studentMember.avatar }}',
+          'email': '{{ studentMember.email }}',
+          'wechat': '{{ studentMember.wechat }}',
+          'qq': '{{ studentMember.qq }}',
+          'intro': decodeURIComponent('{{ studentMember.intro }}'),
+          'grade': '{{ studentMember.student.grade }}',
+          'class': '{{ studentMember.student.class }}',
+        },
+        items: [
+          {
+            label: '姓名',
+            elements: {
+              eType: 'char',
+              name: 'name',
+              element: '<div class="layui-input-block" style="">{{ studentMember.name }} &nbsp;&nbsp;&nbsp; <span class="notice">注意： 如果需要修改，请联系网站管理员。</span></div>'
+            }
+          },
+          {
+            label: '身份证号',
+            elements: {
+              eType: 'char',
+              name: 'idCard',
+              element: '<div class="layui-input-block" style="">{{ studentMember.idCard }} &nbsp;&nbsp;&nbsp; <span class="notice">注意： 如果需要修改，请联系网站管理员。</span></div>'
+            }
+          },
+          {
+            label: '昵称',
+            elements: {
+              eType: 'input',
+              name: 'nickName',
+              layVerify: 'required'
+            }
+          },
+          {
+            label: '性别',
+            elements: {
+              eType: 'select',
+              name: 'gender',
+              layVerify: 'select',
+              option: [
+                {value: 'null', label: '请选择'},
+                {% for i, j in Gender %}
+                {value: '{{ j }}', label: '{{ j }}'},
+                {% endfor %}
+              ],
+            }
+          },
+          {
+            label: '民族',
+            elements: {
+              eType: 'input',
+              name: 'nation',
+              layVerify: ''
+            }
+          },
+          {
+            label: '联系手机',
+            elements: {
+              eType: 'input',
+              name: 'phoneNumber',
+              layVerify: 'required|phone'
+            }
+          },
+          {
+            label: '住址',
+            elements: {
+              eType: 'input',
+              name: 'address',
+              layVerify: 'required'
+            }
+          },
+          {
+            label: '本人照片',
+            elements: {
+              eType: 'file',
+              name: 'photo',
+              btnClass: 'layui-btn greenBtn',
+            }
+          },
+          {
+            label: '头像',
+            elements: {
+              eType: 'file',
+              name: 'avatar',
+              layVerify: '',
+              btnClass: 'layui-btn greenBtn'
+            }
+          },
+          {
+            label: 'Email',
+            elements: {
+              eType: 'input',
+              name: 'email',
+              layVerify: ''
+            }
+          },
+          {
+            label: '微信号',
+            elements: {
+              eType: 'input',
+              name: 'wechat',
+              layVerify: ''
+            }
+          },
+          {
+            label: 'QQ',
+            elements: {
+              eType: 'input',
+              name: 'qq',
+              layVerify: ''
+            }
+          },
+          {
+            label: '简介',
+            elements: {
+              eType: 'textarea',
+              name: 'intro',
+              layVerify: ''
+            }
+          },
+          {
+            label: '年级',
+            elements: {
+              eType: 'select',
+              name: 'grade',
+              layVerify: 'select',
+              option: [
+                {value: 'null', label: '请选择'},
+                {value: '1', label: '1'},
+                {value: '2', label: '2'},
+                {value: '3', label: '3'},
+                {% if studentMember.student.period == StudentPeriod.XiaoXue %}
+                {value: '4', label: '4'},
+                {value: '5', label: '5'},
+                {value: '6', label: '6'},
+                {% endif %}
+              ]
+            }
+          },
+          {
+            label: '班级',
+            elements: {
+              eType: 'input',
+              name: 'class',
+              layVerify: 'required'
+            }
+          },
+        ],
+        verify: {
+          select: function (value) {
+            if (value === '' || value === 'null') return '必填项不能为空'
+          },
+        }
+      }
+    })
+
+    // // 上传照片
+    // layui.upload.render({
+    //   elem: '#btn-photo',
+    //   url: '/upload/',
+    //   done: function(res){
+    //     $('#img-photo')[0].src = res.url
+    //     $('input[name=photo]').val(res.url)
+    //   },
+    //   error: function(){
+    //   }
+    // })
+
+    // // 上传头像
+    // layui.upload.render({
+    //   elem: '#btn-avatar',
+    //   url: '/upload/',
+    //   done: function(res){
+    //     $('#img-avatar')[0].src = res.url
+    //     $('input[name=avatar]').val(res.url)
+    //   },
+    //   error: function(){
+    //   }
+    // })
+
+
+    // $('#info-edit-form').on('submit', function(e) {
+    //   if (e.target !== this) {
+    //     return true
+    //   }
+    //   e.preventDefault()
+    //   $('#info-edit-form-submit').attr('disabled', true)
+    //   ajax({
+    //     method: 'POST',
+    //     url: '/member-center/management/student/{{studentMember.id}}/edit',
+    //     data: JSON.stringify(getFormData('#info-edit-form')),
+    //     success: function () {
+    //       layui.layer.msg('操作成功',{ time: 1000 })
+    //       parent.tableRender()
+    //       window.setTimeout(function () {
+    //         // location.href = '/member-center/info'
+    //         var index = parent.layer.getFrameIndex(window.name) //先得到当前iframe层的索引
+    //         parent.layer.close(index) //再执行关闭
+    //       }, 1100)
+    //     },
+    //     fail: function () {
+    //       $('#info-edit-form-submit').attr('disabled', false)
+    //     }
+    //   })
+    // })
+  })
+</script>
+{% endblock %}

@@ -1,0 +1,258 @@
+{% extends "../layout/layout-website.html" %}
+
+{% block body %}
+<!-- <form id="edit-score-form" autocomplete="off">
+  <div>语文：<input type="number" name="chinese" value="{{studentScore.chinese}}"></div>
+  <div>数学：<input type="number" name="math"  value="{{studentScore.math}}"></div>
+  <div>英语：<input type="number" name="english"  value="{{studentScore.english}}"></div>
+  <div>生物：<input type="number" name="biology"  value="{{studentScore.biology}}"></div>
+  <div>物理：<input type="number" name="physics"  value="{{studentScore.physics}}"></div>
+  <div>化学：<input type="number" name="chemistry"  value="{{studentScore.chemistry}}"></div>
+  <div>政治：<input type="number" name="politics"  value="{{studentScore.politics}}"></div>
+  <div>地理：<input type="number" name="geography"  value="{{studentScore.geography}}"></div>
+  <div>历史：<input type="number" name="history"  value="{{studentScore.history}}"></div>
+  <div>班级名次：<input type="number" name="classRanking"  value="{{studentScore.classRanking}}"></div>
+  <div>年级名次：<input type="number" name="gradeRanking"  value="{{studentScore.gradeRanking}}"></div>
+  <div>
+    学期：
+    <input type="text" id="semesterYear" name="semesterYear" value="{{semesterYear}}">
+    <select name="semesterMonth">
+      <option value="" {% if semesterMonth == null %}selected{% endif %}>请选择</option>
+      <option value="0" {% if semesterMonth === 0 %}selected{% endif %}>3月~7月</option>
+      <option value="1" {% if semesterMonth === 1 %}selected{% endif %}>9月~下一年1月</option>
+    </select>
+  </div>
+  <div>
+    类型：
+    <select name="type">
+      <option value="" {% if studentScore.type == null %}selected{% endif %}>请选择</option>
+      {% for _, type in StudentScoreType %}
+      <option value="{{type}}" {% if studentScore.type === type %}selected{% endif %}>{{type}}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div>
+    <button type="submit" id="btn-edit-score-submit">提交</button>
+  </div>
+</form> -->
+
+
+<div class="layui-card myCard">
+  <div class="layui-card-header">成绩</div>
+  <div class="layui-card-body layui-tab layui-tab-brief">
+    <div id="myForm"></div>
+  </div>
+</div>
+{% endblock %}
+
+
+{% block script %}
+{{ super() }}
+<script>
+  $(function () {
+    // layui.laydate.render({
+    //   elem: '#semesterYear',
+    //   type: 'year',
+    //   theme: '#1E9FFF'
+    // })
+
+    // $('#edit-score-form').on('submit', function(e) {
+    //   if (e.target !== this) {
+    //     return true
+    //   }
+    //   e.preventDefault()
+    //   $('.btn-edit-score-submit').attr('disabled', true)
+    //   ajax({
+    //     method: 'PUT',
+    //     url: '/member-center/management/student/{{studentMember.id}}/score/{{studentScore.id}}',
+    //     data: JSON.stringify(getFormData('#edit-score-form')),
+    //     success: function () {
+    //       $('.btn-edit-score-submit').attr('disabled', false)
+    //       layui.layer.msg('操作成功',{ time: 1000 })
+    //       parent.tableRender()
+    //       window.setTimeout(function () {
+    //         var index = parent.layer.getFrameIndex(window.name) //先得到当前iframe层的索引
+    //         parent.layer.close(index) //再执行关闭
+    //       }, 1100)
+    //     },
+    //     fail: function () {
+    //       $('.btn-edit-score-submit').attr('disabled', false)
+    //     }
+    //   })
+    // })
+
+    newForm({
+      form: {
+        labelWidth: '100',
+        submit: {
+          'class': 'layui-btn greenBtn',
+          event: function (data) {
+            $('[lay-filter="myFormSubmit"]').attr('disabled', true)
+            $('[lay-filter="myFormSubmit"]').addClass('layui-btn-disabled')
+            ajax({
+              method: 'PUT',
+              url: '/member-center/management/student/{{studentMember.id}}/score/{{studentScore.id}}',
+              data: JSON.stringify(data.field),
+              success: function () {
+                layer.msg('修改成功', {time: 2000, icon:6})
+                parent.tableRender()
+                window.setTimeout(function () {parent.layer.close(parent.layer.getFrameIndex(window.name))}, 2000)
+              },
+              fail: function () {
+                $('[lay-filter="myFormSubmit"]').attr('disabled', false)
+                $('[lay-filter="myFormSubmit"]').removeClass('layui-btn-disabled')
+              },
+              error: function () {
+                $('[lay-filter="myFormSubmit"]').attr('disabled', false)
+                $('[lay-filter="myFormSubmit"]').removeClass('layui-btn-disabled')
+              }
+            })
+          }
+        },
+        val: {
+          'chinese': '{{ studentScore.chinese }}',
+          'math': '{{ studentScore.math }}',
+          'english': '{{ studentScore.english }}',
+          'biology': '{{ studentScore.biology }}',
+          'physics': '{{ studentScore.physics }}',
+          'chemistry': '{{ studentScore.chemistry }}',
+          'politics': '{{ studentScore.politics }}',
+          'geography': '{{ studentScore.geography }}',
+          'history': '{{ studentScore.history }}',
+          'classRanking': '{{ studentScore.classRanking }}',
+          'gradeRanking': '{{ studentScore.gradeRanking }}',
+          'semester1': '{{ floor(studentScore.semester / 2) if studentScore.semester != null }}',
+          'semester2': '{{ studentScore.semester % 2 if studentScore.semester != null else "null" }}',
+          'type': '{{ studentScore.type if studentScore.type != null else "null" }}',
+        },
+        items: [
+          {
+            label: '语文',
+            elements: {
+              eType: 'input',
+              name: 'chinese',
+              type: 'number',
+              layVerify: 'required'
+            }
+          },
+          {
+            label: '数学',
+            elements: {
+              eType: 'input',
+              name: 'math',
+              type: 'number',
+              layVerify: 'required'
+            }
+          },
+          {
+            label: '英语',
+            elements: {
+              eType: 'input',
+              name: 'english',
+              type: 'number',
+            }
+          },
+          {
+            label: '生物',
+            elements: {
+              eType: 'input',
+              name: 'biology',
+              type: 'number',
+            }
+          },
+          {
+            label: '物理',
+            elements: {
+              eType: 'input',
+              name: 'physics',
+              type: 'number',
+            }
+          },
+          {
+            label: '化学',
+            elements: {
+              eType: 'input',
+              name: 'chemistry',
+              type: 'number',
+            }
+          },
+          {
+            label: '政治',
+            elements: {
+              eType: 'input',
+              name: 'politics',
+              type: 'number',
+            }
+          },
+          {
+            label: '地理',
+            elements: {
+              eType: 'input',
+              name: 'geography',
+              type: 'number',
+            }
+          },
+          {
+            label: '历史',
+            elements: {
+              eType: 'input',
+              name: 'history',
+              type: 'number',
+            }
+          },
+          {
+            label: '班级名次',
+            elements: {
+              eType: 'input',
+              name: 'classRanking',
+              type: 'number',
+            }
+          },
+          {
+            label: '年级名次',
+            elements: {
+              eType: 'input',
+              name: 'gradeRanking',
+              type: 'number',
+            }
+          },
+          {
+            label: '资助学期',
+            elements: [
+              {
+                eType: 'date',
+                name: 'semester1',
+                type: 'year'
+              },
+              {
+                eType: 'select',
+                name: 'semester2',
+                option: [
+                  {value: 'null', label: '请选择', selected: true},
+                  {value: '0', label: '3月~7月'},
+                  {value: '1', label: '9月~下一年1月'},
+                ]
+              }
+            ]
+          },
+          {
+            label: '类型',
+            elements: {
+              eType: 'select',
+              name: 'type',
+              option: [
+                {value: 'null', label: '请选择'},
+                {% for i, j in StudentScoreType %}
+                {value: '{{ j }}', label: '{{ j }}'},
+                {% endfor %}
+              ]
+            }
+          },
+        ],
+        verify: {
+        }
+      }
+    })
+  })
+</script>
+{% endblock %}

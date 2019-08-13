@@ -1,0 +1,30 @@
+#new-story-from, #edit-story-from {
+  padding: 20px 0 0 250px;
+}
+/* .story-item {
+
+} */
+.story-label {
+  border: solid 1px black;
+  display: block;
+  width: 180px;
+  float: left;
+}
+.story-item>.layui-input {
+  border: solid 1px black;
+  margin-left: 200px;
+  float: none;
+  position: relative;
+}
+.form-img {
+  max-width: 588px;
+  max-height: 300px;
+}
+.story-block, .empty-block {
+  margin: 30px 0;
+}
+.story-block>button {
+  margin-bottom: 10px;
+}
+
+

@@ -1,0 +1,144 @@
+{% extends "../back.html" %}
+
+{% block css %}
+{{ super() }}
+<style>
+  html {
+    overflow: hidden;
+  }
+</style>
+{% endblock %}
+
+{% block main %}
+  <div class="layui-card myCard">
+    <div class="layui-card-header">前台爱心团体用户管理</div>
+    <div class="layui-card-body">
+      <div id="myTable"></div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+  $(function () {
+    newTable({
+      btns: {
+        items: [
+          {% if curAdmin.isSuperUser or curAdmin.permissions.mem_grp_a %}
+          'new',
+          {% endif %}
+          {% if curAdmin.isSuperUser or curAdmin.permissions.mem_grp_d %}
+          'dels',
+          {% endif %}
+          'setCols'
+        ]
+      },
+      search: {
+        'class': 'selects',
+        labelWidth: '120',
+        items: [
+          {
+            label: '团体账号',
+            elements: {
+              eType: 'input',
+              name: 'account'
+            }
+          },
+          {
+            label: '团体名称',
+            elements: {
+              eType: 'input',
+              name: 'name'
+            }
+          },
+          {
+            label: '联系人姓名',
+            elements: {
+              eType: 'input',
+              name: 'contactName'
+            }
+          },
+          {
+            label: '联系手机',
+            elements: {
+              eType: 'input',
+              name: 'phoneNumber'
+            }
+          },
+          {
+            label: 'Email',
+            elements: {
+              eType: 'input',
+              name: 'email'
+            }
+          },
+        ]
+      },
+      table: {
+        tool: {
+          items: [
+            {% if curAdmin.isSuperUser or curAdmin.permissions.mem_grp_g %}
+            'info',
+            {% endif %}
+            {% if curAdmin.isSuperUser or curAdmin.permissions.mem_grp_u %}
+            'edit',
+            {% endif %}
+            {% if curAdmin.isSuperUser or curAdmin.permissions.mem_grp_d %}
+            'del',
+            {% endif %}
+          ]
+        },
+        // lineStyle: [
+        //   {
+        //     condition: 'd.isComplemented === true',  // res: table请求的返回值，curr:当前页码，count:数据总数，d:当前行数据
+        //     style: {
+        //       color: 'red',
+        //       backgroundColor: '#dff'
+        //     }
+        //   }
+        // ],
+        templates: [
+          {
+            id: 'tProvinceName',
+            content: '[[ d.county != null ? d.county.city.province.name : \'\' ]]'
+          },
+          {
+            id: 'tAvatar',
+            content: '[[# if (d.avatar) { ]]<a href="[[ d.avatar ]]" style="cursor: pointer;" target="_blank"><img class="tableImg" src="[[ d.avatar ]]"></a>[[# } ]]'
+          },
+          {
+            id: 'tIsComplemented',
+            content: '[[# if (d.isComplemented) { ]]是[[# } else { ]]否[[# } ]]'
+          },
+          {
+            id: 'tCreatedTime',
+            content: '[[ dateFormat(d.createdTime, \'YYYY-MM-DD HH:mm:ss\') ]]'
+          },
+        ],
+        config: {
+          elem: '#whGroup',
+          url: '/admin/member/whGroup/table',
+          cols: [
+            [
+              {field: 'id', title: 'ID', align: 'center', show: false, sort: true, width: 100, fixed: 'left'},
+              {field: 'name', title: '团体名称', align: 'center', sort: true, minWidth: 140, fixed: 'left'},
+              {field: 'account', title: '团体账号', align: 'center', sort: true, minWidth: 140},
+              {field: 'contactName', title: '联系人姓名', align: 'center', sort: true, minWidth: 140},
+              {field: 'phoneNumber', title: '联系手机', align: 'center', sort: true, width: 120},
+              {field: 'email', title: 'Email', align: 'center', sort: true, minWidth: 180},
+              {field: 'createdTime', title: '注册时间', align: 'center', sort: true, width: 180, templet: '#tCreatedTime'},
+              {field: 'provinceName', title: '大陆省份', align: 'center', sort: true, minWidth: 150, templet: '#tProvinceName'},
+              {field: 'qq', title: 'QQ', align: 'center', sort: true, minWidth: 140},
+              {field: 'wechat', title: '微信号', align: 'center', sort: true, minWidth: 140},
+              {field: 'avatar', title: '头像', align: 'center', sort: true, width: 80, templet: '#tAvatar'},
+              {field: 'isComplemented', title: '完善信息', align: 'center', show: false, sort: true, width: 100, templet: '#tIsComplemented'},
+              {align: 'center', width:180, fixed: 'right', toolbar: '#operation'}
+            ]
+          ]
+        }
+      }
+    })
+  })
+</script>
+{% endblock %}

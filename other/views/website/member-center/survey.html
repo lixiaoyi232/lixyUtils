@@ -1,0 +1,91 @@
+{% extends "../layout/layout-member-center.html" %}
+
+{% block css %}
+{{ super() }}
+{% endblock %}
+
+{% block member_center_main %}
+
+<div class="layui-card">
+  <div class="layui-card-header">问卷调查</div>
+  <div class="layui-card-body">
+    <div id="myTable"></div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+  $(function () {
+    newTable({
+      btns: {
+        items: [
+          // 'setCols'
+        ]
+      },
+      search: {
+        'class': 'selects',
+        labelWidth: '100',
+        submit: {
+          'class': 'layui-btn greenBtn'
+        },
+        items: [
+          {
+            label: '状态',
+            elements: {
+              eType: 'select',
+              name: 'status',
+              option: [
+                {value: 'all', label: '&nbsp;'},
+                {% for i, j in SurveyStatus %}
+                {% if j != SurveyStatus.draft %}{value: '{{ j }}', label: '{{ j }}'},{% endif %}
+                {% endfor %}
+              ]
+            }
+          },
+          {
+            label: '创建时间',
+            elements: {
+              eType: 'date',
+              name: 'createdTime',
+              range: true
+            }
+          }
+        ]
+      },
+      table: {
+        checkboxType: 'none',
+        tool: {
+          items: [
+            {
+              layEvent: 'answer',
+              label: '回答',
+              event: function (obj, config, render) {
+                var path = config.url.split('?')[0]
+                path = (path[path.length - 1] === '/' ? path.slice(0, path.length - 6) : (path.slice(0, path.length - 5)))
+                window.location.href = path + obj.data.id + '/answer#photo'
+              }
+            },
+          ]
+        },
+        templates: [
+        ],
+        config: {
+          elem: '#survey',
+          url: '/survey/survey/table',
+          cols: [
+            [
+              {field: 'id', sort: true, title: 'ID', width:100, show: false},
+              {width:200, align: 'center', toolbar: '#operation'},
+              {field: 'title', sort: true, title: '标题'},
+              {field: 'status', sort: true, title: '状态'},
+            ]
+          ]
+        }
+      }
+    })
+  })
+</script>
+{% endblock %}

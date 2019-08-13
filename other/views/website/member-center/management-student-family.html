@@ -1,0 +1,199 @@
+{% extends "../layout/layout-website.html" %}
+
+{% block css %}
+{{ super() }}
+<link rel="stylesheet" href="/static/css/website/mytable.css">
+{% endblock %}
+
+{% block body %}
+<!-- <a href="javascript:;" class="btn-new-family">新家庭成员</a>
+<div id="table-student-family"></div> -->
+<div class="layui-card myCard">
+  <div class="layui-card-header">学生 {{studentMember.name}} 的家庭成员表</div>
+  <div class="layui-card-body">
+    <div id="myTable"></div>
+  </div>
+</div>
+{% endblock %}
+
+
+{% block script %}
+{{ super() }}
+<script src="/static/js/mytable.js"></script>
+<script>
+  // $(function () {
+  //   var table = new MyTable({
+  //     el: '#table-student-family',
+  //     url: '/member-center/management/student/{{studentMember.id}}/family/table',
+  //     limit: 10,
+  //     cols: [
+  //       {
+  //         title: 'id',
+  //         html: function(family) {
+  //           return family.id
+  //         }
+  //       },
+  //       {
+  //         title: '称呼',
+  //         html: function(family) {
+  //           return family.address
+  //         }
+  //       },
+  //       {
+  //         title: '姓名',
+  //         html: function(family) {
+  //           return family.name
+  //         }
+  //       },
+  //       {
+  //         title: '出生年份',
+  //         html: function(family) {
+  //           return family.birthyear
+  //         }
+  //       },
+  //       {
+  //         title: '职业',
+  //         html: function(family) {
+  //           return family.profession
+  //         }
+  //       },
+  //       {
+  //         title: '健康状况',
+  //         html: function(family) {
+  //           return family.health
+  //         }
+  //       },
+  //       {
+  //         title: '年收入',
+  //         html: function(family) {
+  //           return family.income
+  //         }
+  //       },
+  //       {
+  //         title: '操作',
+  //         html: function(family) {
+  //           return '<a href="javascript:;" class="btn-edit-family">编辑</a>'
+  //         }
+  //       }
+  //     ],
+  //     onFetch: bindHandlers
+  //   })
+
+  //   table.fetch()
+
+  //   function bindHandlers(rowDatas) {
+  //     $('.btn-edit-family').on('click', function() {
+  //       var id = $(this).parents('tr').data('id')
+  //       layui.layer.open({
+  //         type: 2,
+  //         title: '编辑成绩',
+  //         area: ['80%', '80%'],
+  //         content: '/member-center/management/student/'+ rowDatas[id].student.member.id +'/family/' + id + '/edit'
+  //       })
+  //     })
+  //   }
+
+  //   $('.btn-new-family').on('click', function() {
+  //     layui.layer.open({
+  //       type: 2,
+  //       title: '新家庭成员',
+  //       area: ['80%', '80%'],
+  //       content: '/member-center/management/student/{{studentMember.id}}/family/new'
+  //     })
+  //   })
+
+  // })
+  $(function () {
+    newTable({
+      btns: {
+        items: [
+          {
+            layEvent: 'new',
+            'class': 'layui-btn brownBtn',
+            event: function (obj, config, render) {
+              // var path = config.url.split('?')[0]
+              // path = (path[path.length - 1] === '/' ? path.slice(0, path.length - 6) : (path.slice(0, path.length - 5)))
+              // window.location.href = path + 'new'
+              window.tableRender = render
+              layer.open({
+                type: 2,
+                title: '新建',
+                shade: 0.8,
+                area: ['90%', '90%'],
+                content: '/member-center/management/student/{{studentMember.id}}/family/new'
+              })
+            }
+          },
+          // 'setCols'
+        ]
+      },
+      table: {
+        checkboxType: 'none',
+        tool: {
+          items: [
+            {
+              layEvent: 'edit',
+              label: '编辑',
+              event: function (obj, config, render) {
+                // window.location.href = '/admin/member/student/' + obj.data.student.id + '/family'
+                window.tableRender = render
+                layer.open({
+                  type: 2,
+                  title: '编辑',
+                  shade: 0.8,
+                  area: ['90%', '90%'],
+                  content: '/member-center/management/student/'+ obj.data.student.member.id +'/family/' + obj.data.id + '/edit'
+                })
+              }
+            },
+          ]
+        },
+        templates: [
+          {
+            id: 'tProvinceName',
+            content: '[[ d.student.school.member.county.city.province.name ]]'
+          },
+          {
+            id: 'tSchoolAccount',
+            content: '[[ d.student.school.member.account ]]'
+          },
+          {
+            id: 'tSchoolName',
+            content: '[[ d.student.school.member.name ]]'
+          },
+          {
+            id: 'tStudentAccount',
+            content: '[[ d.student.member.account ]]'
+          },
+          {
+            id: 'tStudentName',
+            content: '[[ d.student.member.name ]]'
+          },
+        ],
+        config: {
+          elem: '#family',
+          url: '/member-center/management/student/{{studentMember.id}}/family/table',
+          cols: [
+            [
+              {field: 'id', title: 'ID', align: 'center', show: false, sort: true, width: 100},
+              {align: 'center', width: 120, toolbar: '#operation'},
+              // {field: 'provinceName', title: '大陆省份', align: 'center', sort: true, minWidth: 150, templet: '#tProvinceName'},
+              // {field: 'schoolAccount', title: '学校编号', align: 'center', sort: true, minWidth: 140, templet: '#tSchoolAccount'},
+              // {field: 'schoolName', title: '学校名称', align: 'center', sort: true, minWidth: 250, templet: '#tSchoolName'},
+              // {field: 'studentAccount', title: '学生账号', align: 'center', sort: true, minWidth: 140, templet: '#tStudentAccount'},
+              // {field: 'studentName', title: '学生姓名', align: 'center', sort: true, minWidth: 140, templet: '#tStudentName'},
+              {field: 'address', title: '称呼', align: 'center', sort: true, width: 100},
+              {field: 'name', title: '姓名', align: 'center', sort: true, minWidth: 100},
+              {field: 'birthyear', title: '出生年份', align: 'center', sort: true, width: 100},
+              {field: 'profession', title: '职业', align: 'center', sort: true, minWidth: 150},
+              {field: 'health', title: '健康状况', align: 'center', sort: true, minWidth: 100},
+              {field: 'income', title: '年收入', align: 'center', sort: true, minWidth: 100},
+              // {field: 'publishUser', title: '提交人', align: 'center', sort: true, minWidth: 140},
+            ]
+          ]
+        }
+      }
+    })
+  })
+</script>
+{% endblock %}

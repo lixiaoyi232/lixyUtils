@@ -1,0 +1,99 @@
+{% extends "../layout/layout-member-center.html" %}
+
+{% block css %}
+{{ super() }}
+<link rel="stylesheet" href="/static/css/website/mytable.css">
+{% endblock %}
+
+{% block member_center_main %}
+<!-- <div id="table-notification"></div> -->
+<div class="layui-card">
+  <div class="layui-card-header">系统消息</div>
+  <div class="layui-card-body">
+    <div id="myTable"></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script src="/static/js/mytable.js"></script>
+<script>
+  // $(function() {
+  //   var table = new MyTable({
+  //     el: '#table-notification',
+  //     url: '/member-center/notification/table',
+  //     limit: 10,
+  //     cols: [
+  //       {
+  //         title: '内容',
+  //         html: function(rowdata, $td, $tr) {
+  //           return $('<span>' + rowdata.content + '</span>')
+  //         }
+  //       },
+  //       {
+  //         title: '发送时间',
+  //         html: function(rowdata, $td, $tr) {
+  //           return $('<span>' + dateFormat(rowdata.createdTime, 'YYYY-MM-DD HH:mm:ss') + '</span>')
+  //         }
+  //       }
+  //     ]
+  //   })
+  //   table.fetch(1)
+  // })
+  $(function () {
+    newTable({
+      btns: {
+        items: [
+          // 'setCols'
+        ]
+      },
+      search: {
+        'class': 'selects',
+        labelWidth: '100',
+        submit: {
+          'class': 'layui-btn greenBtn'
+        },
+        items: [
+          {
+            label: '内容',
+            elements: {
+              eType: 'input',
+              name: 'content'
+            }
+          },
+        ]
+      },
+      table: {
+        checkboxType: 'none',
+        // tool: {
+        //   items: [
+        //   ]
+        // },
+        templates: [
+          {
+            id: 'tContent',
+            content: '<span style="[[ d.isRead ? \'\' : \'font-weight: bolder;\' ]]">[[ decodeURIComponent(d.content) ]]</span>'
+          },
+          {
+            id: 'tCreatedTime',
+            content: '[[ dateFormat(d.createdTime, \'YYYY-MM-DD HH:mm:ss\') ]]'
+          }
+        ],
+        config: {
+          elem: '#notification',
+          url: '/member-center/notification/table',
+          cols: [
+            [
+              {field: 'id', title: 'ID', align: 'center', show: false, sort: true, width: 100},
+              {field: 'content', title: '内容', align: 'center', sort: true, minWidth: 200, templet: '#tContent'},
+              {field: 'createdTime', title: '时间', align: 'center', sort: true, minWidth: 180, templet: '#tCreatedTime'},
+              // {width:140, align: 'center', toolbar: '#operation'}
+            ]
+          ]
+        }
+      }
+    })
+  })
+</script>
+{% endblock %}

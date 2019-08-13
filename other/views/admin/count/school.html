@@ -1,0 +1,130 @@
+{% extends "../back.html" %}
+
+{% block css %}
+{{ super() }}
+{% endblock %}
+
+{% block main %}
+  <div class="layui-card myCard">
+    <div class="layui-card-header">学校团体故事统计</div>
+    <div class="layui-card-body">
+      <div id="myTable"></div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+  $(function () {
+    newTable({
+      btns: {
+        items: [
+          'setCols'
+        ]
+      },
+      search: {
+        'class': 'selects',
+        labelWidth: '100',
+        items: [
+          {
+            label: '学校编号',
+            elements: {
+              eType: 'input',
+              name: 'memberAccount'
+            }
+          },
+          {
+            label: '学校名称',
+            elements: {
+              eType: 'input',
+              name: 'memberName'
+            }
+          },
+          {
+            label: '管理员',
+            elements: {
+              eType: 'select',
+              name: 'adminId',
+              option: [
+                {value: 'all', label: '&nbsp;', selected: true},
+                {% for i in admins %}
+                {value: '{{ i.id }}', label: '{{ i.account }}'},
+                {% endfor %}
+              ]
+            }
+          },
+          {
+            label: '学段',
+            elements: {
+              eType: 'select',
+              name: 'studentsPeriod',
+              option: [
+                {value: 'all', label: '&nbsp;', selected: true},
+                {% for i, j in StudentPeriod %}
+                {% if i !== 'LiXiao' %}{value: '{{ j }}', label: '{{ j }}'},{% endif %}
+                {% endfor %}
+              ]
+            }
+          },
+          {
+            label: '时间段',
+            elements: {
+              eType: 'date',
+              name: 'storiesPublishTime',
+              range: true
+            }
+          }
+        ]
+      },
+      table: {
+        templates: [
+          {
+            id: 'tVerifyIn',
+            content: '[[# if (d.verify === \'{{ VerifyStatus.ok }}\') { ]]是[[# } else { ]][[# } ]]'
+          },
+          {
+            id: 'tProvinceName',
+            content: '[[# if (d.member.county != null) { ]][[ d.member.county.city.province.name ]][[# } else { ]][[# } ]]'
+          },
+          {
+            id: 'tMemberAccount',
+            content: '[[ d.member.account ]]'
+          },
+          {
+            id: 'tMemberName',
+            content: '[[ d.member.name ]]'
+          },
+          {
+            id: 'tAdminAccount',
+            content: '[[# if (d.admin != null) { ]][[ d.admin.account ]][[# } else { ]][[# } ]]'
+          },
+        ],
+        config: {
+          elem: '#school',
+          url: '/admin/count/school/table',
+          cols: [
+            [
+              {field: 'id', sort: true, title: 'ID', width:100, align: 'center', fixed: 'left', show: false},
+              {field: 'provinceName', sort: true, title: '大陆省份', width:150, align: 'center', templet: '#tProvinceName'},
+              {field: 'verifyIn', sort: true, title: '会员学校', width:100, align: 'center', templet: '#tVerifyIn'},
+              {field: 'memberAccount', sort: true, title: '学校编号', minWidth:140, align: 'center', templet: '#tMemberAccount'},
+              {field: 'memberName', sort: true, title: '学校名称', minWidth:250, align: 'center', templet: '#tMemberName'},
+              {field: 'members', title: '当前人数', width:90, align: 'center'},
+              {field: 'memberCount', title: '写故事总人数', width:120, align: 'center'},
+              {field: 'storyCount', title: '故事总数', width:90, align: 'center'},
+              {field: 'studentCount', title: '写故事学生人数', width:140, align: 'center'},
+              {field: 'storyStudentCount', title: '学生写故事数', width:120, align: 'center'},
+              {field: 'teacherCount', title: '写故事老师人数', width:140, align: 'center'},
+              {field: 'storyTeacherCount', title: '老师写故事数', width:120, align: 'center'},
+              {field: 'aidStudentCount', title: '提申请学生数', width:120, align: 'center'},
+              {field: 'storyAidCount', title: '资助故事数', width:100, align: 'center'},
+              {field: 'adminAccount', sort: true, title: '管理员', width:120, align: 'center', templet: '#tAdminAccount'},
+            ]
+          ]
+        }
+      }
+    })
+  })
+</script>
+{% endblock %}

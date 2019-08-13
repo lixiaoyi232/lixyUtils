@@ -1,0 +1,176 @@
+{% extends "../back.html" %}
+
+{% block css %}
+{{ super() }}
+<style>
+  html {
+    overflow: hidden;
+  }
+</style>
+{% endblock %}
+
+{% block main %}
+  <div class="layui-card myCard">
+    <div class="layui-card-header">大赛管理</div>
+    <div class="layui-card-body">
+      <div id="myTable"></div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+  $(function () {
+    newTable({
+      btns: {
+        items: [
+          {% if curAdmin.isSuperUser or curAdmin.permissions.mch_mch_a %}
+          'new',
+          {% endif %}
+          {% if curAdmin.isSuperUser or curAdmin.permissions.mch_mch_d %}
+          'dels',
+          {% endif %}
+          'setCols'
+        ]
+      },
+      search: {
+        'class': 'selects',
+        labelWidth: '100',
+        items: [
+          {
+            label: '大赛名称',
+            elements: {
+              eType: 'input',
+              name: 'name'
+            }
+          },
+          {
+            label: '届数',
+            elements: {
+              eType: 'between',
+              name: 'number'
+            }
+          },
+          {
+            label: '二审分数线',
+            elements: {
+              eType: 'between',
+              name: 'firstLine'
+            }
+          },
+          {
+            label: '复赛分数线',
+            elements: {
+              eType: 'between',
+              name: 'secondLine'
+            }
+          },
+        ]
+      },
+      table: {
+        tool: {
+          items: [
+            {% if curAdmin.isSuperUser or curAdmin.permissions.mch_mch_g %}
+            'info',
+            {% endif %}
+            {% if curAdmin.isSuperUser or curAdmin.permissions.mch_mch_u %}
+            'edit',
+            {% endif %}
+            {% if curAdmin.isSuperUser or curAdmin.permissions.mch_mch_d %}
+            'del'
+            {% endif %}
+          ]
+        },
+        templates: [
+          {
+            id: 'tStatus',
+            content: '[[ (new Date(d.matchApplyStart)) < (new Date()) && (new Date()) < (new Date(d.matchEnd)) ? \'进行中\' : \'完成\' ]]'
+          },
+          {
+            id: 'tMatchApplyStart',
+            content: '[[ dateFormat(d.matchApplyStart, \'YYYY-MM-DD\') ]]'
+          },
+          {
+            id: 'tMatchApplyEnd',
+            content: '[[ dateFormat(d.matchApplyEnd, \'YYYY-MM-DD\') ]]'
+          },
+          {
+            id: 'tStoryStart',
+            content: '[[ dateFormat(d.storyStart, \'YYYY-MM-DD\') ]]'
+          },
+          {
+            id: 'tStoryEnd',
+            content: '[[ dateFormat(d.storyEnd, \'YYYY-MM-DD\') ]]'
+          },
+          {
+            id: 'tFinalStoryStart',
+            content: '[[ dateFormat(d.finalStoryStart, \'YYYY-MM-DD\') ]]'
+          },
+          {
+            id: 'tFinalStoryEnd',
+            content: '[[ dateFormat(d.finalStoryEnd, \'YYYY-MM-DD\') ]]'
+          },
+          {
+            id: 'tFirstVerifyStart',
+            content: '[[ dateFormat(d.firstVerifyStart, \'YYYY-MM-DD\') ]]'
+          },
+          {
+            id: 'tFirstVerifyEnd',
+            content: '[[ dateFormat(d.firstVerifyEnd, \'YYYY-MM-DD\') ]]'
+          },
+          {
+            id: 'tSecondVerifyStart',
+            content: '[[ dateFormat(d.secondVerifyStart, \'YYYY-MM-DD\') ]]'
+          },
+          {
+            id: 'tSecondVerifyEnd',
+            content: '[[ dateFormat(d.secondVerifyEnd, \'YYYY-MM-DD\') ]]'
+          },
+          {
+            id: 'tFinalVerifyStart',
+            content: '[[ dateFormat(d.finalVerifyStart, \'YYYY-MM-DD\') ]]'
+          },
+          {
+            id: 'tFinalVerifyEnd',
+            content: '[[ dateFormat(d.finalVerifyEnd, \'YYYY-MM-DD\') ]]'
+          },
+          {
+            id: 'tMatchEnd',
+            content: '[[ dateFormat(d.matchEnd, \'YYYY-MM-DD\') ]]'
+          },
+        ],
+        config: {
+          elem: '#match',
+          url: '/admin/match/match/table',
+          cols: [
+            [
+              {field: 'id', title: 'ID', align: 'center', show: false, sort: true, width: 100, fixed: 'left'},
+              {field: 'name', title: '大赛名称', align: 'center', sort: true, minWidth: 200, fixed: 'left'},
+              {field: 'number', title: '大赛届数', align: 'center', sort: true, width: 100},
+              {field: 'matchApplyStart', title: '报名开始', align: 'center', sort: true, minWidth: 180, templet: '#tMatchApplyStart'},
+              {field: 'matchApplyEnd', title: '报名结束', align: 'center', sort: true, minWidth: 180, templet: '#tMatchApplyEnd'},
+              {field: 'storyStart', title: '初赛开始', align: 'center', sort: true, minWidth: 180, templet: '#tStoryStart'},
+              {field: 'firstVerifyStart', title: '一审开始', align: 'center', sort: true, minWidth: 180, templet: '#tFirstVerifyStart'},
+              {field: 'firstVerifyEnd', title: '一审结束', align: 'center', sort: true, minWidth: 180, templet: '#tFirstVerifyEnd'},
+              {field: 'secondVerifyStart', title: '二审开始', align: 'center', sort: true, minWidth: 180, templet: '#tSecondVerifyStart'},
+              {field: 'secondVerifyEnd', title: '二审结束', align: 'center', sort: true, minWidth: 180, templet: '#tSecondVerifyEnd'},
+              {field: 'storyEnd', title: '初赛结束', align: 'center', sort: true, minWidth: 180, templet: '#tStoryEnd'},
+              {field: 'finalStoryStart', title: '复赛开始', align: 'center', sort: true, minWidth: 180, templet: '#tFinalStoryStart'},
+              {field: 'finalStoryEnd', title: '复赛结束', align: 'center', sort: true, minWidth: 180, templet: '#tFinalStoryEnd'},
+              {field: 'finalVerifyStart', title: '复赛审核开始', align: 'center', sort: true, minWidth: 180, templet: '#tFinalVerifyStart'},
+              {field: 'finalVerifyEnd', title: '复赛审核结束', align: 'center', sort: true, minWidth: 180, templet: '#tFinalVerifyEnd'},
+              {field: 'matchEnd', title: '大赛结束', align: 'center', sort: true, minWidth: 180, templet: '#tMatchEnd'},
+              {field: 'firstLine', title: '二审分数线', align: 'center', sort: true, width: 120},
+              {field: 'secondLine', title: '复赛分数线', align: 'center', sort: true, width: 120},
+              {field: 'info', title: '大赛说明', align: 'center', sort: true, minWidth: 200},
+              {field: 'status', title: '状态', align: 'center', width: 80, templet: '#tStatus'},
+              {align: 'center', width: 150, fixed: 'right', toolbar: '#operation'}
+            ]
+          ]
+        }
+      }
+    })
+  })
+</script>
+{% endblock %}

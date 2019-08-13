@@ -1,0 +1,182 @@
+{% extends "../back.html" %}
+
+{% block css %}
+{{ super() }}
+<style>
+  html {
+    overflow: hidden;
+  }
+</style>
+{% endblock %}
+
+{% block body %}
+  <div class="layui-card myCard">
+    <div class="layui-card-header">往期学生</div>
+    <div class="layui-card-body">
+      <div id="myTable"></div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+  $(function () {
+    newTable({
+      btns: {
+        items: [
+          {% if curAdmin.isSuperUser or curAdmin.permissions.mem_sch_old_a %}
+          {
+            layEvent: 'new',
+            event: function (obj, config, render) {
+              var path = config.url.split('?')[0]
+              path = (path[path.length - 1] === '/' ? path.slice(0, path.length - 6) : (path.slice(0, path.length - 5)))
+              // window.location.href = path + 'new'
+              window.tableRender = render
+              layer.open({
+                type: 2,
+                title: '新建',
+                shade: 0.8,
+                area: ['90%', '90%'],
+                content: path + 'new?schoolId={{ schoolId }}'
+              })
+            }
+          },
+          {% endif %}
+          {% if curAdmin.isSuperUser or curAdmin.permissions.mem_sch_old_d %}
+          'dels',
+          {% endif %}
+          'setCols'
+        ]
+      },
+      search: {
+        'class': 'selects',
+        labelWidth: '100',
+        submit: {
+          event: function (data, config, render) {
+            if (data.field.createdTime !== '') config.url = setQuery(config.url, {createdTime: data.field.createdTime + '___' + (parseInt(data.field.createdTime) + 365 * 24 * 60 * 60 * 1000)})
+            render(config)
+          }
+        },
+        items: [
+          {
+            label: '离校年份',
+            elements: {
+              eType: 'date',
+              name: 'createdTime',
+              type: 'year',
+            }
+          },
+          {
+            label: '学生账号',
+            elements: {
+              eType: 'input',
+              name: 'studentAccount'
+            }
+          },
+          {
+            label: '学生姓名',
+            elements: {
+              eType: 'input',
+              name: 'studentName'
+            }
+          },
+          {
+            label: '身份证号',
+            elements: {
+              eType: 'input',
+              name: 'studentIdCard'
+            }
+          },
+          {
+            label: '联系手机',
+            elements: {
+              eType: 'input',
+              name: 'studentPhone'
+            }
+          },
+          {
+            label: '学段',
+            elements: {
+              eType: 'select',
+              name: 'period',
+              option: [
+                {value: 'all', label: '&nbsp;', selected: true},
+                {% for i, j in StudentPeriod %}
+                {% if i != 'LiXiao' %}{value: '{{ j }}', label: '{{ j }}'},{% endif %}
+                {% endfor %}
+              ]
+            }
+          },
+        ]
+      },
+      table: {
+        tool: {
+          items: [
+            {% if curAdmin.isSuperUser or curAdmin.permissions.mem_sch_old_u %}
+            'edit',
+            {% endif %}
+            {% if curAdmin.isSuperUser or curAdmin.permissions.mem_sch_old_d %}
+            'del',
+            {% endif %}
+          ]
+        },
+        templates: [
+          {
+            id: 'tCreatedTime',
+            content: '[[ dateFormat(d.createdTime, "YYYY") ]]'
+          },
+          {
+            id: 'tSchoolAccount',
+            content: '[[ d.school != null ? d.school.member.account : \'\' ]]'
+          },
+          {
+            id: 'tSchoolName',
+            content: '[[ d.school != null ? d.school.member.name : \'\' ]]'
+          },
+          {
+            id: 'tStudentAccount',
+            content: '[[ d.student.member.account ]]'
+          },
+          {
+            id: 'tStudentName',
+            content: '[[ d.student.member.name ]]'
+          },
+          {
+            id: 'tStudentAge',
+            content: '[[ getAgeByIdCard(d.student.member.idCard) ]]'
+          },
+          {
+            id: 'tStudentIdCard',
+            content: '[[ d.student.member.idCard ]]'
+          },
+          {
+            id: 'tStudentPhone',
+            content: '[[ d.student.member.phoneNumber ]]'
+          },
+        ],
+        config: {
+          elem: '#old',
+          url: '/admin/member/old/table?schoolId={{ schoolId }}',
+          cols: [
+            [
+              {field: 'id', title: 'ID', align: 'center', show: false, sort: true, width: 100, fixed: 'left'},
+              // {field: 'schoolName', title: '学校名称', align: 'center', sort: true, minWidth: 250, templet: '#tSchoolName'},
+              {field: 'createdTime', title: '离校年份', align: 'center', sort: true, minWidth: 100, templet: '#tCreatedTime'},
+              {field: 'studentName', title: '学生姓名', align: 'center', sort: true, minWidth: 140, templet: '#tStudentName'},
+              {field: 'studentAccount', title: '学生账号', align: 'center', sort: true, minWidth: 140, templet: '#tStudentAccount'},
+              {field: 'yearOfEnrollment', title: '入学年份', align: 'center', sort: true, width: 100},
+              {field: 'studentAge', title: '年龄', align: 'center', minWidth: 80, templet: '#tStudentAge'},
+              {field: 'studentIdCard', title: '身份证号', align: 'center', sort: true, minWidth: 180, templet: '#tStudentIdCard'},
+              {field: 'studentPhone', title: '联系手机', align: 'center', sort: true, minWidth: 120, templet: '#tStudentPhone'},
+              {field: 'period', title: '学段', align: 'center', sort: true, minWidth: 80},
+              {field: 'class', title: '班级', align: 'center', sort: true, minWidth: 80},
+              {align: 'center', width: 120, fixed: 'right', toolbar: '#operation'}
+            ]
+          ]
+        }
+      }
+    })
+  })
+</script>
+{% endblock %}

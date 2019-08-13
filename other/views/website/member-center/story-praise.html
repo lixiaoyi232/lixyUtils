@@ -1,0 +1,154 @@
+{% extends "../layout/layout-member-center.html" %}
+
+{% block css %}
+{{ super() }}
+<link rel="stylesheet" href="/static/css/website/mytable.css">
+{% endblock %}
+
+{% block member_center_main %}
+<!-- <div id="table-praise"></div> -->
+<div class="layui-card">
+  <div class="layui-card-header">我的赞</div>
+  <div class="layui-card-body">
+    <div id="myTable"></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script src="/static/js/mytable.js"></script>
+<script>
+  // $(function () {
+  //   var table = new MyTable({
+  //     el: '#table-praise',
+  //     url: '/member-center/story-praise/table',
+  //     limit: 10,
+  //     cols: [
+  //       {
+  //         title: 'id',
+  //         html: function(story) {
+  //           return story.id
+  //         }
+  //       },
+  //       {
+  //         title: '标题',
+  //         html: function(story) {
+  //           return '<a href="/story/' + story.id + '">' + story.title + '</a>'
+  //         }
+  //       },
+  //       {
+  //         title: '操作',
+  //         html: function(story) {
+  //           return '<a href="javascript:;" class="btn-unpraise">取消点赞</a>'
+  //         }
+  //       }
+  //     ],
+  //     onFetch: bindHandlers
+  //   })
+
+  //   table.fetch()
+
+  //   function bindHandlers(rowDatas) {
+  //     $('.btn-unpraise').on('click', function() {
+  //       var $btn = $(this)
+  //       $btn.attr('disabled', true)
+  //       var id = $(this).parents('tr').data('id')
+  //       var url = '/story/' + id + '/'
+  //       if (rowDatas[id]._hasCanceled) {
+  //         url += 'praise'
+  //       } else {
+  //         url += 'unpraise'
+  //       }
+  //       ajax({
+  //         method: 'POST',
+  //         url: url,
+  //         data: null,
+  //         success: function () {
+  //           $btn.attr('disabled', false)
+  //           layui.layer.msg('操作成功',{ time: 1000 })
+  //           if (rowDatas[id]._hasCanceled) {
+  //             $btn.text('取消点赞')
+  //             rowDatas[id]._hasCanceled = false
+  //           } else {
+  //             $btn.text('点赞')
+  //             rowDatas[id]._hasCanceled = true
+  //           }
+  //         },
+  //         fail: function () {
+  //           $btn.attr('disabled', false)
+  //         }
+  //       })
+  //     })
+  //   }
+
+  // })
+  $(function () {
+    newTable({
+      btns: {
+        items: [
+          // 'setCols'
+        ]
+      },
+      search: {
+        'class': 'selects',
+        labelWidth: '100',
+        submit: {
+          'class': 'layui-btn greenBtn'
+        },
+        items: [
+          {
+            label: '标题',
+            elements: {
+              eType: 'input',
+              name: 'title'
+            }
+          },
+        ]
+      },
+      table: {
+        checkboxType: 'none',
+        tool: {
+          items: [
+            {
+              layEvent: 'cancel',
+              label: '取消赞',
+              event: function (obj, config, render) {
+                layer.confirm('您确认要取消赞吗？', function(index){
+                  ajax({
+                    method: 'POST',
+                    url: '/story/' + obj.data.id + '/unpraise',
+                    success: function () {
+                      layer.msg('取消赞成功', {time: 2000, icon:6})
+                      render()
+                      layer.close(index)
+                    }
+                  })
+                })
+                render(config)
+              }
+            },
+          ]
+        },
+        templates: [
+          {
+            id: 'tTitle',
+            content: '<a href="/story/[[ d.id ]]" target="_blank" style="cursor: pointer;">[[ d.title ]]</a>'
+          },
+        ],
+        config: {
+          elem: '#praise',
+          url: '/member-center/story-praise/table',
+          cols: [
+            [
+              {field: 'id', title: 'ID', align: 'center', show: false, sort: true, width: 100},
+              {width:140, align: 'center', toolbar: '#operation'},
+              {field: 'title', title: '标题', align: 'center', sort: true, minWidth: 200, templet: '#tTitle'},
+            ]
+          ]
+        }
+      }
+    })
+  })
+</script>
+{% endblock %}

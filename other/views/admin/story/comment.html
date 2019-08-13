@@ -1,0 +1,133 @@
+{% extends "../back.html" %}
+
+{% block css %}
+{{ super() }}
+<style>
+  html {
+    overflow: hidden;
+  }
+</style>
+{% endblock %}
+
+{% block main %}
+  <div class="layui-card myCard">
+    <div class="layui-card-header">故事评论管理</div>
+    <div class="layui-card-body">
+      <div id="myTable"></div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+  $(function () {
+    newTable({
+      btns: {
+        items: [
+          {% if curAdmin.isSuperUser or curAdmin.permissions.sty_cmt_d %}
+          'dels',
+          {% endif %}
+          'setCols'
+        ]
+      },
+      search: {
+        'class': 'selects',
+        labelWidth: '100',
+        items: [
+          {
+            label: '内容',
+            elements: {
+              eType: 'input',
+              name: 'text'
+            }
+          },
+          {
+            label: '创建时间',
+            elements: {
+              eType: 'date',
+              name: 'createdTime',
+              range: true
+            }
+          },
+          {
+            label: '评论人账号',
+            elements: {
+              eType: 'input',
+              name: 'authorAccount',
+            }
+          },
+          {
+            label: '评论人姓名',
+            elements: {
+              eType: 'input',
+              name: 'authorName',
+            }
+          },
+          {
+            label: '评论人类型',
+            elements: {
+              eType: 'select',
+              name: 'authorType',
+              option: [
+                {value: 'all', label: '&nbsp;', selected: true},
+                {% for i, j in MemberType %}
+                {value: '{{ j }}', label: '{{ j }}'},
+                {% endfor %}
+              ]
+            }
+          },
+        ]
+      },
+      table: {
+        tool: {
+          items: [
+            // 'edit',
+            {% if curAdmin.isSuperUser or curAdmin.permissions.sty_cmt_d %}
+            'del'
+            {% endif %}
+          ]
+        },
+        templates: [
+          {
+            id: 'tCreatedTime',
+            content: '[[ dateFormat(d.createdTime, \'YYYY-MM-DD HH:mm:ss\') ]]'
+          },
+          {
+            id: 'tStoryTitle',
+            content: '<a href="/story/[[ d.story.id ]]" target="_blank" style="cursor: pointer;">[[ d.story.title ]]</a>'
+          },
+          {
+            id: 'tAuthorAccount',
+            content: '[[ d.author.account ]]'
+          },
+          {
+            id: 'tAuthorName',
+            content: '[[ d.author.name ]]'
+          },
+          {
+            id: 'tAuthorType',
+            content: '[[ d.author.type ]]'
+          },
+        ],
+        config: {
+          elem: '#storyComment',
+          url: '/admin/story/comment/table',
+          cols: [
+            [
+              {field: 'id', title: 'ID', align: 'center', show: false, sort: true, width: 100, fixed: 'left'},
+              {field: 'text', title: '评论内容', sort: true, minWidth: 200},
+              {field: 'createdTime', title: '评论时间', align: 'center', sort: true, width: 180, templet: '#tCreatedTime'},
+              {field: 'storyTitle', title: '标题', align: 'center', sort: true, minWidth: 200, templet: '#tStoryTitle'},
+              {field: 'authorAccount', title: '评论人账号', align: 'center', sort: true, minWidth: 140, templet: '#tAuthorAccount'},
+              {field: 'authorName', title: '评论人姓名', align: 'center', sort: true, minWidth: 140, templet: '#tAuthorName'},
+              {field: 'authorType', title: '评论人类型', align: 'center', sort: true, width: 120, templet: '#tAuthorType'},
+              {align: 'center', width: 80, fixed: 'right', toolbar: '#operation'}
+            ]
+          ]
+        }
+      }
+    })
+  })
+</script>
+{% endblock %}

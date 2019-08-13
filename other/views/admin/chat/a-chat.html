@@ -1,0 +1,104 @@
+{% extends "../back.html" %}
+
+{% block css %}
+{{ super() }}
+{% endblock %}
+
+{% block main %}
+  <div class="layui-card myCard">
+    <div class="layui-card-header">单聊</div>
+    <div class="layui-card-body">
+      <div id="myTable"></div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+  $(function () {
+    newTable({
+      // btns: {
+      //   items: [
+      //     'setCols',
+      //   ]
+      // },
+      search: {
+        'class': 'selects',
+        labelWidth: '100',
+        items: [
+          {
+            label: '名称',
+            elements: {
+              eType: 'input',
+              name: 'memberName'
+            }
+          },
+          {
+            label: '大陆省份',
+            elements: {
+              eType: 'input',
+              name: 'provinceName',
+              // eType: 'select',
+              // name: 'provinceId',
+              // option: [
+              //   {value: 'all', label: '&nbsp;', selected: true},
+              //   {% for p in provinces %}
+              //   {value: '{{ p.id }}', label: '{{ p.name }}'},
+              //   {% endfor %}
+              // ],
+            },
+          },
+          {
+            label: 'ID',
+            elements: {
+              eType: 'between',
+              name: 'memberId'
+            }
+          }
+        ]
+      },
+      table: {
+        checkboxType: 'none',
+        tool: {
+          items: [
+            {
+              layEvent: 'into',
+              'class': 'layui-btn-primary',
+              label: '进入',
+              event: function (obj, config, render) {openWindow('/admin/chat/a-chat/' + obj.data.member.id, undefined, {resizable: 'yes'})}
+            },
+          ]
+        },
+        templates: [
+          {
+            id: 'i',
+            content: '[[ d.member.id ]]'
+          },
+          {
+            id: 'n',
+            content: '<a onClick="openWindow(\'/admin/member/school/[[ d.member.id ]]/info\')" style="cursor: pointer;">[[ d.member.name ]]</a>'
+          },
+          {
+            id: 'pv',
+            content: '[[ d.member.county.city.province.name ]]'
+          },
+        ],
+        config: {
+          elem: '#aChat',
+          url: '/admin/chat/a-chat/table',
+          cols: [
+            [
+              {field: 'id', sort: true, title: 'ID', templet: '#i', width:80, fixed: 'left', show: false},
+              {field: 'name', sort: true, title: '学校名称', templet: '#n'},
+              {field: 'provinceName', sort: true, title: '所在地区', minWidth: 150, templet: '#pv'},
+              {field: 'aNumber', sort: true, title: '未读数'},
+              {fixed: 'right', width:200, align: 'center', toolbar: '#operation'}
+            ]
+          ]
+        }
+      }
+    })
+  })
+</script>
+{% endblock %}

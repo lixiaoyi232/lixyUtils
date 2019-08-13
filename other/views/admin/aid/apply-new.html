@@ -1,0 +1,376 @@
+{% extends "../back.html" %}
+
+{% block css %}
+{{ super() }}
+{% endblock %}
+
+{% block body %}
+  <div class="layui-card myCard">
+    <div class="layui-card-header">新建资助申请单</div>
+    <div class="layui-card-body layui-tab layui-tab-brief">
+      <div id="myForm"></div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+  $(function () {
+    newForm({
+      form: {
+        labelWidth: '120',
+        submit: {
+          event: function (data) {
+            $('[lay-filter="myFormSubmit"]').attr('disabled', true)
+            $('[lay-filter="myFormSubmit"]').addClass('layui-btn-disabled')
+            ajax({
+              method: 'POST',
+              url: '/admin/aid/apply/new',
+              data: JSON.stringify(data.field),
+              success: function () {
+                layer.msg('新建成功', {time: 2000, icon:6})
+                parent.tableRender()
+                window.setTimeout(function () {parent.layer.close(parent.layer.getFrameIndex(window.name))}, 2000)
+                // window.setTimeout(function () {window.location.href = '/admin/aid/apply'}, 2000)
+              },
+              fail: function () {
+                $('[lay-filter="myFormSubmit"]').attr('disabled', false)
+                $('[lay-filter="myFormSubmit"]').removeClass('layui-btn-disabled')
+              },
+              error: function () {
+                $('[lay-filter="myFormSubmit"]').attr('disabled', false)
+                $('[lay-filter="myFormSubmit"]').removeClass('layui-btn-disabled')
+              }
+            })
+          }
+        },
+        items: [
+          {
+            label: '学生',
+            elements: [
+              {
+                eType: 'char',
+                name: 'studentShow',
+                element: '<div class="layui-form-label"><button type="button" class="inblk layui-btn layui-btn-primary">修改</button></div><div class="layui-input-block students" style="">请选择学生</div>',
+                events: [
+                  {
+                    type: 'delegate',
+                    name: 'click',
+                    query: 'button',
+                    callback: function (e) {
+                      var index = layer.open({
+                        type: 1,
+                        title: '选择学生',
+                        offset: ['5px', '5px'],
+                        skin: 'layui-layer-rim',
+                        area: [(document.body.clientWidth - 20) + 'px', (document.body.clientHeight - 20) + 'px'],
+                        content: '<div id="chooseStu"></div>',
+                        maxmin: true
+                      })
+                      newTable({
+                        parent: '#chooseStu',
+                        btns: {
+                          items: [
+                            {
+                              layEvent: 'backStu',
+                              'class': 'layui-btn-normal',
+                              label: '确认选择',
+                              event: function (obj, config, render) {
+                                var data = table.checkStatus(config.id).data
+                                if (data.length === 0) layer.close(index)
+                                else if (data.length > 0) {
+                                  $('[name=studentId]').val(data[0].student.id)
+                                  $('[name=schoolId]').val(data[0].student.school.id)
+                                  $('.students').html(data[0].name)
+                                  $('[name=teacherId]').val('')
+                                  $('.teachers').html('请先选择学生')
+                                  layer.close(index)
+                                }
+                              }
+                            },
+                            {
+                              layEvent: 'cancelStu',
+                              label: '取消',
+                              event: function (obj, config, render) {layer.close(index)}
+                            },
+                            'setCols'
+                          ]
+                        },
+                        search: {
+                          'class': 'selects',
+                          labelWidth: '100',
+                          items: [
+                            {
+                              label: '会员学校',
+                              elements: {
+                                eType: 'select',
+                                name: 'schoolVerifyIn',
+                                option: [
+                                  {value: 'all', label: '&nbsp;', selected: true},
+                                  {value: '{{ VerifyStatus.ok }}', label: '是'},
+                                  {value: '{{ VerifyStatus.wait }},{{ VerifyStatus.no }}', label: '否'},
+                                ]
+                              }
+                            },
+                            {
+                              label: '学生账号',
+                              elements: {
+                                eType: 'input',
+                                name: 'account'
+                              }
+                            },
+                            {
+                              label: '学生姓名',
+                              elements: {
+                                eType: 'input',
+                                name: 'name'
+                              }
+                            },
+                            {
+                              label: '身份证号',
+                              elements: {
+                                eType: 'input',
+                                name: 'idCard'
+                              }
+                            },
+                            {
+                              label: '学校编号',
+                              elements: {
+                                eType: 'input',
+                                name: 'schoolAccount'
+                              }
+                            },
+                            {
+                              label: '学校名称',
+                              elements: {
+                                eType: 'input',
+                                name: 'schoolName'
+                              }
+                            },
+                            {
+                              label: '联系手机',
+                              elements: {
+                                eType: 'input',
+                                name: 'phoneNumber'
+                              }
+                            },
+                            {
+                              label: '大陆省份',
+                              elements: {
+                                eType: 'input',
+                                name: 'provinceName'
+                              }
+                            },
+                            {
+                              label: '学段',
+                              elements: {
+                                eType: 'select',
+                                name: 'studentPeriod',
+                                option: [
+                                  {value: 'all', label: '&nbsp;', selected: true},
+                                  {% for i, j in StudentPeriod %}
+                                  {% if i != 'LiXiao' %}{value: '{{ j }}', label: '{{ j }}'},{% endif %}
+                                  {% endfor %}
+                                ]
+                              }
+                            },
+                          ]
+                        },
+                        table: {
+                          checkboxType: 'radio',
+                          templates: [
+                            {
+                              id: 'tSchoolVerifyIn',
+                              content: '[[# if (d.student.school.verify === \'{{ VerifyStatus.ok }}\') { ]]是[[# } else { ]]否[[# } ]]'
+                            },
+                            {
+                              id: 'tSchoolAccount',
+                              content: '[[ d.student.school.member.account ]]'
+                            },
+                            {
+                              id: 'tSchoolName',
+                              content: '[[ d.student.school.member.name ]]'
+                            },
+                            {
+                              id: 'tProvinceName',
+                              content: '[[ d.county.city.province.name ]]'
+                            },
+                            {
+                              id: 'tStudentPeriod',
+                              content: '[[#  if(d.student.period === \'{{ StudentPeriod.XiaoXue }}\'){ ]]<span class="layui-badge layui-bg-orange">小</span>[[# } else if(d.student.period === \'{{ StudentPeriod.ChuZhong }}\'){ ]]<span class="layui-badge layui-bg-blue">初</span>[[#  } else if(d.student.period === \'{{ StudentPeriod.GaoZhong }}\'){ ]]<span class="layui-badge layui-bg-red">高</span>[[#  } else { ]]<span class="layui-badge layui-bg-gray">离</span>[[#  } ]]'
+                            },
+                            {
+                              id: 'tAvatar',
+                              content: '[[# if (d.avatar) { ]]<a href="[[ d.avatar ]]" style="cursor: pointer;" target="_blank"><img class="tableImg" src="[[ d.avatar ]]"></a>[[# } ]]'
+                            },
+                            {
+                              id: 'tIsComplemented',
+                              content: '[[# if (d.isComplemented) { ]]是[[# } else { ]]否[[# } ]]'
+                            },
+                            {
+                              id: 'tStudentYear',
+                              content: '[[ d.student.yearOfEnrollment ]]'
+                            },
+                            {
+                              id: 'tStudentClass',
+                              content: '[[ d.student.class ]]'
+                            },
+                            {
+                              id: 'tStudentGrade',
+                              content: '[[ d.student.grade ]]'
+                            },
+                            {
+                              id: 'tStudentPhoto',
+                              content: '[[# if (d.student.photo) { ]]<a href="[[ d.student.photo ]]" style="cursor: pointer;" target="_blank"><img class="tableImg" src="[[ d.student.photo ]]"></a>[[# } ]]'
+                            },
+                            {
+                              id: 'tStudentAddress',
+                              content: '[[ d.student.address != null ? d.student.address : \'\' ]]'
+                            },
+                            {
+                              id: 'tStudentBirthday',
+                              content: '[[ d.student.birthday != null ? d.student.birthday : \'\' ]]'
+                            },
+                            {
+                              id: 'tStudentFamilyInfo',
+                              content: '[[ d.student.familyInfo != null ? d.student.familyInfo : \'\' ]]'
+                            },
+                            {
+                              id: 'tStudentPoverty',
+                              content: '[[ d.student.poverty != null ? d.student.poverty : \'\' ]]'
+                            },
+                          ],
+                          config: {
+                            elem: '#student',
+                            url: '/admin/member/student/table?isComplemented=true&dftNotIdA=true&haveFamilies=true&haveScores=true&semester={{ semester }}',
+                            cols: [
+                              [
+                                {field: 'id', title: 'ID', align: 'center', show: false, sort: true, width: 100, fixed: 'left'},
+                                {field: 'account', title: '学生账号', align: 'center', sort: true, minWidth: 140, fixed: 'left'},
+                                {field: 'name', title: '学生姓名', align: 'center', sort: true, minWidth: 140},
+                                {field: 'nickName', title: '学生昵称', align: 'center', show: false, sort: true, minWidth: 140},
+                                {field: 'provinceName', title: '大陆省份', align: 'center', sort: true, minWidth: 150, templet: '#tProvinceName'},
+                                {field: 'schoolVerifyIn', title: '会员学校', align: 'center', sort: true, width:100, templet: '#tSchoolVerifyIn'},
+                                {field: 'schoolAccount', title: '学校编号', align: 'center', sort: true, minWidth: 140, templet: '#tSchoolAccount'},
+                                {field: 'schoolName', title: '学校名称', align: 'center', sort: true, minWidth: 250, templet: '#tSchoolName'},
+                                {field: 'phoneNumber', title: '联系手机', align: 'center', sort: true, width: 140},
+                                {field: 'studentPeriod', title: '学段', align: 'center', sort: true, width: 80, templet: '#tStudentPeriod'},
+                                {field: 'idCard', title: '身份证号', align: 'center', sort: true, width: 180},
+                                {field: 'gender', title: '性别', align: 'center', show: false, sort: true, width: 80},
+                                {field: 'nation', title: '民族', align: 'center', show: false, sort: true, width: 80},
+                                {field: 'email', title: 'Email', align: 'center', show: false, sort: true, minWidth: 100},
+                                {field: 'wechat', title: '微信号', align: 'center', show: false, sort: true, minWidth: 100},
+                                {field: 'qq', title: 'QQ', align: 'center', show: false, sort: true, minWidth: 100},
+                                {field: 'avatar', title: '头像', align: 'center', show: false, sort: true, width: 80, templet: '#tAvatar'},
+                                {field: 'isComplemented', title: '完善信息', align: 'center', show: false, sort: true, width: 100, templet: '#tIsComplemented'},
+                                {field: 'studentYear', title: '入学年份', align: 'center', show: false, sort: true, minWidth: 100, templet: '#tStudentYear'},
+                                {field: 'studentClass', title: '班级', align: 'center', show: false, sort: true, width: 80, templet: '#tStudentClass'},
+                                {field: 'studentGrade', title: '年级', align: 'center', show: false, sort: true, width: 80, templet: '#tStudentGrade'},
+                                {field: 'studentPhoto', title: '照片', align: 'center', show: false, sort: true, width: 80, templet: '#tStudentPhoto'},
+                                {field: 'studentAddress', title: '地址', align: 'center', show: false, sort: true, minWidth: 120, templet: '#tStudentAddress'},
+                                {field: 'studentFamilyInfo', title: '家庭情况简述', align: 'center', sort: true, minWidth: 200, templet: '#tStudentFamilyInfo'},
+                                {field: 'studentPoverty', title: '贫困状态', align: 'center', sort: true, minWidth: 160, templet: '#tStudentPoverty'},
+                                {field: 'studentBirthday', title: '出生日期', align: 'center', show: false, sort: true, minWidth: 100, templet: '#tStudentBirthday'},
+                              ]
+                            ],
+                          }
+                        }
+                      })
+                    }
+                  }
+                ]
+              },
+              {
+                eType: 'input',
+                name: 'studentId',
+                show: false,
+                layVerify: 'stuRqd'
+              },
+              {
+                eType: 'input',
+                name: 'schoolId',
+                show: false,
+              }
+            ]
+          },
+          // {
+          //   label: '申请学期',
+          //   elements: [
+          //     {
+          //       eType: 'date',
+          //       name: 'semester1',
+          //       layVerify: 'required',
+          //       type: 'year'
+          //     },
+          //     {
+          //       eType: 'select',
+          //       name: 'semester2',
+          //       layVerify: 'select',
+          //       option: [
+          //         {value: 'null', label: '请选择', selected: true},
+          //         {value: '0', label: '3月~7月'},
+          //         {value: '1', label: '9月~下一年1月'},
+          //       ]
+          //     }
+          //   ]
+          // },
+          {
+            label: '申请金额',
+            elements: {
+              eType: 'input',
+              name: 'money',
+              type: 'number',
+              layVerify: 'required'
+            }
+          },
+          {
+            label: '用途',
+            elements: {
+              eType: 'input',
+              name: 'use',
+              display: 'block',
+              layVerify: 'required'
+            }
+          },
+          {
+            label: '开户行',
+            elements: {
+              eType: 'input',
+              name: 'bank',
+              layVerify: 'required'
+            }
+          },
+          {
+            label: '开户人',
+            elements: {
+              eType: 'input',
+              name: 'bankUser',
+              layVerify: 'required'
+            }
+          },
+          {
+            label: '开户账号',
+            elements: {
+              eType: 'input',
+              name: 'bankNumber',
+              layVerify: 'required'
+            }
+          },
+        ],
+        verify: {
+          select: function (value) {
+            if (value === '' || value === 'null') return '必填项不能为空'
+          },
+          stuRqd: function (value) {
+            if (value === '') return '学生不能为空'
+          },
+          tchRqd: function (value) {
+            if (value === '') return '指导老师不能为空'
+          }
+        }
+      }
+    })
+  })
+</script>
+{% endblock %}

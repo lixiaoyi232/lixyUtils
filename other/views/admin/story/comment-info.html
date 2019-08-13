@@ -1,0 +1,56 @@
+{% extends "../back.html" %}
+
+{% block css %}
+{{ super() }}
+{% endblock %}
+
+{% block body %}
+  <div class="layui-card myCard">
+    <div class="layui-card-header">{{ storyComment.author.nickname }}对{{ storyComment.story.title }}的评论</div>
+    <div class="layui-card-body layui-tab layui-tab-brief">
+      <div id="myForm"></div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+  $(function () {
+    newForm({
+      form: {
+        labelWidth: '100',
+        submit: {
+          show: false
+        },
+        items: [
+          {
+            label: '评论者',
+            elements: {
+              eType: 'char',
+              name: 'author',
+              element: '<div class="layui-input-block" style="">{{ storyComment.author.name }}</div>'
+            }
+          },
+          {
+            label: '标题',
+            elements: {
+              eType: 'char',
+              name: 'text',
+              element: '<div class="layui-input-block" style="">{{ storyComment.story.title }}</div>'
+            }
+          },
+          {
+            label: '内容',
+            elements: {
+              eType: 'char',
+              name: 'story',
+              element: '<div class="layui-input-block" style="">' + decodeURIComponent('{{ storyComment.text }}') + '</div>'
+            }
+          }
+        ]
+      }
+    })
+  })
+</script>
+{% endblock %}

@@ -1,0 +1,235 @@
+{% extends "../layout/layout-member-center.html" %}
+
+{% block css %}
+{{ super() }}
+<style>
+  .layui-input-block, .formChar {
+    color: black;
+  }
+</style>
+{% endblock %}
+
+{% block member_center_main %}
+  <div class="layui-card myCard">
+    <div class="layui-card-header">{{ survey.title }}</div>
+    <div class="layui-card-body layui-tab layui-tab-brief">
+      <div id="myForm"></div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+  $(function () {
+    {% if surveyAnswer == null and survey.status == SurveyStatus.ok %}
+    newForm({
+      form: {
+        labelWidth: '100',
+        submit: {
+          event: function (data) {
+            var dataObj = getFormData('[lay-filter=myForm]')
+            {% for i in survey.content %}
+              {% if i.type == 'radio' or i.type == 'checkbox' %}
+              if (dataObj['{{ loop.index0 }}'] == null) {
+                layer.msg('题{{ loop.index }}不能为空', {time: 2000, icon:5, anim: 6})
+                return
+              }
+              {% elif i.type == 'radio2' %}
+              if (dataObj['{{ loop.index0 }}'] == null) {
+                layer.msg('题{{ loop.index }}不能为空', {time: 2000, icon:5, anim: 6})
+                return
+              } else if (dataObj['{{ loop.index0 }}'] === '{{ i.fillOptLab }}' && dataObj['{{ loop.index0 }}f'] === '') {
+                layer.msg('题{{ loop.index }}选了“{{ i.fillOptLab }}”，输入框就不能为空', {time: 2000, icon:5, anim: 6})
+                return
+              }
+              {% elif i.type == 'checkbox2' %}
+              if (dataObj['{{ loop.index0 }}'] == null) {
+                layer.msg('题{{ loop.index }}不能为空', {time: 2000, icon:5, anim: 6})
+                return
+              } else if ((dataObj['{{ loop.index0 }}'] === '{{ i.fillOptLab }}' || dataObj['{{ loop.index0 }}'].indexOf('{{ i.fillOptLab }}') !== -1) && dataObj['{{ loop.index0 }}f'] === '') {
+                layer.msg('题{{ loop.index }}选了“{{ i.fillOptLab }}”，输入框就不能为空', {time: 2000, icon:5, anim: 6})
+                return
+              }
+              {% endif %}
+            {% endfor %}
+            $('[lay-filter="myFormSubmit"]').attr('disabled', true)
+            $('[lay-filter="myFormSubmit"]').addClass('layui-btn-disabled')
+            ajax({
+              method: 'PUT',
+              url: '/survey/survey/{{ survey.id }}/answer',
+              data: JSON.stringify(getFormData('[lay-filter=myForm]')),
+              success: function () {
+                layer.msg('提交成功', {time: 2000, icon:6})
+                window.setTimeout(function () {window.location.href = '/member-center/survey#photo'}, 2000)
+              },
+              fail: function () {
+                $('[lay-filter="myFormSubmit"]').attr('disabled', false)
+                $('[lay-filter="myFormSubmit"]').removeClass('layui-btn-disabled')
+              },
+              error: function () {
+                $('[lay-filter="myFormSubmit"]').attr('disabled', false)
+                $('[lay-filter="myFormSubmit"]').removeClass('layui-btn-disabled')
+              }
+            })
+          }
+        },
+        items: [
+          {% for i in survey.content %}
+          {% set lastIndex = 0 %}
+          {
+            label: '{{ loop.index }}、',
+            elements: [
+              {
+                eType: 'char',
+                name: '{{ loop.index }}q',
+                display: 'block',
+                element: '<div class="layui-input-block" style="">{{ i.question }}</div>'
+              },
+              {% if i.type == 'radio' %}
+              {
+                eType: 'char',
+                name: '{{ loop.index }}o',
+                display: 'block',
+                element: ''
+                  {% set outIndex = loop.index0 %}
+                  {% for j in i.options %}
+                  + '<input type="radio" name="{{ outIndex }}" value="{{ loop.index }}" title="{{ loop.index|getLetter }}、{{ j }}">'
+                  {% endfor %}
+              }
+              {% elif i.type == 'radio2' %}
+              {
+                eType: 'char',
+                name: '{{ loop.index }}o',
+                display: 'block',
+                element: ''
+                  {% set outIndex = loop.index0 %}
+                  {% for j in i.options %}
+                  + '<input type="radio" name="{{ outIndex }}" value="{{ loop.index }}" title="{{ loop.index|getLetter }}、{{ j }}">'
+                  {% set lastIndex = loop.index + 1 %}
+                  {% endfor %}
+                  + '<input type="radio" name="{{ outIndex }}" value="{{ i.fillOptLab }}" title="{{ lastIndex|getLetter }}、{{ i.fillOptLab }}"><input type="text" name="{{ outIndex }}f" class="layui-input inblk" style="width: auto;" lay-verify="">'
+              }
+              {% elif i.type == 'checkbox' %}
+              {
+                eType: 'char',
+                name: '{{ loop.index }}o',
+                display: 'block',
+                element: ''
+                  {% set outIndex = loop.index0 %}
+                  {% for j in i.options %}
+                  + '<input type="checkbox" lay-skin="primary" name="{{ outIndex }}" value="{{ loop.index }}" title="{{ loop.index|getLetter }}、{{ j }}">'
+                  {% endfor %}
+              }
+              {% elif i.type == 'checkbox2' %}
+              {
+                eType: 'char',
+                name: '{{ loop.index }}o',
+                display: 'block',
+                element: ''
+                  {% set outIndex = loop.index0 %}
+                  {% for j in i.options %}
+                  {% set lastIndex = loop.index + 1 %}
+                  + '<input type="checkbox" lay-skin="primary" name="{{ outIndex }}" value="{{ loop.index }}" title="{{ loop.index|getLetter }}、{{ j }}">'
+                  {% endfor %}
+                  + '<input type="checkbox" lay-skin="primary" name="{{ outIndex }}" value="{{ i.fillOptLab }}" title="{{ lastIndex|getLetter }}、{{ i.fillOptLab }}"><input type="text" name="{{ outIndex }}f" class="layui-input inblk" style="width: auto;" lay-verify="">'
+              }
+              {% elif i.type == 'short' %}
+              {
+                eType: 'textarea',
+                name: '{{ loop.index0 }}',
+                layVerify: 'required'
+              }
+              {% endif %}
+            ]
+          },
+          {% endfor %}
+        ]
+      }
+    })
+    {% else %}
+    newForm({
+      form: {
+        labelWidth: '100',
+        submit: {
+          show: false,
+        },
+        items: [
+          {% for i in survey.content %}
+          {% set lastIndex = 0 %}
+          {
+            label: '{{ loop.index }}、',
+            elements: [
+              {
+                eType: 'char',
+                name: '{{ loop.index }}q',
+                display: 'block',
+                element: '<div class="layui-input-block" style="">{{ i.question }}</div>'
+              },
+              {% if i.type == 'radio' %}
+              {
+                eType: 'char',
+                name: '{{ loop.index }}o',
+                display: 'block',
+                element: ''
+                  {% set outIndex = loop.index0 %}
+                  {% for j in i.options %}
+                  + '<input type="radio" name="{{ outIndex }}" value="{{ loop.index }}" title="{{ loop.index|getLetter }}、{{ j }}"{% if surveyAnswer.answer[outIndex] === loop.index %} checked=""{% endif %}>'
+                  {% endfor %}
+              }
+              {% elif i.type == 'radio2' %}
+              {
+                eType: 'char',
+                name: '{{ loop.index }}o',
+                display: 'block',
+                element: ''
+                  {% set outIndex = loop.index0 %}
+                  {% for j in i.options %}
+                  + '<input type="radio" name="{{ outIndex }}" value="{{ loop.index }}" title="{{ loop.index|getLetter }}、{{ j }}"{% if surveyAnswer.answer[outIndex] === loop.index %} checked=""{% endif %}>'
+                  {% set lastIndex = loop.index + 1 %}
+                  {% endfor %}
+                  + '<input type="radio" name="{{ outIndex }}" value="{{ i.fillOptLab }}" title="{{ lastIndex|getLetter }}、{{ i.fillOptLab }}"{% if surveyAnswer.answer[outIndex]|type == "string" %} checked=""{% endif %}><input type="text" name="{{ outIndex }}f" class="layui-input inblk" style="width: auto;" lay-verify=""{% if surveyAnswer.answer[outIndex]|type == "string" %} value="{{ surveyAnswer.answer[outIndex] }}"{% endif %}>'
+              }
+              {% elif i.type == 'checkbox' %}
+              {
+                eType: 'char',
+                name: '{{ loop.index }}o',
+                display: 'block',
+                element: ''
+                  {% set outIndex = loop.index0 %}
+                  {% for j in i.options %}
+                  + '<input type="checkbox" lay-skin="primary" name="{{ outIndex }}" value="{{ loop.index }}" title="{{ loop.index|getLetter }}、{{ j }}"{% if surveyAnswer != null and surveyAnswer.answer[outIndex].indexOf(loop.index) !== -1 %} checked=""{% endif %}>'
+                  {% endfor %}
+              }
+              {% elif i.type == 'checkbox2' %}
+              {
+                eType: 'char',
+                name: '{{ loop.index }}o',
+                display: 'block',
+                element: ''
+                  {% set outIndex = loop.index0 %}
+                  {% for j in i.options %}
+                  {% set lastIndex = loop.index + 1 %}
+                  + '<input type="checkbox" lay-skin="primary" name="{{ outIndex }}" value="{{ loop.index }}" title="{{ loop.index|getLetter }}、{{ j }}"{% if surveyAnswer != null and surveyAnswer.answer[outIndex].indexOf(loop.index) !== -1 %} checked=""{% endif %}>'
+                  {% endfor %}
+                  + '<input type="checkbox" lay-skin="primary" name="{{ outIndex }}" value="{{ i.fillOptLab }}" title="{{ lastIndex|getLetter }}、{{ i.fillOptLab }}"{% if surveyAnswer.answer[outIndex][surveyAnswer.answer[outIndex].length - 1]|type == "string" %} checked=""{% endif %}><input type="text" name="{{ outIndex }}f" class="layui-input inblk" style="width: auto;" lay-verify=""{% if surveyAnswer.answer[outIndex][surveyAnswer.answer[outIndex].length - 1]|type == "string" %} value="{{ surveyAnswer.answer[outIndex][surveyAnswer.answer[outIndex].length - 1] }}"{% endif %}>'
+              }
+              {% elif i.type == 'short' %}
+              {
+                eType: 'char',
+                name: '{{ loop.index0 }}',
+                layVerify: 'required',
+                display: 'block',
+                element: '<div class="layui-input-block" style=""><pre>{{ surveyAnswer.answer[loop.index0] }}</pre></div>'
+              }
+              {% endif %}
+            ]
+          },
+          {% endfor %}
+        ]
+      }
+    })
+    {% endif %}
+  })
+</script>
+{% endblock %}

@@ -1,0 +1,131 @@
+{% extends "./layout/layout-headerfooter.html" %}
+
+{% import "../utils.html" as utils %}
+
+{% block css %}
+{{super()}}
+<!-- <link rel="stylesheet" href="/static/css/website/mytable.css"> -->
+  <link rel="stylesheet" href="/static/css/admin/back.css">
+  <style>
+    .mc-mainbg {
+      background-color: #F4F4F4;
+      padding: 20px 0;
+    }
+    .mc-main {
+      min-height: 400px;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 10px;
+      position: relative;
+      /* background-color: white; */
+    }
+    #myVideo {
+      text-align: center;
+    }
+    .videoInBlock {
+      margin: 0 auto;
+      width: 800px;
+      height: 600px;
+    }
+    .video-js {
+      width: 100%;
+      height: 100%;
+    }
+
+    #myVideo video {
+      width: 100%;
+      height: 100%;
+    }
+    #videoList {
+      margin: 30px 10px;
+    }
+    .videoItem {
+      display: inline-block;
+      margin: 10px 20px;
+      line-height: 32px;
+      cursor: pointer;
+    }
+    .videoItem:hover {
+      color: #2687a7;
+    }
+    .clicked-this {
+      color: #2687a7;
+    }
+    @media only screen and (max-width: 991px) {
+      .mc-main {
+        max-width: 600px;
+      }
+      .videoInBlock {
+        width: 500px;
+        height: 375px;
+      }
+    }
+    @media only screen and (max-width: 767px) {
+      .mc-main {
+        max-width: 400px;
+      }
+      .videoInBlock {
+        width: 360px;
+        height: 270px;
+      }
+    }
+  </style>
+{% endblock %}
+
+
+{% block main %}
+<!-- <div>
+  新闻：
+</div> -->
+  <div class="mc-mainbg">
+    <div class="mc-main">
+      <div class="layui-card">
+        <div class="layui-card-header">在线视频</div>
+        <div class="layui-card-body">
+          <div id="myVideo">
+            <div class="videoInBlock">
+              <video src="/uploads/online-video/wen&ysr.mp4" controls="controls">您的浏览器不支持video标签</video>
+            </div>
+          </div>
+          <div id="videoList">
+            <span class="videoItem" dataVideo="ysr.mp4">黄羊川</span>
+            <span class="videoItem clicked-this" dataVideo="wen&ysr.mp4">温世仁先生与千乡万才</span>
+            <span class="videoItem" dataVideo="gbpq.mp4">网络城乡</span>
+            <span class="videoItem" dataVideo="west10.mp4">西部开发十年可成</span>
+            <span class="videoItem" dataVideo="wdhan.mp4">汪道涵与千乡万才</span>
+            <span class="videoItem" dataVideo="ysr1.mp4">黄羊川 (英文版)</span>
+            <span class="videoItem" dataVideo="village.mp4">网络城乡 (英文版)</span>
+            <span class="videoItem" dataVideo="tom_hyc.mp4">高清风光版《黄羊川》</span>
+            <span class="videoItem" dataVideo="2003set1.mp4">第一届SET大赛(上半部)</span>
+            <span class="videoItem" dataVideo="2003set2.mp4">第一届SET大赛(下半部)</span>
+            <span class="videoItem" dataVideo="talkcctv2.mp4">CCTV-2《对话》温世仁</span>
+            <span class="videoItem" dataVideo="dobwen.mp4">凤凰卫视专题采访：台商如何创造两岸双赢</span>
+            <span class="videoItem" dataVideo="shblod1.mp4">凤凰卫视：山河血脉-1</span>
+            <span class="videoItem" dataVideo="shblod2.mp4">凤凰卫视：山河血脉-2</span>
+            <span class="videoItem" dataVideo="esathor.mp4">《东方时空》-追忆温先生</span>
+            <span class="videoItem" dataVideo="sharcctv4.mp4">《海峡两岸》-温先生专访</span>
+            <span class="videoItem" dataVideo="netdream.mp4">《海峡两岸》-网络梦想在延续</span>
+            <span class="videoItem" dataVideo="newshyc1.mp4">CCTV-12《新闻夜话》之黄羊川1</span>
+            <span class="videoItem" dataVideo="newshyc2.mp4">CCTV-12《新闻夜话》之黄羊川2</span>
+            <span class="videoItem" dataVideo="talkj.mp4">追忆温世仁-甘肃卫视“交流”节目</span>
+            <span class="videoItem" dataVideo="06ednm.mp4">台湾公视：伊甸志工在内蒙</span>
+            <span class="videoItem" dataVideo="09tldnx15.mp4">台联大志工在宁夏张易中学</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+$(function() {
+  $('.videoItem').on('click', function (e) {
+    $('.videoItem').removeClass('clicked-this')
+    $(e.target).addClass('clicked-this')
+    $('video').attr('src', '/uploads/online-video/' + $(e.target).attr('dataVideo'))[0].play()
+  })
+})
+</script>
+{% endblock%}

@@ -1,0 +1,100 @@
+{% extends "../back.html" %}
+
+{% block css %}
+{{ super() }}
+{% endblock %}
+
+{% block main %}
+  <div class="layui-card myCard">
+    <div class="layui-card-header">通讯录</div>
+    <div class="layui-card-body">
+      <div id="myTable"></div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+  $(function () {
+    newTable({
+      // btns: {
+      //   items: [
+      //     'setCols',
+      //   ]
+      // },
+      search: {
+        'class': 'selects',
+        labelWidth: '100',
+        items: [
+          {
+            label: '名称',
+            elements: {
+              eType: 'input',
+              name: 'name'
+            }
+          },
+          {
+            label: '编号',
+            elements: {
+              eType: 'input',
+              name: 'account'
+            }
+          },
+          {
+            label: '大陆省份',
+            elements: {
+              eType: 'input',
+              name: 'provinceName',
+              // eType: 'select',
+              // name: 'provinceId',
+              // option: [
+              //   {value: 'all', label: '&nbsp;', selected: true},
+              //   {% for p in provinces %}
+              //   {value: '{{ p.id }}', label: '{{ p.name }}'},
+              //   {% endfor %}
+              // ]
+            }
+          },
+        ]
+      },
+      table: {
+        checkboxType: 'none',
+        tool: {
+          items: [
+            {
+              layEvent: 'into',
+              'class': 'layui-btn-primary',
+              label: '进入',
+              event: function (obj, config, render) {openWindow('/admin/chat/a-chat/' + obj.data.id, undefined, {resizable: 'yes'})}
+            },
+          ]
+        },
+        templates: [
+          {
+            id: 'n',
+            content: '<a onClick="openWindow(\'/admin/member/school/[[ d.id ]]/info\')" style="cursor: pointer;">[[ d.name ]]</a>'
+          },
+          {
+            id: 'pv',
+            content: '[[ d.county.city.province.name ]]'
+          },
+        ],
+        config: {
+          elem: '#aChat',
+          url: '/admin/chat/list/table',
+          cols: [
+            [
+              {field: 'id', sort: true, title: 'ID', width:100, fixed: 'left', show: false},
+              {field: 'account', sort: true, title: '学校编号'},
+              {field: 'name', sort: true, title: '学校名称', templet: '#n'},
+              {field: 'provinceName', sort: true, title: '所在地区', minWidth: 150, templet: '#pv'},
+              {fixed: 'right', width:200, align: 'center', toolbar: '#operation'}
+            ]
+          ]
+        }
+      }
+    })
+  })
+</script>
+{% endblock %}

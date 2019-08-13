@@ -1,0 +1,129 @@
+{% extends "../back.html" %}
+
+{% block css %}
+{{ super() }}
+<style>
+  html {
+    overflow: hidden;
+  }
+</style>
+{% endblock %}
+
+{% block body %}
+  <div class="layui-card myCard">
+    <div class="layui-card-header">{{ survey.title }}</div>
+    <div class="layui-card-body">
+      <div id="myTable"></div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+  $(function () {
+    newTable({
+      btns: {
+        items: [
+          {
+            layEvent: 'export',
+            'class': 'layui-btn-normal',
+            label: '导出',
+            event: function (obj, config, render) {
+              layer.confirm('确认导出吗？', function(index){
+                window.location = '/admin/survey/survey/{{ survey.id }}/exportExcel' + (config.url.split('?')[1] != null ? '?' + config.url.split('?')[1] : '')
+                layer.close(index)
+              })
+            }
+          },
+          'setCols'
+        ]
+      },
+      search: {
+        'class': 'selects',
+        labelWidth: '100',
+        items: [
+          {
+            label: '用户名称',
+            elements: {
+              eType: 'input',
+              name: 'memberName'
+            }
+          },
+          {
+            label: '提交时间',
+            elements: {
+              eType: 'date',
+              name: 'createdTime',
+              range: true
+            }
+          }
+        ]
+      },
+      table: {
+        tool: {
+          items: [
+            {% if curAdmin.isSuperUser or curAdmin.permissions.svy_svy_d %}
+            // 'del',
+            {% endif %}
+          ]
+        },
+        templates: [
+          {
+            id: 'tMemberName',
+            content: '[[ d.member.name ]]'
+          },
+          {% for i in contentArr %}
+          {% if i.type == 'radio' %}
+          {
+            id: 't{{ loop.index }}',
+            content: '[[# let content = JSON.parse(\'{{ survey.content | safe }}\') ]][[ content[{{ loop.index0 }}].options[parseInt(d.answer["{{ loop.index0 }}"]) - 1] ]]'
+          },
+          {% elif i.type == 'checkbox' %}
+          {
+            id: 't{{ loop.index }}',
+            content: '[[# let content = JSON.parse(\'{{ survey.content | safe }}\') ]][[ d.answer["{{ loop.index0 }}"].reduce((obj, i) => (obj += content[{{ loop.index0 }}].options[parseInt(i) - 1] + "；", obj), "").slice(0, -1) ]]'
+          },
+          {% elif i.type == 'radio2' %}
+          {
+            id: 't{{ loop.index }}',
+            content: '[[# let content = JSON.parse(\'{{ survey.content | safe }}\') ]][[ isNaN(d.answer["{{ loop.index0 }}"]) ? d.answer["{{ loop.index0 }}"] : content[{{ loop.index0 }}].options[parseInt(d.answer["{{ loop.index0 }}"]) - 1] ]]'
+          },
+          {% elif i.type == 'checkbox2' %}
+          {
+            id: 't{{ loop.index }}',
+            content: '[[# let content = JSON.parse(\'{{ survey.content | safe }}\') ]][[ d.answer["{{ loop.index0 }}"].reduce((obj, i) => (obj += isNaN(i) ? i : content[{{ loop.index0 }}].options[parseInt(i) - 1] + "；", obj), "").slice(0, -1) ]]'
+          },
+          {% elif i.type == 'short' %}
+          {
+            id: 't{{ loop.index }}',
+            content: '[[# let content = JSON.parse(\'{{ survey.content | safe }}\') ]][[ d.answer["{{ loop.index0 }}"] ]]'
+          },
+          {% endif %}
+          {% endfor %}
+          {
+            id: 'tCreatedTime',
+            content: '[[ dateFormat(d.createdTime, \'YYYY-MM-DD HH:mm:ss\') ]]'
+          }
+        ],
+        checkboxType: 'none',
+        config: {
+          elem: '#survey',
+          url: '/admin/survey/survey/{{ survey.id }}/aTable',
+          cols: [
+            [
+              {field: 'id', sort: true, title: 'ID', width:100, fixed: 'left', show: false},
+              {field: 'memberName', sort: true, title: '用户名称', minWidth: 250, templet: '#tMemberName'},
+              {% for i in contentArr %}
+              {field: '{{ loop.index }}', sort: true, title: '{{ i.question }}', minWidth: 200, templet: '#t{{ loop.index }}'},
+              {% endfor %}
+              {field: 'createdTime', sort: true, title: '提交时间', minWidth: 180, templet: '#tCreatedTime'},
+              // {fixed: 'right', width:200, align: 'center', toolbar: '#operation'}
+            ]
+          ]
+        }
+      }
+    })
+  })
+</script>
+{% endblock %}

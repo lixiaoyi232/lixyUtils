@@ -1,0 +1,78 @@
+{% extends "../back.html" %}
+
+{% block css %}
+<link rel="stylesheet" href="/static/css/admin/login.css">
+{% endblock %}
+
+{% block body %}
+<div class="img">
+  <div class="alpha">
+    <div class="login">
+      <div class="title">
+        <span>欢迎登录</span>
+      </div>
+      <div id="myForm"></div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block script %}
+  {{ super() }}
+  <script>
+    $(function () {
+      newForm({
+        form: {
+          // labelWidth: '100',
+          submit: {
+            event: function (data) {
+              $('[lay-filter="myFormSubmit"]').attr('disabled', true)
+              $('[lay-filter="myFormSubmit"]').addClass('layui-btn-disabled')
+              data.field.intro = encodeURI(data.field.intro)
+              ajax({
+                method: 'POST',
+                url: '/admin/login',
+                data: JSON.stringify(data.field),
+                success: function () {
+                  layer.msg('登录成功', {time: 2000, icon:6})
+                  window.setTimeout(function () {window.location.href = '/admin'}, 2000)
+                },
+                fail: function () {
+                  $('[lay-filter="myFormSubmit"]').attr('disabled', false)
+                  $('[lay-filter="myFormSubmit"]').removeClass('layui-btn-disabled')
+                },
+                error: function () {
+                  $('[lay-filter="myFormSubmit"]').attr('disabled', false)
+                  $('[lay-filter="myFormSubmit"]').removeClass('layui-btn-disabled')
+                }
+              })
+            }
+          },
+          items: [
+            {
+              label: '用户名',
+              elements: {
+                eType: 'input',
+                name: 'account',
+                layVerify: 'required'
+              }
+            },
+            {
+              label: '密码',
+              elements: {
+                eType: 'input',
+                type: 'password',
+                name: 'password',
+                layVerify: 'required|pass'
+              }
+            }
+          ],
+          verify: {
+            pass: [/(.+){6,20}$/, '密码必须6到20位']
+          }
+        }
+      })
+    })
+  </script>
+{% endblock %}
+

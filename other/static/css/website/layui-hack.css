@@ -1,0 +1,17 @@
+
+.layui-carousel>.layui-carousel-ind {
+  position: absolute;
+  top: auto;
+  bottom: 15px;
+}
+.layui-carousel>.carousel-item {
+  position: absolute;
+}
+
+
+.layui-col-space13 {
+  margin: -6.5px;
+}
+.layui-col-space13>* {
+  padding: 6.5px;
+}
