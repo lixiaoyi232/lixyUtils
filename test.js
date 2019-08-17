@@ -18,7 +18,7 @@ let toTest = {
         },
         {
           label: '年龄',
-          callback: (d) => ({v: d.name}),
+          callback: (d) => ({v: d.age}),
         },
       ],
       datas: [
