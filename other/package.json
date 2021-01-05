@@ -8,7 +8,7 @@
     "start": "NODE_ENV=production node dist/app.js"
   },
   "dependencies": {
-    "axios": "^0.18.0",
+    "axios": "^0.21.1",
     "bytes": "^3.0.0",
     "chalk": "^2.4.1",
     "cron": "^1.4.1",
